@@ -14,7 +14,7 @@ SY = 12.3;          // Width of channel for NeoPixel strip (measured)
 
 TY = 20;            // Total width, must be > SY
 TZ1 = 6;            // Height from base to top of hexagon plane
-TZ2 = 8;           // Height from base to top of plate that covers hexagon plane
+TZ2 = 10;           // Height from base to top of plate that covers hexagon plane
 CZ1 = 1;            // Height of cover
 DY  = 1;            // Thickness of divider
 SLOT_GROW = 1.2;    // Growth factor for slots (literal wiggle room)
