@@ -1,8 +1,10 @@
 /*
- * neo_strip.scad - NeoPixel strip + cover, fully parameterized.
+ * NeoPixel strip + cover, fully parameterized
  */
  
 NN = 8;             // Number of NeoPixels
+IH = false;         // True to generate interior hexagons  
+
 NR = 5;             // Radius of hexagon for a single NeoPixel
 NE = 9;             // Space from edge to center of first & last hexagon
 
@@ -12,7 +14,7 @@ SY = 12.3;          // Width of channel for NeoPixel strip (measured)
 
 TY = 20;            // Total width, must be > SY
 TZ1 = 6;            // Height from base to top of hexagon plane
-TZ2 = 10;           // Height from base to top of plate that covers hexagon plane
+TZ2 = 8;           // Height from base to top of plate that covers hexagon plane
 CZ1 = 1;            // Height of cover
 DY  = 1;            // Thickness of divider
 SLOT_GROW = 1.2;    // Growth factor for slots (literal wiggle room)
@@ -54,7 +56,10 @@ difference()
         {
             linear_extrude(TZ1 - SZ)
             {
-                circle(NR, $fn = 6);
+                if (IH)
+                {
+                    circle(NR, $fn = 6);
+                }
             }
         }
     }
@@ -102,3 +107,4 @@ translate([0, 2 * TY, 0])
         }
     }
 }
+
