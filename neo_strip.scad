@@ -6,7 +6,6 @@ NN = 8;             // Number of NeoPixels
 IH = false;         // True to generate interior hexagons  
 
 NR = 5;             // Radius of hexagon for a single NeoPixel
-NE = 9;             // Space from edge to center of first & last hexagon
 
 NC = 16.2;          // Center-to-center NeoPixel spacing (measured)
 SZ = 4.1;           // Height of channel for NeoPixel strip (measured)
@@ -29,10 +28,13 @@ assert(TY > SY, "TY must be greater than SY.");
  * Derived values:
  */
  
+ NE = NC / 2;                       // Space from edge to center of first & last hexagon
  TX = NE + (NN - 1) * NC + NE;      // Total depth
- echo("TX=", TX);
- 
  DZ = TZ1 - SZ;                     // Height of divider slot
+
+ echo("NE=", NE);
+ echo("TX=", TX);
+ echo("DZ=", DZ);
 
 /* 
  * Strip
