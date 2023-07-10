@@ -4,7 +4,8 @@
  
 NN = 8;             // Number of NeoPixels
 IH = false;         // True to generate interior hexagons  
-
+SB = false;         // True to generate half-slot at beginning
+SE = false;         // True to generate half-slot at end
 NR = 5;             // Radius of hexagon for a single NeoPixel
 
 NC = 16.2;          // Center-to-center NeoPixel spacing (measured)
@@ -67,7 +68,12 @@ difference()
     }
     
     // Slots for dividers between hexagons to block light
-    for (n = [0 : 1 : NN - 2])
+    //  Extra half-slot at beginning if SB is set
+    //  Extra half-slot at end if SE is set
+    
+    StartN = SB ? -1 : 0;
+    EndN   = SE ? (NN -1) : (NN - 2);
+    for (n = [StartN : 1 : EndN])
     {
         translate([NE + (n * NC) + (NC / 2), TY / 2, TZ2])
         {
