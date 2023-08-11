@@ -11,3 +11,8 @@ The cover has a hexagonal hole for each NeoPixel and tabs that snap in to the to
 split the object into two in your slicer and invert the channel (feel free to submit a PR to generate both in the same orientation). In general you will want to print the channel using a transparent color and the cover using an opaque one, but experiment. 
 
 The channels are sized so that they can be butted end-to-end. You can set SB to create a half-slot at the beginning of the channel, and SE to create one at the end. Then you can print a cover that spans channels and holds them together.
+
+## [quads.scad](https://github.com/jeffbarr/OpenSCADObjects/blob/main/neo_strip.scad)
+
+A rectangle built from a grid of rectangles that are gently and randomly perturbed into quadrilaterals ([sample](https://github.com/jeffbarr/OpenSCADObjects/blob/main/quads_sample_1.jpg). Watch this [animation](https://github.com/jeffbarr/OpenSCADObjects/blob/main/quad_12x12.gif) to see how the values of *RowPert* and *ColPert* affect the generated image. The generated rectangle is a grid measuring *Rows* by *Cols*. Each interior rectangle/quadrilateral-to-be measures *RectDepth* by *RectWidth*, and there's *RectRowGap* / *RectColGap* between each one. The higher that *ColPert* and *RowPert* are, the more perturbed each onie will be. Practically, these values should probably be no higher than half of *RectDepth* and *RectWidth*, but nothing will break if you set a higher value.
+
