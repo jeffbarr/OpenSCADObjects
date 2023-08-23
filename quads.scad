@@ -54,6 +54,12 @@ BaseHeight = 3;
 HeightInc  = 0.4;
 Heights    = 7;
 
+/* Compute overall size */
+Width = (Cols * RectWidth) + ((Cols - 1) * RectColGap);
+Depth = (Cols * RectDepth) + ((Rows - 1) * RectRowGap);
+
+echo ("Overall size: ", Width, Depth);
+
 /* Build the grid */
 G = 
 [
@@ -62,8 +68,8 @@ G =
 	for (r = [1 : Rows - 1]) 
 		[	[0, 0],
 			for (c = [1 : Cols - 1]) [
-				rands(-RowPert, RowPert, 1)[0], 
-				rands(-ColPert, ColPert, 1)[0]],
+				round(rands(-RowPert, RowPert, 1)[0]), 
+				round(rands(-ColPert, ColPert, 1)[0])],
 			[0, 0]				
 		],
 			
@@ -87,6 +93,7 @@ for (r = [0 : Rows])
  *	  [X_BL, Y_BL]       [X_BR, Y_BR]
  */
 
+translate([-Width / 2, -Depth / 2, 0])
 /* Construct polygons */
 for (r = [0 : Rows - 1])
 {
