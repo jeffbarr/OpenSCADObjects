@@ -1,7 +1,16 @@
 /* quads.scad -
  *
- * Some quadrilaterals that are perturbed rectangles 
- 
+ * Some quadrilaterals that are perturbed rectangles, there are lots of settings
+ * and options.
+ *
+ * HeightMode - Method used to set height of each quad, and must be one of:
+ *
+ *				HM_FIXED- All quads are the same height, BaseHeight.
+ *
+ *				HM_RANDOM - Each quad is BaseHeight + one of Heights
+ *							random values, stepped by HeightInc.
+ *
+ *
  * Good settings:
  *
  * Rows	Cols	RectWidth	RectDepth	RectRowGap	RectColGap	RowPert	ColPert
@@ -49,7 +58,11 @@ RectColGap = 2;
 RowPert = 8;
 ColPert = 8;
 
-/* Set options for random height */
+/* Set height mode */
+//HeightMode = "HM_FIXED";
+HeightMode = "HM_RANDOM";
+
+/* Set options for fixed and random heights */
 BaseHeight = 3;
 HeightInc  = 0.4;
 Heights    = 7;
@@ -123,8 +136,11 @@ for (r = [0 : Rows - 1])
 			X_TR_G = X_TR + G[r+1][c+1][1];
 			Y_TR_G = Y_TR + G[r+1][c+1][0];		
 		
-			/* Pick a height */
-			Height = BaseHeight + floor(rands(0, Heights, 1)[0]) * HeightInc;
+			/* Pick a height based on HeightMode */
+			Height =
+				(HeightMode == "HM_FIXED")  ? BaseHeight :
+				(HeightMode == "HM_RANDOM") ? BaseHeight + floor(rands(0, Heights, 1)[0]) * HeightInc :
+				0;
 					
 			linear_extrude(Height)
 				polygon([[X_BL_G, Y_BL_G], [X_BR_G, Y_BR_G], 
