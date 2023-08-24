@@ -10,6 +10,11 @@
  *				HM_RANDOM - Each quad is BaseHeight + one of Heights
  *							random values, stepped by HeightInc.
  *
+ * QuadType - Type of each quad, and must be one of:
+ *
+ *			  QT_VERT - Polygon with vertical sides.
+ *
+ *			  QT_TAPER - Polygon with tapered sides.
  *
  * Good settings:
  *
@@ -61,6 +66,10 @@ ColPert = 8;
 /* Set height mode */
 //HeightMode = "HM_FIXED";
 HeightMode = "HM_RANDOM";
+
+/* Set quad type */
+//QuadType = "QT_VERT";
+QuadType = "QT_TAPER";
 
 /* Set options for fixed and random heights */
 BaseHeight = 3;
@@ -141,9 +150,26 @@ for (r = [0 : Rows - 1])
 				(HeightMode == "HM_FIXED")  ? BaseHeight :
 				(HeightMode == "HM_RANDOM") ? BaseHeight + floor(rands(0, Heights, 1)[0]) * HeightInc :
 				0;
-					
-			linear_extrude(Height)
-				polygon([[X_BL_G, Y_BL_G], [X_BR_G, Y_BR_G], 
-						 [X_TR_G, Y_TR_G], [X_TL_G, Y_TL_G]]);
+			
+			/* Generate quad based on QuadType */
+			if (QuadType == "QT_VERT")
+			{
+				linear_extrude(Height)
+					polygon([[X_BL_G, Y_BL_G], [X_BR_G, Y_BR_G], 
+							 [X_TR_G, Y_TR_G], [X_TL_G, Y_TL_G]]);
+			}
+			else 
+			if (QuadType == "QT_TAPER")
+			{
+				X_Center = X_BL + RectWidth / 2;
+				Y_Center = Y_BL + RectDepth / 2;
+				
+				translate([X_Center, Y_Center, 0])
+					linear_extrude(Height, scale=0.5)
+						translate([-X_Center, -Y_Center, 0])
+							polygon([[X_BL_G, Y_BL_G], [X_BR_G, Y_BR_G], 
+									 [X_TR_G, Y_TR_G], [X_TL_G, Y_TL_G]]);
+			}
+			
 	}
 }
