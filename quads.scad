@@ -76,6 +76,18 @@ BaseHeight = 3;
 HeightInc  = 0.4;
 Heights    = 7;
 
+/* Perform sanity checks */
+assert(Rows > 0);
+assert(Cols > 0);
+assert(RectWidth > 0);
+assert(RectDepth > 0);
+assert(RectRowGap >= 0);
+assert(RectColGap >= 0);
+assert(RowPert >= 0);
+assert(ColPert >= 0);
+assert((HeightMode == "HM_FIXED") || (HeightMode == "HM_RANDOM"));
+assert((QuadType == "QT_VERT") || (QuadType == "QT_TAPER"));
+
 /* Compute overall size */
 Width = (Cols * RectWidth) + ((Cols - 1) * RectColGap);
 Depth = (Cols * RectDepth) + ((Rows - 1) * RectRowGap);
