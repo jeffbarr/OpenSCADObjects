@@ -18,5 +18,4 @@ A rectangle built from a grid of rectangles that are gently and randomly perturb
 
 The *HeightMode* is used to determine the height of each quadrilatoral, and it can be either "HM_FIXED" to make them all *BaseHeight*, or "HM_RANDOM" to make them any one of *Heights* random heights starting from *BaseHeight* and incrementing by *HeightInc*.
 
-The *QuadType* is used to determine the type of each quadrilateral. "QT_VERT" creates simple polygons with vertical sides ([sample](https://github.com/jeffbarr/OpenSCADObjects/blob/main/quads_sample_vert.png) ), and "QT_TAPERED" ([sample](https://github.com/jeffbarr/OpenSCADObjects/blob/main/quads_sample_taper.png) ) starts with simple polygons that taper to 50% of the original width and depth.
-
+The *QuadType* is used to  the type of each quadrilateral. "QT_VERT" creates simple polygons with vertical sides ([sample](https://github.com/jeffbarr/OpenSCADObjects/blob/main/quads_sample_vert.png) ), "QT_TAPERED" ([sample](https://github.com/jeffbarr/OpenSCADObjects/blob/main/quads_sample_taper.png) ) creates simple polygons that taper to 50% of the original width and depth, and "QT_TOPO" creates more complex polyhedra that resemble a topological map ([sample](https://github.com/jeffbarr/OpenSCADObjects/blob/main/quads_sample_vert.png) ).
