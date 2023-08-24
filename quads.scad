@@ -16,6 +16,9 @@
  *
  *			  QT_TAPER - Polygon with tapered sides.
  *
+ *			  QT_TOPO - Polyhedrons that meet at the edges, works best when
+ *						HeightMode is HM_RANDOM.
+ *
  * Good settings:
  *
  * Rows	Cols	RectWidth	RectDepth	RectRowGap	RectColGap	RowPert	ColPert
@@ -25,7 +28,7 @@
  */
 
 /*
- * Each x in the grid is a point that will be perturbed (in x and y) 
+ * Each x in the G grid is a point that will be perturbed (in x and y) 
  * to make slightly irregular quadrilaterals. The edges remain untouched
  * to create a rectangle.
   *
@@ -41,6 +44,11 @@
  * 4 +---+---+---+---+---+---+---+---+
  *
  * A is the first rectangle (defined by the points around it, and so forth.
+ *
+ * The H grid is used only when QuadType is QT_TOPO, and has the same basic
+ * layout as the G grid. Each x in the grid represents the height of the
+ * polyhedron where the adjacent quadrilaterals meet. Each element of the
+ * H grid is a height value.
  */
  
 /* Define the grid */
@@ -70,6 +78,7 @@ HeightMode = "HM_RANDOM";
 /* Set quad type */
 //QuadType = "QT_VERT";
 QuadType = "QT_TAPER";
+//QuadType = "QT_TOPO";
 
 /* Set options for fixed and random heights */
 BaseHeight = 3;
@@ -86,7 +95,7 @@ assert(RectColGap >= 0);
 assert(RowPert >= 0);
 assert(ColPert >= 0);
 assert((HeightMode == "HM_FIXED") || (HeightMode == "HM_RANDOM"));
-assert((QuadType == "QT_VERT") || (QuadType == "QT_TAPER"));
+assert((QuadType == "QT_VERT") || (QuadType == "QT_TAPER") || (QuadType == "QT_TOPO"));
 
 /* Compute overall size */
 Width = (Cols * RectWidth) + ((Cols - 1) * RectColGap);
@@ -94,13 +103,14 @@ Depth = (Cols * RectDepth) + ((Rows - 1) * RectRowGap);
 
 echo ("Overall size: ", Width, Depth);
 
-/* Build the grid */
+/* Build the G grid */
 G = 
 [
 	[for (c = [0 : Cols]) [ 0, 0]],
 		
 	for (r = [1 : Rows - 1]) 
-		[	[0, 0],
+		[
+			[0, 0],
 			for (c = [1 : Cols - 1]) [
 				round(rands(-RowPert, RowPert, 1)[0]), 
 				round(rands(-ColPert, ColPert, 1)[0])],
@@ -110,14 +120,38 @@ G =
 	[for (c = [0 : Cols]) [ 0, 0]],
 ];
 
+echo("G Grid:");
 for (r = [0 : Rows])
 {
-	echo("Row: ", r);
-	echo("  ", G[r], "\n");
+	echo("  Row: ", r);
+	echo("    ", G[r], "\n");
+}
+
+/* Build the H grid */
+H =
+[
+	[for (c = [0 : Cols]) BaseHeight],
+		
+	for (r = [1 : Rows - 1]) 
+		[	
+			BaseHeight,
+			for (c = [1 : Cols - 1]) BaseHeight + floor(rands(0, Heights, 1)[0]) * HeightInc,
+			BaseHeight				
+		],	
+		
+	[for (c = [0 : Cols]) BaseHeight],
+];
+	
+echo("H Grid:");
+for (r = [0 : Rows])
+{
+	echo("  Row: ", r);
+	echo("    ", H[r], "\n");
 }
 	
-
 /*
+ * Names of the X_BL (Bottom Left) define the four corners of the rectangle:
+ *
  *	  [X_TL, Y_TL]       [X_TR, Y_TR]
  *    +-------------...-------------+
  *    |                             |
@@ -125,6 +159,9 @@ for (r = [0 : Rows])
  *    |                             |
  *    +-------------...-------------+
  *	  [X_BL, Y_BL]       [X_BR, Y_BR]
+ *
+ * These values are then perturbed via the G grid to define the corners of the
+ * quadrilateral, with names suffixed by _G.
  */
 
 translate([-Width / 2, -Depth / 2, 0])
@@ -157,7 +194,7 @@ for (r = [0 : Rows - 1])
 		X_TR_G = X_TR + G[r+1][c+1][1];
 		Y_TR_G = Y_TR + G[r+1][c+1][0];		
 	
-		/* Pick a height based on HeightMode */
+		/* Pick a height based on HeightMode (this value is not used for QT_TOPO, since each corner has a distinct height) */
 		Height =
 			(HeightMode == "HM_FIXED")  ? BaseHeight :
 			(HeightMode == "HM_RANDOM") ? BaseHeight + floor(rands(0, Heights, 1)[0]) * HeightInc :
@@ -182,6 +219,41 @@ for (r = [0 : Rows - 1])
 						polygon([[X_BL_G, Y_BL_G], [X_BR_G, Y_BR_G], 
 								 [X_TR_G, Y_TR_G], [X_TL_G, Y_TL_G]]);
 		}
+		else if (QuadType == "QT_TOPO")
+		{
+			/* Get height of each corner */
+			Z_BL = H[r][c];
+			Z_BR = H[r][c+1];
+			Z_TL = H[r+1][c];
+			Z_TR = H[r+1][c+1];
 			
+			echo("[", r, ", ", c, "]: ", Z_TL, ", ", Z_TR, ", ", Z_BL, ", ", Z_BR);
+			
+			/* Create points for polyhedron */
+			PolyPoints = 
+			[
+				[X_BL_G, Y_BL_G, 0],		// 0
+				[X_BR_G, Y_BR_G, 0],		// 1
+				[X_TR_G, Y_TR_G, 0],		// 2
+				[X_TL_G, Y_TL_G, 0],		// 3
+				[X_BL_G, Y_BL_G, Z_BL],		// 4
+				[X_BR_G, Y_BR_G, Z_BR],		// 5
+				[X_TR_G, Y_TR_G, Z_TR],		// 6
+				[X_TL_G, Y_TL_G, Z_TL],		// 7
+			];
+			
+			/* Create polyhedron */
+			PolyFaces =
+			[  
+				[0,1,2,3],  // bottom
+				[4,5,1,0],  // front
+				[7,6,5,4],  // top
+				[5,6,2,1],  // right
+				[6,7,3,2],  // back
+				[7,4,0,3]	// left
+			];
+
+				polyhedron(points=PolyPoints,faces=PolyFaces);
+		}
 	}
 }
