@@ -121,55 +121,55 @@ for (r = [0 : Rows - 1])
 {
 	for (c = [0 : Cols - 1])
 	{ 
-			/* Compute coordinates of each rectangle */
-			X_BL = (c * (RectWidth + RectColGap)); 
-			X_BR = X_BL + RectWidth;
-			X_TL = X_BL;
-			X_TR = X_BR;
-		
-			Y_BL = (r * (RectDepth + RectRowGap)); 
-			Y_TL = Y_BL + RectDepth;
-			Y_BR = Y_BL;
-			Y_TR = Y_TL;
-		
-			/* Adjust by the per-corner perturbation in the grid */
-			X_BL_G = X_BL + G[r][c][1];
-			Y_BL_G = Y_BL + G[r][c][0];
+		/* Compute coordinates of each rectangle */
+		X_BL = (c * (RectWidth + RectColGap)); 
+		X_BR = X_BL + RectWidth;
+		X_TL = X_BL;
+		X_TR = X_BR;
+	
+		Y_BL = (r * (RectDepth + RectRowGap)); 
+		Y_TL = Y_BL + RectDepth;
+		Y_BR = Y_BL;
+		Y_TR = Y_TL;
+	
+		/* Adjust by the per-corner perturbation in the grid */
+		X_BL_G = X_BL + G[r][c][1];
+		Y_BL_G = Y_BL + G[r][c][0];
 
-			X_BR_G = X_BR + G[r][c+1][1];
-			Y_BR_G = Y_BR + G[r][c+1][0];
-		
-			X_TL_G = X_TL + G[r+1][c][1];
-			Y_TL_G = Y_TL + G[r+1][c][0];
+		X_BR_G = X_BR + G[r][c+1][1];
+		Y_BR_G = Y_BR + G[r][c+1][0];
+	
+		X_TL_G = X_TL + G[r+1][c][1];
+		Y_TL_G = Y_TL + G[r+1][c][0];
 
-			X_TR_G = X_TR + G[r+1][c+1][1];
-			Y_TR_G = Y_TR + G[r+1][c+1][0];		
+		X_TR_G = X_TR + G[r+1][c+1][1];
+		Y_TR_G = Y_TR + G[r+1][c+1][0];		
+	
+		/* Pick a height based on HeightMode */
+		Height =
+			(HeightMode == "HM_FIXED")  ? BaseHeight :
+			(HeightMode == "HM_RANDOM") ? BaseHeight + floor(rands(0, Heights, 1)[0]) * HeightInc :
+			0;
 		
-			/* Pick a height based on HeightMode */
-			Height =
-				(HeightMode == "HM_FIXED")  ? BaseHeight :
-				(HeightMode == "HM_RANDOM") ? BaseHeight + floor(rands(0, Heights, 1)[0]) * HeightInc :
-				0;
+		/* Generate quad based on QuadType */
+		if (QuadType == "QT_VERT")
+		{
+			linear_extrude(Height)
+				polygon([[X_BL_G, Y_BL_G], [X_BR_G, Y_BR_G], 
+						 [X_TR_G, Y_TR_G], [X_TL_G, Y_TL_G]]);
+		}
+		else 
+		if (QuadType == "QT_TAPER")
+		{
+			X_Center = X_BL + RectWidth / 2;
+			Y_Center = Y_BL + RectDepth / 2;
 			
-			/* Generate quad based on QuadType */
-			if (QuadType == "QT_VERT")
-			{
-				linear_extrude(Height)
-					polygon([[X_BL_G, Y_BL_G], [X_BR_G, Y_BR_G], 
-							 [X_TR_G, Y_TR_G], [X_TL_G, Y_TL_G]]);
-			}
-			else 
-			if (QuadType == "QT_TAPER")
-			{
-				X_Center = X_BL + RectWidth / 2;
-				Y_Center = Y_BL + RectDepth / 2;
-				
-				translate([X_Center, Y_Center, 0])
-					linear_extrude(Height, scale=0.5)
-						translate([-X_Center, -Y_Center, 0])
-							polygon([[X_BL_G, Y_BL_G], [X_BR_G, Y_BR_G], 
-									 [X_TR_G, Y_TR_G], [X_TL_G, Y_TL_G]]);
-			}
+			translate([X_Center, Y_Center, 0])
+				linear_extrude(Height, scale=0.5)
+					translate([-X_Center, -Y_Center, 0])
+						polygon([[X_BL_G, Y_BL_G], [X_BR_G, Y_BR_G], 
+								 [X_TR_G, Y_TR_G], [X_TL_G, Y_TL_G]]);
+		}
 			
 	}
 }
