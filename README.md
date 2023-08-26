@@ -20,4 +20,6 @@ The *HeightMode* is used to determine the height of each quadrilatoral, and it c
 
 The *QuadType* is used to  the type of each quadrilateral. "QT_VERT" creates simple polygons with vertical sides ([sample](https://github.com/jeffbarr/OpenSCADObjects/blob/main/quads_sample_vert.png) ), "QT_TAPERED" ([sample](https://github.com/jeffbarr/OpenSCADObjects/blob/main/quads_sample_taper.png) ) creates simple polygons that taper to 50% of the original width and depth, and "QT_TOPO" creates more complex polyhedra that resemble a topological map ([sample](https://github.com/jeffbarr/OpenSCADObjects/blob/main/quads_sample_topo.png) ).
 
-This file is fully customizer-enabled, and you can play with all of [the options](https://github.com/jeffbarr/OpenSCADObjects/blob/main/quads_customizer.png) to get a better sense of what this code can do.
+This file is fully customizer-enabled, and you can play with all of [the options](https://github.com/jeffbarr/OpenSCADObjects/blob/main/quads_customizer.png) to get a better sense of what this code can do:
+
+![OpenSCAD Customizer for quads.scad]([image link](https://github.com/jeffbarr/OpenSCADObjects/blob/main/quads_customizer.png)https://github.com/jeffbarr/OpenSCADObjects/blob/main/quads_customizer.png)
