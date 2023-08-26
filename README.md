@@ -22,4 +22,4 @@ The *QuadType* is used to  the type of each quadrilateral. "QT_VERT" creates sim
 
 This file is fully customizer-enabled, and you can play with all of [the options](https://github.com/jeffbarr/OpenSCADObjects/blob/main/quads_customizer.png) to get a better sense of what this code can do:
 
-![OpenSCAD Customizer for quads.scad]([image link](https://github.com/jeffbarr/OpenSCADObjects/blob/main/quads_customizer.png)https://github.com/jeffbarr/OpenSCADObjects/blob/main/quads_customizer.png)
+![OpenSCAD Customizer for quads.scad](https://github.com/jeffbarr/OpenSCADObjects/blob/main/quads_customizer.png)
