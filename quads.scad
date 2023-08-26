@@ -51,16 +51,31 @@
  * H grid is a height value.
  */
  
-/* Define the grid */
+/* 
+ * Define the grid:
+ */
+ 
+// Number of rows in the grid 
 Rows = 12;
+// Number of columns in the grid 
 Cols = 12;
 
-/* Define size of rectangles */
+/* 
+ * Define size of each rectangle in the grid:
+ */
+
+// Width of each rectangle
 RectWidth = 15;
+// Depth of each rectangle
 RectDepth = 15;
 
-/* Define gap between rectangles */
+/* 
+ * Define gap between rectangles:
+ */
+
+// Gap between each row of rectangles
 RectRowGap = 2;
+// Gap between each column of rectangles
 RectColGap = 2;
 
 /* 
@@ -68,22 +83,39 @@ RectColGap = 2;
  * perturbation can be from (-RowPert) to (RowPert), and the same 
  * for ColPert. 
  */
+ 
+// Max perturbation between rows
 RowPert = 8;
+// Max perturbation between columns
 ColPert = 8;
 
-/* Set height mode */
-//HeightMode = "HM_FIXED";
-HeightMode = "HM_RANDOM";
+/* 
+ * Set height mode:
+ */
+ 
+// Height mode
+HeightMode = "HM_FIXED"; // [HM_FIXED, HM_RANDOM]
 
-/* Set quad type */
-//QuadType = "QT_VERT";
-QuadType = "QT_TAPER";
-//QuadType = "QT_TOPO";
+/*
+ * Define height parameters:
+*/
 
-/* Set options for fixed and random heights */
-BaseHeight = 3;
-HeightInc  = 0.4;
-Heights    = 7;
+// Base height
+BaseHeight = 3;		// [0.2 : 10]
+// Height increment
+HeightInc  = 0.4; 	// [0.2 : 0.2 : 10]
+// Number of random heights
+Heights    = 7;		// [1 : 20]
+
+/* 
+ * Set quad type:
+ */
+ 
+// Quad type
+QuadType = "QT_VERT"; // [QT_VERT, QT_TAPER, QT_TOPO]
+
+/* End of customization */
+module __Customizer_Limit__ () {}
 
 /* Perform sanity checks */
 assert(Rows > 0);
