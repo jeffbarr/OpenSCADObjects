@@ -18,13 +18,6 @@
  *
  *			  QT_TOPO - Polyhedrons that meet at the edges, works best when
  *						HeightMode is HM_RANDOM.
- *
- * Good settings:
- *
- * Rows	Cols	RectWidth	RectDepth	RectRowGap	RectColGap	RowPert	ColPert
- * ----	----	---------	---------	----------	----------	-------	-------
- *	9	9		16			16			2			2			8		8
- *	12	12		15			15
  */
 
 /*
@@ -285,7 +278,7 @@ for (r = [0 : Rows - 1])
 				[7,4,0,3]	// left
 			];
 
-				polyhedron(points=PolyPoints,faces=PolyFaces);
+			polyhedron(points=PolyPoints,faces=PolyFaces);
 		}
 	}
 }
