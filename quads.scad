@@ -107,6 +107,10 @@ Heights    = 7;		// [1 : 20]
 // Quad type
 QuadType = "QT_VERT"; // [QT_VERT, QT_TAPER, QT_TOPO]
 
+/* 
+ * Random seed (0 to let OpenSCAD pick):
+ */
+ 
 /* End of customization */
 module __Customizer_Limit__ () {}
 
@@ -121,6 +125,13 @@ assert(RowPert >= 0);
 assert(ColPert >= 0);
 assert((HeightMode == "HM_FIXED") || (HeightMode == "HM_RANDOM"));
 assert((QuadType == "QT_VERT") || (QuadType == "QT_TAPER") || (QuadType == "QT_TOPO"));
+
+/* Seed the RNG */
+X = rands(0, 100, 1, 131313);
+
+/* Rotate around Z */
+cur_vpr = $vpr;
+$vpr = [cur_vpr[0], cur_vpr[1], 360 * $t];
 
 /* Compute overall size */
 Width = (Cols * RectWidth) + ((Cols - 1) * RectColGap);
