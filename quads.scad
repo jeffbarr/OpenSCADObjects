@@ -122,6 +122,13 @@ assert(ColPert >= 0);
 assert((HeightMode == "HM_FIXED") || (HeightMode == "HM_RANDOM"));
 assert((QuadType == "QT_VERT") || (QuadType == "QT_TAPER") || (QuadType == "QT_TOPO"));
 
+/* Seed the RNG */
+X = rands(0, 100, 1, 131313);
+
+/* Rotate around Z */
+cur_vpr = $vpr;
+$vpr = [cur_vpr[0], cur_vpr[1], 360 * $t];
+
 /* Compute overall size */
 Width = (Cols * RectWidth) + ((Cols - 1) * RectColGap);
 Depth = (Cols * RectDepth) + ((Rows - 1) * RectRowGap);
