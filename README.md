@@ -23,3 +23,7 @@ The *QuadType* is used to  the type of each quadrilateral. "QT_VERT" creates sim
 This file is fully customizer-enabled, and you can play with all of [the options](https://github.com/jeffbarr/OpenSCADObjects/blob/main/quads_customizer.png) to get a better sense of what this code can do:
 
 ![OpenSCAD Customizer for quads.scad](https://github.com/jeffbarr/OpenSCADObjects/blob/main/quads_customizer.png)
+
+## [super_hexagons.scad](https://github.com/jeffbarr/OpenSCADObjects/blob/main/super_hexagons.scad)
+
+A grid of hexagons, each hexagon is made from 6 triangles, each of a different height. *TriangleSize* controls the size of each triangle, and there are *CountX* columns and *CountY* rows of hexagons. They are spaced by *SpaceX* from column to column, and *SpaceY* from row to row. *Shrinkage* if non-zero is scaling as the triangles get taller. The base height is *BaseHeight*, and step between the 6 heights (one per triangle) is *HeightInc*.  
