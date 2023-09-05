@@ -33,6 +33,12 @@ HeightInc  = 0.4; 	// [0.0 : 0.2 : 10]
 // 	Shift for odd rows
 OddShiftX = SpaceX / 2;
 
+// Optional fill on left side
+LeftFill = true; // [false, true]
+
+// Optional fill on right side
+RightFill = true; // [false, true]
+
 /* End of customization */
 module __Customizer_Limit__ () {}
 
@@ -71,11 +77,19 @@ for (x = [0 : CountX - 1])
 	{
 		PtX = ((y % 2) == 1) ? OddShiftX + (x * SpaceX) : (x * SpaceX);
 		PtY = y * SpaceY;
-	
+
+		/* Choose sides to print */
+		OddY   = (y % 2) == 1;
+		FirstX = (x == 0);
+		LastX  = (x == (CountX - 1));
+
+		WhichSides = (RightFill && LastX && OddY)   ? [2, 3, 4]
+		           : (LeftFill  && FirstX && !OddY) ? [0, 1, 5]
+		           : AllSides;
+		
 		translate([PtX, PtY, 0])
 		{
-			SuperHex(TriangleSize, 1.1, Heights, AllSides);
+			SuperHex(TriangleSize, 1.1, Heights, WhichSides);
 		}
 	}
 }
-
