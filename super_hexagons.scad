@@ -4,7 +4,7 @@
  *
  * Print partial hexagons
  * Good settings:
- *   10, 6, 5, 29, 33, 3, 0.4
+ *   10, 6, 5, 29, 33, 3, 1.0, 0.4
  */
 
 // Triangle radius
@@ -23,7 +23,7 @@ SpaceY = 29;
 SpaceX = 33;
 
 // Shrinkage
-Shrinkage = 0.5;
+Shrinkage = 1.0;
 
 // Base height
 BaseHeight = 3;		// [0.2 : 10]
