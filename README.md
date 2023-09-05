@@ -31,3 +31,8 @@ A grid of hexagons, each hexagon is made from 6 triangles, each of a different h
 ![Super Hexagons Sample](https://github.com/jeffbarr/OpenSCADObjects/blob/main/super_hexagons_sample.png)
 
 *TriangleSize* controls the size of each triangle, and there are *CountX* columns and *CountY* rows of hexagons. They are spaced by *SpaceX* from column to column, and *SpaceY* from row to row. *Shrinkage* if non-zero is scaling as the triangles get taller. The base height is *BaseHeight*, and step between the 6 heights (one per triangle) is *HeightInc*.  If *LeftFill* is set, the leftmost column has a straight edge. If *RightFill* is set, the rightmost column has a straight edge.
+
+This file is fully customizer-enabled:
+
+![OpenSCAD Customizer for super_hexagons.scad](https://github.com/jeffbarr/OpenSCADObjects/blob/main/super_hexagons_customizer.png)
+
