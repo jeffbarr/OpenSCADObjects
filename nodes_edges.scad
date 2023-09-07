@@ -11,6 +11,9 @@
 // Node radius
 NodeSize = 9;
 
+// Node shape (0 for circle, 6 for hexagon)
+NodeShape = 0; // [0, 6]
+
 // Column count
 CountX = 7;
 
@@ -38,10 +41,10 @@ EdgeHeight = 3.0;
 // Edge width
 EdgeWidth = 6;
 
-/* Percentage of full length for edges in X direction */
+// Percentage of full length for edges in X direction 
 EdgeLengthXFactor = 0.9;
 
-/* Percentage of full length for edges in XY direction */
+// Percentage of full length for edges in XY direction
 EdgeLengthXYFactor = 0.9;
 
 // Rim thickness
@@ -53,28 +56,34 @@ module __Customizer_Limit__ () {}
 // 	Shift for odd rows
 OddShiftX = SpaceX / 2;
 
+// Node rotation
+NodeRotation = (NodeShape == 0) ? 0 : 30;
+
 // Render a node, with a rim
 module Node(Radius, Height, RimHeight)
 {	
+	rotate([0, 0, NodeRotation])
+	{
 	union()
 	{
-		/* Node */
-		linear_extrude(Height)
-		{
-			circle(Radius);
-		}
-		
-		/* Rim */	
-		for (dd = [0 : 1.5 : 3])
-        {
-			linear_extrude(RimHeight)
+			/* Node */
+			linear_extrude(Height)
 			{
-				difference()
+				circle(Radius, $fn=NodeShape);
+			}
+			
+			/* Rim */	
+			for (dd = [0 : 1.5 : 3])
+			{
+				linear_extrude(RimHeight)
 				{
-					circle(Radius - dd);
-					offset(delta=-RimThickness)
+					difference()
 					{
-						circle(Radius - dd);
+						circle(Radius - dd, $fn=NodeShape);
+						offset(delta=-RimThickness)
+						{
+							circle(Radius - dd, $fn=NodeShape);
+						}
 					}
 				}
 			}
