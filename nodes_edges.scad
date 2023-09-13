@@ -120,33 +120,12 @@ module Edge(Length, Width, Height, RimHeight)
 	}
 }
 
-
 // Compute center of a node (x,y) 
 function NodeX(x, y, OddShiftX, SpaceX) = ((y % 2) == 1) ? OddShiftX + (x * SpaceX) : (x * SpaceX);
 function NodeY(x, y, SpaceY) = y * SpaceY;
 
-/* Rotate around Z */
-cur_vpr = $vpr;
-$vpr = [cur_vpr[0], cur_vpr[1], 360 * $t];
-
-/* Compute overall size */
-TotalX = (CountX - 1) * SpaceX;
-TotalY = (CountY - 1) * SpaceY;
-echo(TotalX, TotalY);
-
-/* Compute angle for edges */
-C = SpaceX / 2;
-A = SpaceY;
-B = sqrt(A^2 + C^2 - (2 * A * C) * cos(90));
-AngA = acos((B^2 + C^2 - A^2) / (2 * B * C)); 
-
-/* Compute edge lengths */
-EdgeLengthX  = (SpaceX - 2 * NodeSize) * EdgeLengthXFactor;
-EdgeLengthXY = (B - 2 * NodeSize) * EdgeLengthXYFactor;
-echo("EdgeLengthX", EdgeLengthX);
-echo("EdgeLengthXY", EdgeLengthXY);
-
-translate([-TotalX / 2, -TotalY / 2, 0])
+// Render nodes and edges
+module NodesAndEdges(CountX, CountY, SpaceX, SpaceY, OddShiftX, NodeSize, NodeHeight, NodeRimHeight, EdgeLengthX, EdgeLengthXY, EdgeWidth, EdgeHeight, EdgeRimHeight)
 {
 	/* Nodes */
 	for (x = [0 : CountX - 1])
@@ -184,8 +163,7 @@ translate([-TotalX / 2, -TotalY / 2, 0])
 					color("red") 
 						Edge(EdgeLengthX, EdgeWidth, EdgeHeight, EdgeRimHeight);
 				}
-			}
-			
+			}		
 	
 			/* Forward edges between Y and Y+1 */
 			if (y < (CountY - 1))
@@ -230,3 +208,29 @@ translate([-TotalX / 2, -TotalY / 2, 0])
 	}
 }
 
+
+/* Rotate around Z */
+cur_vpr = $vpr;
+$vpr = [cur_vpr[0], cur_vpr[1], 360 * $t];
+
+/* Compute overall size */
+TotalX = (CountX - 1) * SpaceX;
+TotalY = (CountY - 1) * SpaceY;
+echo(TotalX, TotalY);
+
+/* Compute angle for edges */
+C = SpaceX / 2;
+A = SpaceY;
+B = sqrt(A^2 + C^2 - (2 * A * C) * cos(90));
+AngA = acos((B^2 + C^2 - A^2) / (2 * B * C)); 
+
+/* Compute edge lengths */
+EdgeLengthX  = (SpaceX - 2 * NodeSize) * EdgeLengthXFactor;
+EdgeLengthXY = (B - 2 * NodeSize) * EdgeLengthXYFactor;
+echo("EdgeLengthX", EdgeLengthX);
+echo("EdgeLengthXY", EdgeLengthXY);
+
+translate([-TotalX / 2, -TotalY / 2, 0])
+{
+	NodesAndEdges(CountX, CountY, SpaceX, SpaceY, OddShiftX, NodeSize, NodeHeight, NodeRimHeight, EdgeLengthX, EdgeLengthXY, EdgeWidth, EdgeHeight, EdgeRimHeight);
+}
