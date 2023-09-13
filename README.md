@@ -53,3 +53,16 @@ Here's a sample in black and silver:
 ![Nodes and Edges Black and Silver](https://github.com/jeffbarr/OpenSCADObjects/blob/main/nodes_edges_black_silver.jpg)
 
 This file is fully customizer-enabled.
+
+## [spikes.scad](https://github.com/jeffbarr/OpenSCADObjects/blob/main/spikes.scad)
+
+Spikes on rafts:
+
+![Spikes on Rafts](https://github.com/jeffbarr/OpenSCADObjects/blob/main/spikes_sample.png)
+
+*RaftCount* sets the number of rafts, each one separated by *RaftSpaceX* and *Raftheight* thick. Each raft has a grid of *SpikeCountX* by *SpikeCountY* spikes, and each spike is *SpikeCylHeight* + *SpikeTipHeight* high. Additionally, each spike is *SpikeRadius* around, spaced on the raft based on *SpikeSpaceX* and *SpikeSpaceY*.
+
+This file is fully customizer-enabled.
+
+
+
