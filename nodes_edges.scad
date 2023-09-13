@@ -91,6 +91,12 @@ module Node(Radius, Height, RimHeight)
 	}
 }
 
+// Render the element that makes up the edge
+module EdgeElement(Length, Width)
+{
+	square([Length, Width], center=true);
+}
+
 // Render an edge, with a rim
 module Edge(Length, Width, Height, RimHeight)
 {
@@ -99,7 +105,9 @@ module Edge(Length, Width, Height, RimHeight)
 		/* Edge */
 		{
 			linear_extrude(Height)
-				square([Length, Width], center=true);
+			{
+				EdgeElement(Length, Width);
+			}
 		}
 		
 		/* Rim */
@@ -109,10 +117,10 @@ module Edge(Length, Width, Height, RimHeight)
 			{
 				difference()
 				{
-					square([Length - dd, Width - dd], center=true);
+					EdgeElement(Length - dd, Width - dd);
 					offset(delta=-RimThickness)
 					{
-						square([Length - dd, Width - dd], center=true);
+						EdgeElement(Length - dd, Width - dd);
 					}
 				}
 			}
@@ -234,3 +242,4 @@ translate([-TotalX / 2, -TotalY / 2, 0])
 {
 	NodesAndEdges(CountX, CountY, SpaceX, SpaceY, OddShiftX, NodeSize, NodeHeight, NodeRimHeight, EdgeLengthX, EdgeLengthXY, EdgeWidth, EdgeHeight, EdgeRimHeight);
 }
+
