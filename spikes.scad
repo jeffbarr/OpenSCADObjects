@@ -36,6 +36,9 @@ SpikeSpaceY = 10;
 // Border
 RaftBorder = 10;
 
+// Holes in raft below spikes
+RaftHoles = false;
+
 // Render one spike
 module Spike(SpikeRadius, SpikeCylHeight, SpikeTipHeight, SpikeWall)
 {
@@ -72,7 +75,7 @@ function RaftSizeX(BorderX, CountX, SpikeSpaceX) = BorderX + ((CountX - 1) * Spi
 function RaftSizeY(BorderY, CountY, SpikeSpaceY) = BorderY + ((CountY - 1) * SpikeSpaceY) + BorderY;
 
 // Render a raft with a grid of spikes
-module Raft(CountX, CountY, SpikeSpaceX, SpikeSpaceY, BorderX, BorderY, RaftHeight, SpikeRadius, SpikeCylHeight, SpikeTipHeight, SpikeWall)
+module Raft(CountX, CountY, SpikeSpaceX, SpikeSpaceY, BorderX, BorderY, RaftHeight, RaftHoles, SpikeRadius, SpikeCylHeight, SpikeTipHeight, SpikeWall)
 {
 	// Compute size of raft
 	RaftX = RaftSizeX(BorderX, CountX, SpikeSpaceX);
@@ -83,6 +86,7 @@ module Raft(CountX, CountY, SpikeSpaceX, SpikeSpaceY, BorderX, BorderY, RaftHeig
 	{
 		cube([RaftX, RaftY, RaftHeight]);
 		
+		if (RaftHoles)
 		{
 			for (x = [0 : CountX -1])
 			{
@@ -126,7 +130,7 @@ for (r = [0 : RaftCount - 1])
 	translate([RaftX, RaftY, 0])
 	{
 		Raft(SpikeCountX, SpikeCountY, SpikeSpaceX, SpikeSpaceY, RaftBorder, RaftBorder, 
-			 RaftHeight, SpikeRadius, SpikeCylHeight, SpikeTipHeight, SpikeWall);
+			 RaftHeight, RaftHoles, SpikeRadius, SpikeCylHeight, SpikeTipHeight, SpikeWall);
 	}
 }
 
