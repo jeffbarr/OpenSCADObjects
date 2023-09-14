@@ -15,6 +15,9 @@ SpikeCylHeight = 7;
 // Spike tip height
 SpikeTipHeight = 35;
 
+// Spike wall thickness
+SpikeWall = 2;
+
 // Raft height
 RaftHeight = 2.0; // [0 : 0.2 : 4.0]
 
@@ -34,16 +37,19 @@ SpikeSpaceY = 10;
 RaftBorder = 10;
 
 // Render one spike
-module Spike(SpikeRadius, SpikeCylHeight, SpikeTipHeight)
+module Spike(SpikeRadius, SpikeCylHeight, SpikeTipHeight, SpikeWall)
 {
-	//translate([SpikeRadius, SpikeRadius, 0])
 	{
 		union()
 		{
 			// Cylinder
 			linear_extrude(SpikeCylHeight)
 			{
-				circle(SpikeRadius);
+				difference()
+				{
+					circle(SpikeRadius);
+					circle(SpikeRadius - SpikeWall);
+				}
 			}
 			
 			// Spike
@@ -51,7 +57,11 @@ module Spike(SpikeRadius, SpikeCylHeight, SpikeTipHeight)
 			{
 				linear_extrude(SpikeTipHeight, scale=0.1)
 				{
-					circle(SpikeRadius);
+					difference()
+					{
+						circle(SpikeRadius);
+						circle(SpikeRadius - SpikeWall);
+					}
 				}
 			}
 		}
@@ -62,14 +72,35 @@ function RaftSizeX(BorderX, CountX, SpikeSpaceX) = BorderX + ((CountX - 1) * Spi
 function RaftSizeY(BorderY, CountY, SpikeSpaceY) = BorderY + ((CountY - 1) * SpikeSpaceY) + BorderY;
 
 // Render a raft with a grid of spikes
-module Raft(CountX, CountY, SpikeSpaceX, SpikeSpaceY, BorderX, BorderY, RaftHeight, SpikeRadius, SpikeCylHeight, SpikeTipHeight)
+module Raft(CountX, CountY, SpikeSpaceX, SpikeSpaceY, BorderX, BorderY, RaftHeight, SpikeRadius, SpikeCylHeight, SpikeTipHeight, SpikeWall)
 {
 	// Compute size of raft
 	RaftX = RaftSizeX(BorderX, CountX, SpikeSpaceX);
 	RaftY = RaftSizeY(BorderY, CountY, SpikeSpaceY);
 	
-	// Raft
-	cube([RaftX, RaftY, RaftHeight]);
+	// Raft with holes cut out for spikes
+	difference()
+	{
+		cube([RaftX, RaftY, RaftHeight]);
+		
+		{
+			for (x = [0 : CountX -1])
+			{
+				for (y = [0 : CountY - 1])
+				{
+					SpikeX = BorderX + (x * SpikeSpaceX);
+					SpikeY = BorderY + (y * SpikeSpaceY);
+					translate([SpikeX, SpikeY, 0])
+					{
+						linear_extrude(RaftHeight)
+						{
+							circle(SpikeRadius - SpikeWall);
+						}
+					}
+				}
+			}
+		}
+	}
 	
 	// Grid of spikes
 	for (x = [0 : CountX -1])
@@ -80,7 +111,7 @@ module Raft(CountX, CountY, SpikeSpaceX, SpikeSpaceY, BorderX, BorderY, RaftHeig
 			SpikeY = BorderY + (y * SpikeSpaceY);
 			translate([SpikeX, SpikeY, RaftHeight])
 			{
-				Spike(SpikeRadius, SpikeCylHeight, SpikeTipHeight);
+				Spike(SpikeRadius, SpikeCylHeight, SpikeTipHeight, SpikeWall);
 			}
 		}
 	}
@@ -95,7 +126,7 @@ for (r = [0 : RaftCount - 1])
 	translate([RaftX, RaftY, 0])
 	{
 		Raft(SpikeCountX, SpikeCountY, SpikeSpaceX, SpikeSpaceY, RaftBorder, RaftBorder, 
-			 RaftHeight, SpikeRadius, SpikeCylHeight, SpikeTipHeight);
+			 RaftHeight, SpikeRadius, SpikeCylHeight, SpikeTipHeight, SpikeWall);
 	}
 }
 
