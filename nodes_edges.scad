@@ -11,8 +11,11 @@
 // Node radius
 NodeSize = 9;
 
-// Node shape (0 for circle, 6 for hexagon)
-NodeShape = 0; // [0, 6]
+// Node shape (0 for circle, , 4 for square, 6 for hexagon)
+NodeShape = 0; // [0, 4, 6]
+
+// Offset odd rows
+OffsetOdd = true;
 
 // Column count
 CountX = 7;
@@ -53,11 +56,14 @@ RimThickness = 0.5;
 /* End of customization */
 module __Customizer_Limit__ () {}
 
-// 	Shift for odd rows
-OddShiftX = SpaceX / 2;
+// 	Possible shift for odd rows
+OddShiftX = OffsetOdd ? (SpaceX / 2) : 0;
 
 // Node rotation
-NodeRotation = (NodeShape == 0) ? 0 : 30;
+NodeRotation = (NodeShape == 0) ? 0  :	/* Circle  */
+               (NodeShape == 4) ? 45 :	/* Square  */
+               (NodeShape == 6) ? 30 :	/* Hexagon */
+                                  0;
 
 // Render a node, with a rim
 module Node(Radius, Height, RimHeight)
@@ -133,7 +139,7 @@ function NodeX(x, y, OddShiftX, SpaceX) = ((y % 2) == 1) ? OddShiftX + (x * Spac
 function NodeY(x, y, SpaceY) = y * SpaceY;
 
 // Render nodes and edges
-module NodesAndEdges(CountX, CountY, SpaceX, SpaceY, OddShiftX, NodeSize, NodeHeight, NodeRimHeight, EdgeLengthX, EdgeLengthXY, EdgeWidth, EdgeHeight, EdgeRimHeight)
+module NodesAndEdges(CountX, CountY, SpaceX, SpaceY, OddShiftX, OffsetOdd, NodeSize, NodeHeight, NodeRimHeight, EdgeLengthX, EdgeLengthXY, EdgeWidth, EdgeHeight, EdgeRimHeight)
 {
 	/* Nodes */
 	for (x = [0 : CountX - 1])
@@ -176,10 +182,11 @@ module NodesAndEdges(CountX, CountY, SpaceX, SpaceY, OddShiftX, NodeSize, NodeHe
 			/* Forward edges between Y and Y+1 */
 			if (y < (CountY - 1))
 			{
-				if (((y % 2) == 0) ||
+				if ((!OffsetOdd)   || 
+					((y % 2) == 0) ||
 				    (((y % 2) == 1) && (x != (CountX - 1))))
 				{
-					XXX = ((y % 2) == 1) ? x + 1: x;
+					XXX = (OffsetOdd && (y % 2) == 1) ? x + 1: x;
 					FwdEndPtX = NodeX(XXX, y + 1, OddShiftX, SpaceX);
 					FwdEndPtY = NodeY(XXX, y + 1, SpaceY);
 					FwdMidPtX = (FwdEndPtX - StartPtX) / 2;
@@ -194,7 +201,7 @@ module NodesAndEdges(CountX, CountY, SpaceX, SpaceY, OddShiftX, NodeSize, NodeHe
 			}
 
 			/* Backward edges between Y and Y+1 */
-			if (y < (CountY - 1))
+			if (OffsetOdd && (y < (CountY - 1)))
 			{
 				if ((x != 0) ||
 					((x == 0) && ((y % 2) == 1)))
@@ -226,11 +233,11 @@ TotalX = (CountX - 1) * SpaceX;
 TotalY = (CountY - 1) * SpaceY;
 echo(TotalX, TotalY);
 
-/* Compute angle for edges */
+/* Compute angle for edges, special case if not offsetting odd rows */
 C = SpaceX / 2;
 A = SpaceY;
 B = sqrt(A^2 + C^2 - (2 * A * C) * cos(90));
-AngA = acos((B^2 + C^2 - A^2) / (2 * B * C)); 
+AngA = OffsetOdd ? acos((B^2 + C^2 - A^2) / (2 * B * C)) : 90;
 
 /* Compute edge lengths */
 EdgeLengthX  = (SpaceX - 2 * NodeSize) * EdgeLengthXFactor;
@@ -240,6 +247,6 @@ echo("EdgeLengthXY", EdgeLengthXY);
 
 translate([-TotalX / 2, -TotalY / 2, 0])
 {
-	NodesAndEdges(CountX, CountY, SpaceX, SpaceY, OddShiftX, NodeSize, NodeHeight, NodeRimHeight, EdgeLengthX, EdgeLengthXY, EdgeWidth, EdgeHeight, EdgeRimHeight);
+	NodesAndEdges(CountX, CountY, SpaceX, SpaceY, OddShiftX, OffsetOdd, NodeSize, NodeHeight, NodeRimHeight, EdgeLengthX, EdgeLengthXY, EdgeWidth, EdgeHeight, EdgeRimHeight);
 }
 
