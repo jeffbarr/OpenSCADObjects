@@ -5,7 +5,7 @@
 // TODO:
 //
 //	Generate more tiles
-//	Options to print specific tiles or types of tiles (DB, Compute, by Color, etc)
+//	Options to print specific types of tiles (DB, Compute, by Color, etc)
 //
 
 // X Spacing
@@ -22,6 +22,9 @@ CountY = 5;
 
 // Tile Scale
 TileScale = 0.75;
+
+// Tile Selection
+TileSelection = "Ordered"; // [Ordered, Random]
 
 // End of customizations
 module _end_customizations_ () {};
@@ -109,8 +112,11 @@ for (y = [0 : 1 : CountY - 1])
 		PtX = x * SpaceX;
 		PtY = y * SpaceY;
 		
-		FileIndex = ((y * CountY) + x) % FileCount;
-		
+		// Pick a tile
+		FileIndex = 
+			(TileSelection == "Ordered") ? ((y * CountY) + x) % FileCount :
+		    (TileSelection == "Random")  ? rands(0, FileCount, 1)[0]      :
+		                                   0;
 		translate([PtX, PtY, 0])
 		{
 			echo(PtX, PtY, FileIndex);
