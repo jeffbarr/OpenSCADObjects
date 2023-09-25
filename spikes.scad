@@ -1,43 +1,43 @@
-/* Spikes on rafts */
+/* Spikes on rafts, with selectable spike type */
 
 // Number of rafts
-RaftCount = 1;
+_RaftCount = 1;
 
 // Space between rafts
-RaftSpaceX = 20;
+_RaftSpaceX = 20;
 
 // Spike radius
-SpikeRadius = 7;
+_SpikeRadius = 7;
 
 // Spike cylinder height
-SpikeCylHeight = 7;
+_SpikeCylHeight = 7;
 
 // Spike tip height
-SpikeTipHeight = 35;
+_SpikeTipHeight = 35;
 
 // Spike wall thickness
-SpikeWall = 2;
+_SpikeWall = 2;
 
 // Raft height
-RaftHeight = 2.0; // [0 : 0.2 : 4.0]
+_RaftHeight = 2.0; // [0 : 0.2 : 4.0]
 
 // Rows of spikes per raft
-SpikeCountY = 4;
+_SpikeCountY = 4;
 
 // Columns of spikes per raft
-SpikeCountX = 4;
+_SpikeCountX = 4;
 
 // Space between columns of spikes
-SpikeSpaceX = 10;
+_SpikeSpaceX = 10;
 
 // Space between rows of spikes
-SpikeSpaceY = 10;
+_SpikeSpaceY = 10;
 
 // Border
-RaftBorder = 10;
+_RaftBorder = 10;
 
 // Holes in raft below spikes
-RaftHoles = false;
+_RaftHoles = false;
 
 // Render one spike
 module Spike(SpikeRadius, SpikeCylHeight, SpikeTipHeight, SpikeWall)
@@ -122,15 +122,15 @@ module Raft(CountX, CountY, SpikeSpaceX, SpikeSpaceY, BorderX, BorderY, RaftHeig
 }
 
 // Render all of the rafts
-for (r = [0 : RaftCount - 1])
+for (r = [0 : _RaftCount - 1])
 {
-	RaftX = r * RaftSizeX(RaftBorder, SpikeCountX, SpikeSpaceX) + (r - 1) * RaftSpaceX;
+	RaftX = r * RaftSizeX(_RaftBorder, _SpikeCountX, _SpikeSpaceX) + (r - 1) * _RaftSpaceX;
 	RaftY = 0;
 	
 	translate([RaftX, RaftY, 0])
 	{
-		Raft(SpikeCountX, SpikeCountY, SpikeSpaceX, SpikeSpaceY, RaftBorder, RaftBorder, 
-			 RaftHeight, RaftHoles, SpikeRadius, SpikeCylHeight, SpikeTipHeight, SpikeWall);
+		Raft(_SpikeCountX, _SpikeCountY, _SpikeSpaceX, _SpikeSpaceY, _RaftBorder, _RaftBorder, 
+			 _RaftHeight, _RaftHoles, _SpikeRadius, _SpikeCylHeight, _SpikeTipHeight, _SpikeWall);
 	}
 }
 
