@@ -6,18 +6,6 @@ _RaftCount = 1;
 // Space between rafts
 _RaftSpaceX = 20;
 
-// Spike radius
-_SpikeRadius = 7;
-
-// Spike cylinder height
-_SpikeCylHeight = 7;
-
-// Spike tip height
-_SpikeTipHeight = 35;
-
-// Spike wall thickness
-_SpikeWall = 2;
-
 // Raft height
 _RaftHeight = 2.0; // [0 : 0.2 : 4.0]
 
@@ -38,6 +26,19 @@ _RaftBorder = 10;
 
 // Holes in raft below spikes
 _RaftHoles = false;
+
+/* [Cylindrical Spikes] */
+// Spike radius
+_CylSpikeRadius = 7;
+
+// Spike cylinder height
+_CylSpikeCylHeight = 7;
+
+// Spike tip height
+_CylSpikeTipHeight = 35;
+
+// Spike wall thickness
+_CylSpikeWall = 2;
 
 // Render one spike
 module Spike(SpikeRadius, SpikeCylHeight, SpikeTipHeight, SpikeWall)
@@ -129,8 +130,9 @@ for (r = [0 : _RaftCount - 1])
 	
 	translate([RaftX, RaftY, 0])
 	{
-		Raft(_SpikeCountX, _SpikeCountY, _SpikeSpaceX, _SpikeSpaceY, _RaftBorder, _RaftBorder, 
-			 _RaftHeight, _RaftHoles, _SpikeRadius, _SpikeCylHeight, _SpikeTipHeight, _SpikeWall);
+		Raft(_SpikeCountX, _SpikeCountY, _SpikeSpaceX, _SpikeSpaceY, 
+             _RaftBorder, _RaftBorder, _RaftHeight, _RaftHoles, 
+             _CylSpikeRadius, _CylSpikeCylHeight, _CylSpikeTipHeight, _CylSpikeWall);
 	}
 }
 
