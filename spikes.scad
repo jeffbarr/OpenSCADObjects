@@ -2,7 +2,7 @@
  * Spikes on rafts, with selectable spike type:
  * 
  * Cylindrical - Cylinder topped by point
- * Pyramid     - Pyramid
+ * Pyramidal   - Pyramid
  */
 
 // Number of rafts
@@ -13,6 +13,12 @@ _RaftSpaceX = 20;
 
 // Raft height
 _RaftHeight = 2.0; // [0 : 0.2 : 4.0]
+
+// Border
+_RaftBorder = 10;
+
+// Holes in raft below spikes
+_RaftHoles = false;
 
 // Rows of spikes per raft
 _SpikeCountY = 4;
@@ -25,12 +31,6 @@ _SpikeSpaceX = 10;
 
 // Space between rows of spikes
 _SpikeSpaceY = 10;
-
-// Border
-_RaftBorder = 10;
-
-// Holes in raft below spikes
-_RaftHoles = false;
 
 /* Spike type */
 _SpikeType = "Cylinder"; // ["Cylinder", "Pyramid"]
@@ -48,7 +48,7 @@ _CylSpikeTipHeight = 35;
 // Spike wall thickness
 _CylSpikeWall = 2;
 
-/* [Pyramid Spikes] */
+/* [Pyramidal Spikes] */
 // Spike base width/depth
 _PyrBase = 14;
 
