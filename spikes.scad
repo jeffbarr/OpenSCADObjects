@@ -1,4 +1,9 @@
-/* Spikes on rafts, with selectable spike type */
+/* 
+ * Spikes on rafts, with selectable spike type:
+ * 
+ * Cylindrical - Cylinder topped by point
+ * Pyramid     - Pyramid
+ */
 
 // Number of rafts
 _RaftCount = 1;
@@ -27,6 +32,9 @@ _RaftBorder = 10;
 // Holes in raft below spikes
 _RaftHoles = false;
 
+/* Spike type */
+_SpikeType = "Cylinder"; // ["Cylinder", "Pyramid"]
+
 /* [Cylindrical Spikes] */
 // Spike radius
 _CylSpikeRadius = 7;
@@ -40,8 +48,57 @@ _CylSpikeTipHeight = 35;
 // Spike wall thickness
 _CylSpikeWall = 2;
 
-// Render one spike
-module Spike(SpikeRadius, SpikeCylHeight, SpikeTipHeight, SpikeWall)
+/* [Pyramid Spikes] */
+// Spike base width/depth
+_PyrBase = 14;
+
+// Spike height
+_PyrHeight = 35;
+
+// Spike wall thickness
+_PyrWall = 2;
+
+module __end_customization() {}
+
+/* Pyramid points */
+PyrPoints =
+[
+    [0, 0, 0],
+    [1, 0, 0],
+    [1, 1, 0],
+    [0, 1, 0],
+    [0.5, 0.5, 1]
+];
+
+/* Pyramind faces */
+PyrFaces =
+[
+    [0, 1, 2, 3],
+    [4, 1, 0],
+    [4, 2, 1],
+    [4, 3, 2],
+    [4, 0, 3]
+];
+
+// Render one spike (cylinder or pyramid)
+module Spike(SpikeType, SpikeRadius, SpikeCylHeight, SpikeTipHeight, SpikeWall, PyrBase, PyrHeight, PyrWall)
+{
+    if (SpikeType == "Cylinder")
+    {
+        CylSpike(SpikeRadius, SpikeCylHeight, SpikeTipHeight, SpikeWall);
+    }
+    else if (SpikeType == "Pyramid")
+    {
+        PyrSpike(PyrBase, PyrHeight, SpikeWall);
+    }
+    else
+    {
+        echo("Unknown spike type ", SpikeType);
+    }
+}
+
+// Render one cylinder spike
+module CylSpike(SpikeRadius, SpikeCylHeight, SpikeTipHeight, SpikeWall)
 {
 	{
 		union()
@@ -72,11 +129,54 @@ module Spike(SpikeRadius, SpikeCylHeight, SpikeTipHeight, SpikeWall)
 	}
 }
 
+// Render one pyramid spike
+module PyrSpike(PyrBase, PyrHeight, PyrWall)
+{
+    {
+        difference()
+        {
+            translate([-PyrBase/2, -PyrBase/2, 0])
+            scale([PyrBase, PyrBase, PyrHeight])
+            {
+                polyhedron(points=PyrPoints, faces=PyrFaces);
+            }
+            
+            translate([-(PyrBase - PyrWall) / 2, -(PyrBase - PyrWall) / 2, 0])
+            {
+                scale([PyrBase - PyrWall, PyrBase - PyrWall, PyrHeight - PyrWall])
+                {
+                    polyhedron(points=PyrPoints, faces=PyrFaces);
+                }
+            }            
+        }
+    }
+}
+
+// Render one  hole
+module Hole(SpikeType, SpikeRadius, SpikeWall, PyrBase, PyrWall)
+{
+    if (SpikeType == "Cylinder")
+    {
+        circle(SpikeRadius - SpikeWall);
+    }
+    else if (SpikeType == "Pyramid")
+    {
+        translate([-(PyrBase - PyrWall) / 2, -(PyrBase - PyrWall) / 2])
+        {
+            square([PyrBase - PyrWall, PyrBase - PyrWall]);
+        }
+    }
+    else
+    {
+        echo("Unknown spike type ", SpikeType);
+    }
+}
 function RaftSizeX(BorderX, CountX, SpikeSpaceX) = BorderX + ((CountX - 1) * SpikeSpaceX) + BorderX;
 function RaftSizeY(BorderY, CountY, SpikeSpaceY) = BorderY + ((CountY - 1) * SpikeSpaceY) + BorderY;
 
 // Render a raft with a grid of spikes
-module Raft(CountX, CountY, SpikeSpaceX, SpikeSpaceY, BorderX, BorderY, RaftHeight, RaftHoles, SpikeRadius, SpikeCylHeight, SpikeTipHeight, SpikeWall)
+module Raft(CountX, CountY, SpikeSpaceX, SpikeSpaceY, BorderX, BorderY, RaftHeight, RaftHoles, SpikeType, SpikeRadius, SpikeCylHeight, SpikeTipHeight, SpikeWall,
+    PyrBase, PyrHeight, PyrWall)
 {
 	// Compute size of raft
 	RaftX = RaftSizeX(BorderX, CountX, SpikeSpaceX);
@@ -99,7 +199,7 @@ module Raft(CountX, CountY, SpikeSpaceX, SpikeSpaceY, BorderX, BorderY, RaftHeig
 					{
 						linear_extrude(RaftHeight)
 						{
-							circle(SpikeRadius - SpikeWall);
+                            Hole(SpikeType, SpikeRadius, SpikeWall, PyrBase, PyrWall);
 						}
 					}
 				}
@@ -116,7 +216,7 @@ module Raft(CountX, CountY, SpikeSpaceX, SpikeSpaceY, BorderX, BorderY, RaftHeig
 			SpikeY = BorderY + (y * SpikeSpaceY);
 			translate([SpikeX, SpikeY, RaftHeight])
 			{
-				Spike(SpikeRadius, SpikeCylHeight, SpikeTipHeight, SpikeWall);
+				Spike(SpikeType, SpikeRadius, SpikeCylHeight, SpikeTipHeight, SpikeWall, PyrBase, PyrHeight, PyrWall);
 			}
 		}
 	}
@@ -132,7 +232,7 @@ for (r = [0 : _RaftCount - 1])
 	{
 		Raft(_SpikeCountX, _SpikeCountY, _SpikeSpaceX, _SpikeSpaceY, 
              _RaftBorder, _RaftBorder, _RaftHeight, _RaftHoles, 
-             _CylSpikeRadius, _CylSpikeCylHeight, _CylSpikeTipHeight, _CylSpikeWall);
+             _SpikeType, _CylSpikeRadius, _CylSpikeCylHeight, _CylSpikeTipHeight, _CylSpikeWall, _PyrBase, _PyrHeight, _PyrWall);
 	}
 }
 
