@@ -32,7 +32,7 @@ _SpikeSpaceX = 10;
 // Space between rows of spikes
 _SpikeSpaceY = 10;
 
-/* Spike type */
+// Spike type
 _SpikeType = "Cylinder"; // ["Cylinder", "Pyramid"]
 
 /* [Cylindrical Spikes] */
@@ -70,7 +70,7 @@ PyrPoints =
     [0.5, 0.5, 1]
 ];
 
-/* Pyramind faces */
+/* Pyramid faces */
 PyrFaces =
 [
     [0, 1, 2, 3],
@@ -171,6 +171,7 @@ module Hole(SpikeType, SpikeRadius, SpikeWall, PyrBase, PyrWall)
         echo("Unknown spike type ", SpikeType);
     }
 }
+
 function RaftSizeX(BorderX, CountX, SpikeSpaceX) = BorderX + ((CountX - 1) * SpikeSpaceX) + BorderX;
 function RaftSizeY(BorderY, CountY, SpikeSpaceY) = BorderY + ((CountY - 1) * SpikeSpaceY) + BorderY;
 
@@ -232,7 +233,8 @@ for (r = [0 : _RaftCount - 1])
 	{
 		Raft(_SpikeCountX, _SpikeCountY, _SpikeSpaceX, _SpikeSpaceY, 
              _RaftBorder, _RaftBorder, _RaftHeight, _RaftHoles, 
-             _SpikeType, _CylSpikeRadius, _CylSpikeCylHeight, _CylSpikeTipHeight, _CylSpikeWall, _PyrBase, _PyrHeight, _PyrWall);
+             _SpikeType, _CylSpikeRadius, _CylSpikeCylHeight, _CylSpikeTipHeight, _CylSpikeWall,
+             _PyrBase, _PyrHeight, _PyrWall);
 	}
 }
 
