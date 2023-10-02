@@ -60,7 +60,7 @@ Spikes on rafts:
 
 ![Spikes on Rafts](https://github.com/jeffbarr/OpenSCADObjects/blob/main/spikes_sample.png)
 
-*RaftCount* sets the number of rafts, each one separated by *RaftSpaceX* and *Raftheight* thick. Each raft has a grid of *SpikeCountX* by *SpikeCountY* spikes, and each spike is *SpikeCylHeight* + *SpikeTipHeight* high. Additionally, each spike is *SpikeRadius* around, spaced on the raft based on *SpikeSpaceX* and *SpikeSpaceY*.
+*_RaftCount* sets the number of rafts, each one separated by *_RaftSpaceX* and *_Raftheight* thick. Each raft has a grid of *_SpikeCountX* by *_SpikeCountY* spikes, and each spike is *_SpikeCylHeight* + *_SpikeTipHeight* high. Spikes can be cylindrical or pyramidal. Each cylindrical spike is *_SpikeRadius* around. Each pyramidal spike is on a square base *_PyrBase* wide and deep, and *_PyrHeight* tall, ith walls *_PyrWall* thick. Spikes of either type are spaced on the raft based on *_SpikeSpaceX* and *_SpikeSpaceY*. 
 
 This file is fully customizer-enabled.
 
