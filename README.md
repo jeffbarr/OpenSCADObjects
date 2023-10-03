@@ -54,6 +54,16 @@ Here's a sample in black and silver:
 
 This file is fully customizer-enabled.
 
+## [nodes_graph.scad](https://github.com/jeffbarr/OpenSCADObjects/blob/main/nodes_graph.scad)
+
+A variant of [nodes_edges.scad](https://github.com/jeffbarr/OpenSCADObjects/blob/main/nodes_edges.scad) with more layout flexibility -- circular (and semi-circular) rings of nodes and edges, axial rays that fill out a square or diagonal, and fringe. Still a work in progress.
+
+Sample:
+
+![Nodes Graphs Sample](https://github.com/jeffbarr/OpenSCADObjects/blob/main/nodes_graph_sample.jpg)
+
+Mostly customizer-enabled, choosing the desired output is accomplished by editing the code.
+
 ## [spikes.scad](https://github.com/jeffbarr/OpenSCADObjects/blob/main/spikes.scad)
 
 Spikes on rafts:
