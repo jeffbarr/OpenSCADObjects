@@ -10,17 +10,23 @@
 *
 * Fringe - A rectangle with triangles hanging down.
 *
+* Hexagon - Hexagon with interior goodness.
+*
 * This code is powerful yet messy. TODO:
 *	
-* Fix HACK that intertwines Fringe metrics in the wrong way with Step:
-*
-* --> _SquareStep = _FringeColSpace.
-*
-* --> Allow actual choice of what is created, vs editing the code.
+* --> Fix HACK that intertwines Fringe metrics in the wrong way with Step:
+*     _SquareStep = _FringeColSpace.
 *
 * --> Move more parameters to "_" and never use them in modules
 *
+* --> Render edges that overlap (mostly in Axial) together so that the
+*     pattern on top looks better.
+*
+* --> Prefix all config variables with the pattern that they affect.
 */
+
+// Pattern
+_Pattern = "Circular"; // [Circular, Axial, Fringe, Hexagon]
 
 // Node radius
 _NodeSize = 7.5;
@@ -108,6 +114,11 @@ _FringeColSpace = 30;
 
 // Height of each triangular fringe
 _FringeTriangeHeight = 120;
+
+/* [Hexagon] */
+
+// Base width
+_BaseWidth = 100;
 
 // HaCK
 _SquareStep = _FringeColSpace;
@@ -215,6 +226,45 @@ module ConnectNodesWithEdge(FromX, FromY, ToX, ToY, EdgeWidth, EdgeHeight, EdgeR
 		rotate([0, 0, Theta])
 		{
 			Edge(EdgeLength, EdgeWidth, EdgeHeight, EdgeRimHeight);
+		}
+	}
+}
+	
+// Triangle inset from the given points, styled like an edge
+// 7 is magic and should be a parameter
+// Good luck understanding this, the 7 and the polygon should be another module
+//
+module Triangle(X0, Y0, X1, Y1, X2, Y2, Height, RimHeight)
+{
+	TrianglePoints =
+	[
+		[X0, Y0],
+		[X1, Y1],
+		[X2, Y2]
+	];
+	
+	union()
+	{
+		/* Triangle */
+		linear_extrude(Height)
+		{
+			offset(-7)
+			{
+				polygon(TrianglePoints);
+			}
+		}
+		
+		/* Rim */
+		for (dd = [0 : 1.5 : 3])
+		{
+			linear_extrude(RimHeight)
+			{
+				difference()
+				{
+					offset(delta= (-7 - dd)) polygon(TrianglePoints);
+					offset(delta= (-7 - dd - RimThickness)) polygon(TrianglePoints);
+				}
+			}
 		}
 	}
 }
@@ -424,7 +474,7 @@ module AxialRays(Square, SquareStep, SquareCount, NodeShape, NodeSize, NodeHeigh
 }
 
 // 
-// Fringe --
+// Fringe:
 // 
 //	A horizontal grid (FringeCols x FringeRows, then triangles of FringeTriangleHeight dropping down
 //
@@ -490,9 +540,183 @@ module Fringe(FringeCols, FringeRows, FringeColSpace, FringeTriangleHeight, Node
 	}
 }
 
-/* Main, pick just one */
+//
+// Hexagon:
+//
+//		Hexagon with interior goodies, with middle split on exterior edges
+//
 
-CircularRays(_StartRing,_RingCount, _RingSpace, _RayStep, _RayLimit, _RayCenter, _CenterX, _CenterY,_NodeShape, _NodeSize, _NodeHeight);
-//AxialRays(true, _SquareStep, _SquareCount, _NodeShape, _NodeSize, _NodeHeight, _FwdDiagonalEdges, _BwdDiagonalEdges, _XEdges, _YEdges);
-//Fringe(_FringeCols, _FringeRows, _FringeColSpace, _FringeTriangeHeight, _NodeShape, _NodeSize, _NodeHeight, NodeRimHeight);
+module Hexagon(BaseWidth, NodeShape, NodeSize, NodeHeight)
+{
+	// Compute coordinates of each exterior node
+	X = [for (d = [0 : 60 : 359]) BaseWidth * cos(d)];
+	Y = [for (d = [0 : 60 : 359]) BaseWidth * sin(d)];
+		
+	// Compute coordinates for mid-points of each exterior node
+	XX = [for (i = [0 : 5]) (X[i] + X[(i + 1) % 6]) / 2];
+	YY = [for (i = [0 : 5]) (Y[i] + Y[(i + 1) % 6]) / 2];
+
+	// Merge so that XXX and YYY are coordinates of all exterior nodes
+	XXX = 
+	[
+		X[0], XX[0],
+		X[1], XX[1],
+		X[2], XX[2],
+		X[3], XX[3],
+		X[4], XX[4],
+		X[5], XX[5]
+	];
+
+	YYY = 
+	[
+		Y[0], YY[0],
+		Y[1], YY[1],
+		Y[2], YY[2],
+		Y[3], YY[3],
+		Y[4], YY[4],
+		Y[5], YY[5]
+	];
+	
+	// Compute coordinates for 4 interior nodes
+	XI =
+	[
+		X[1], 
+		0,
+		X[2],
+		0
+	];
+	
+	YI =
+	[
+		0,
+		Y[1] / 2,
+		0,
+		-Y[1] / 2
+	];
+	
+	// Render exterior nodes
+	for (i = [0 : 11])
+	{
+		translate([XXX[i], YYY[i], 0])
+		{
+			Node(NodeShape, NodeSize, NodeHeight, NodeRimHeight);
+		}
+	}	
+	
+	// Render edges between exterior nodes
+	for (i = [0 : 11])
+	{
+		X0 = XXX[i];
+		Y0 = YYY[i];
+		X1 = XXX[(i + 1) % 12];
+		Y1 = YYY[(i + 1) % 12];
+
+		ConnectNodesWithEdge(X0, Y0, X1, Y1, EdgeWidth, EdgeHeight, EdgeRimHeight, NodeSize);	
+	}
+	
+	// Render center node
+	translate([0, 0, 0])
+	{
+		Node(NodeShape, NodeSize, NodeHeight, NodeRimHeight);
+	}
+	
+	// Render other interior nodes
+	for (i = [0 : 3])
+	{
+		translate([XI[i], YI[i], 0])
+		{
+			Node(NodeShape, NodeSize, NodeHeight, NodeRimHeight);
+		}
+	}
+
+	// Render edges from center to interior nodes
+	for (i = [0 : 3])
+	{
+		ConnectNodesWithEdge(0, 0, XI[i], YI[i], EdgeWidth, EdgeHeight, EdgeRimHeight, NodeSize);			
+	}
+	
+	// Render edges from interior nodes to exterior nodes on X axis
+	ConnectNodesWithEdge(XI[0], YI[0], XXX[0], YYY[0], EdgeWidth, EdgeHeight, EdgeRimHeight, NodeSize);		
+	ConnectNodesWithEdge(XI[2], YI[2], X[3], Y[3], EdgeWidth, EdgeHeight, EdgeRimHeight, NodeSize);	
+	
+	// Render edges from interior nodes to exterior nodes on Y axis
+	ConnectNodesWithEdge(XI[1], YI[1], XXX[3], YYY[3], EdgeWidth, EdgeHeight, EdgeRimHeight, NodeSize);	
+	ConnectNodesWithEdge(XI[3], YI[3], XXX[9], YYY[9], EdgeWidth, EdgeHeight, EdgeRimHeight, NodeSize);
+
+	// Render edges to connect interior nodes to each other
+	for (i = [0 : 3])
+	{
+		ConnectNodesWithEdge(XI[i], YI[i], XI[(i + 1) % 4], YI[(i + 1) % 4], EdgeWidth, EdgeHeight, EdgeRimHeight, NodeSize);
+	}
+	
+	// Render edges to connect interior nodes to top and bottom diagonals
+	ConnectNodesWithEdge(XI[0], YI[0], XXX[1], YYY[1], EdgeWidth, EdgeHeight, EdgeRimHeight, NodeSize);
+	ConnectNodesWithEdge(XI[2], YI[2], XXX[5], YYY[5], EdgeWidth, EdgeHeight, EdgeRimHeight, NodeSize);
+	ConnectNodesWithEdge(XI[2], YI[2], XXX[7], YYY[7], EdgeWidth, EdgeHeight, EdgeRimHeight, NodeSize);	
+	ConnectNodesWithEdge(XI[0], YI[0], XXX[11], YYY[11], EdgeWidth, EdgeHeight, EdgeRimHeight, NodeSize);
+	
+	// Render edge to connect the "corner" exterior nodes to the X axis
+	ConnectNodesWithEdge(XI[0], YI[0], XXX[2], YYY[2], EdgeWidth, EdgeHeight, EdgeRimHeight, NodeSize);
+	ConnectNodesWithEdge(XI[2], YI[2], XXX[4], YYY[4], EdgeWidth, EdgeHeight, EdgeRimHeight, NodeSize);
+	ConnectNodesWithEdge(XI[2], YI[2], XXX[8], YYY[8], EdgeWidth, EdgeHeight, EdgeRimHeight, NodeSize);	
+	ConnectNodesWithEdge(XI[0], YI[0], XXX[10], YYY[10], EdgeWidth, EdgeHeight, EdgeRimHeight, NodeSize);
+	
+	// Render edges to connect the "corner" exterior nodes to those at X=0 above and below the axis
+	ConnectNodesWithEdge(XI[1], YI[1], XXX[2], YYY[2], EdgeWidth, EdgeHeight, EdgeRimHeight, NodeSize);
+	ConnectNodesWithEdge(XI[1], YI[1], XXX[4], YYY[4], EdgeWidth, EdgeHeight, EdgeRimHeight, NodeSize);
+	ConnectNodesWithEdge(XI[3], YI[3], XXX[8], YYY[8], EdgeWidth, EdgeHeight, EdgeRimHeight, NodeSize);	
+	ConnectNodesWithEdge(XI[3], YI[3], XXX[10], YYY[10], EdgeWidth, EdgeHeight, EdgeRimHeight, NodeSize);	
+	
+	// Fill in lots of triangles
+	Triangle(XXX[0], YYY[0], XXX[1], YYY[1], XI[0], XI[1], EdgeHeight, EdgeRimHeight);
+	Triangle(XI[0], YI[0], XXX[1], YYY[1], XXX[2], YYY[2], EdgeHeight, EdgeRimHeight);
+	Triangle(XI[0], YI[0], XI[1], YI[1], XXX[2], YYY[2], EdgeHeight, EdgeRimHeight);
+	Triangle(XI[1], YI[1], XXX[2], YYY[2], XXX[3], YYY[3], EdgeHeight, EdgeRimHeight);
+	Triangle(XI[1], YI[1], XXX[2], YYY[2], XXX[4], YYY[4], EdgeHeight, EdgeRimHeight);
+	Triangle(XI[1], YI[1], XXX[4], YYY[4], XI[2], YI[2], EdgeHeight, EdgeRimHeight);
+	Triangle(XXX[4], YYY[4], XI[2], YI[2], XXX[5], YYY[5], EdgeHeight, EdgeRimHeight);
+	Triangle(XI[2], YI[2], XXX[5], YYY[5], XXX[6], YYY[6], EdgeHeight, EdgeRimHeight);
+	Triangle(XI[2], YI[2], XXX[6], YYY[6], XXX[7], YYY[7], EdgeHeight, EdgeRimHeight);
+	Triangle(XI[2], YI[2], XXX[7], YYY[7], XXX[8], YYY[8], EdgeHeight, EdgeRimHeight);	
+	Triangle(XI[2], YI[2], XXX[8], YYY[8], XI[3], YI[3], EdgeHeight, EdgeRimHeight);	
+	Triangle(XXX[8], YYY[8], XI[3], YI[3], XXX[9], YYY[9], EdgeHeight, EdgeRimHeight);
+	Triangle(XXX[9], YYY[9], XI[3], YI[3], XXX[10], YYY[10], EdgeHeight, EdgeRimHeight);
+	Triangle(XI[3], YI[3], XXX[10], YYY[10], XI[0], YI[0], EdgeHeight, EdgeRimHeight);
+	Triangle(XXX[11], YYY[11], XXX[10], YYY[10], XI[0], YI[0], EdgeHeight, EdgeRimHeight);
+	Triangle(XXX[11], YYY[11], XI[0], YI[0], XXX[0], YYY[0], EdgeHeight, EdgeRimHeight);
+
+	for (i = [0 : 3])
+	{
+		Triangle(0, 0, XI[i], YI[i], XI[(i + 1) % 4], YI[(i + 1) % 4], EdgeHeight, EdgeRimHeight);
+	}
+}
+
+/* Render chosen pattern */
+
+if (_Pattern == "Circular")
+{
+	CircularRays(_StartRing,_RingCount, _RingSpace, _RayStep, _RayLimit, _RayCenter, 
+			     _CenterX, _CenterY,_NodeShape, _NodeSize, _NodeHeight);
+}
+
+else if (_Pattern == "Axial")
+{
+	AxialRays(true, _SquareStep, _SquareCount, _NodeShape, _NodeSize, _NodeHeight, 
+			  _FwdDiagonalEdges, _BwdDiagonalEdges, _XEdges, _YEdges);}
+
+else if (_Pattern == "Fringe")
+{
+	Fringe(_FringeCols, _FringeRows, _FringeColSpace, _FringeTriangeHeight, _NodeShape, _NodeSize,
+			_NodeHeight, NodeRimHeight);
+}
+
+else if (_Pattern == "Hexagon")
+{
+	Hexagon(_BaseWidth, _NodeShape, _NodeSize, _NodeHeight);
+}
+else
+{
+	echo("Unknown pattern ", _Pattern);
+}
+
 
