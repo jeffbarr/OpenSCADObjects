@@ -120,6 +120,9 @@ _FringeTriangeHeight = 120;
 // Base width
 _BaseWidth = 100;
 
+// Inside triangles
+_InsideTriangles = true;
+
 // HaCK
 _SquareStep = _FringeColSpace;
 
@@ -543,10 +546,14 @@ module Fringe(FringeCols, FringeRows, FringeColSpace, FringeTriangleHeight, Node
 //
 // Hexagon:
 //
-//		Hexagon with interior goodies, with middle split on exterior edges
+//		Hexagon with interior goodies, with middle split on exterior edges, and optional
+//		interior triangle panels.
+//
+//		Consult https://github.com/jeffbarr/OpenSCADObjects/blob/main/nodes_graph_hexagon_node_ids.jpg
+//		to see how X/Y, XX/YY, XXX/YYY, XI/YI, and NX/NY map to node coordinates.
 //
 
-module Hexagon(BaseWidth, NodeShape, NodeSize, NodeHeight)
+module Hexagon(BaseWidth, InsideTriangles, NodeShape, NodeSize, NodeHeight)
 {
 	// Compute coordinates of each exterior node
 	X = [for (d = [0 : 60 : 359]) BaseWidth * cos(d)];
@@ -594,100 +601,101 @@ module Hexagon(BaseWidth, NodeShape, NodeSize, NodeHeight)
 		-Y[1] / 2
 	];
 	
-	// Render exterior nodes
-	for (i = [0 : 11])
+	// Put all coordinates together, indices are "fixed" per the diagram
+	NX =
+	[
+		0, 
+	    XXX[0], XXX[1], XXX[2], XXX[3], XXX[4],  XXX[5], 
+		XXX[6], XXX[7], XXX[8], XXX[9], XXX[10], XXX[11],
+	  	XI[0], XI[1], XI[2], XI[3]
+	];
+		  
+	NY = 
+	[
+		0, 
+	    YYY[0], YYY[1], YYY[2], YYY[3], YYY[4],  YYY[5], 
+	    YYY[6], YYY[7], YYY[8], YYY[9], YYY[10], YYY[11], 
+		YI[0], YI[1], YI[2], YI[3]
+	];
+	
+	// Build list of nodes to render
+	Nodes = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16];
+
+	// Build list of edges to render, as node indexes
+	Edges =
+	[
+		// Connect exterior nodes
+		[1, 2], [2, 3], [3, 4], [4, 5], [5, 6], [6, 7], [7, 8], [8, 9], [9, 10], [10, 11], [11, 12], [12, 1],
+	
+		// Connect center node to interior nodes
+		[0, 13], [0, 14], [0, 15], [0, 16],
+	
+		// Connect interior nodes to exterior nodes on X axis
+		[1, 13], [7, 15],
+	
+		// Connect interior nodes to exterior nodes on Y axis
+		[4, 14], [10, 16],
+	
+		// Connect interior nodes to each other
+		[13, 14], [14, 15], [15, 16], [16, 13],
+	
+		// Connect interior nodes to top and bottom diagonals
+		[2, 13], [6, 15], [8, 15], [12, 13],
+		
+		// Connect corner interior nodes to X axis
+		[3, 13], [5, 15], [9, 15], [11, 13],
+		
+		// Connect corner interior nodes to Y axis
+		[3, 14], [5, 14], [9, 16], [11, 16]
+	];
+	
+	// Render nodes
+	for (n = Nodes)
 	{
-		translate([XXX[i], YYY[i], 0])
+		translate([NX[n], NY[n], 0])
 		{
 			Node(NodeShape, NodeSize, NodeHeight, NodeRimHeight);
 		}
-	}	
-	
-	// Render edges between exterior nodes
-	for (i = [0 : 11])
-	{
-		X0 = XXX[i];
-		Y0 = YYY[i];
-		X1 = XXX[(i + 1) % 12];
-		Y1 = YYY[(i + 1) % 12];
+	}
 
-		ConnectNodesWithEdge(X0, Y0, X1, Y1, EdgeWidth, EdgeHeight, EdgeRimHeight, NodeSize);	
-	}
-	
-	// Render center node
-	translate([0, 0, 0])
+	// Render edges
+	for (e = Edges)
 	{
-		Node(NodeShape, NodeSize, NodeHeight, NodeRimHeight);
+		ConnectNodesWithEdge(NX[e[0]], NY[e[0]], NX[e[1]], NY[e[1]], EdgeWidth, EdgeHeight, EdgeRimHeight, NodeSize);	
 	}
-	
-	// Render other interior nodes
-	for (i = [0 : 3])
+
+	if (InsideTriangles)
 	{
-		translate([XI[i], YI[i], 0])
+		// Build list of triangles as node indices
+		Triangles =
+		[
+			[0,  13, 14],
+			[0,  14, 15],
+			[0,  15, 16],
+			[0,  13, 16],
+			[1,  2,  13],
+			[1,  12, 13],
+			[2,  3,  13],
+			[3,  4,  14],
+			[3,  13, 14],
+			[4,  5,  14],
+			[5,  6,  15],
+			[5,  14, 15],
+			[6,  7,  15],
+			[7,  8,  15],
+			[8,  9,  15],
+			[9,  10, 16],
+			[9,  15, 16],
+			[10, 11, 16],
+			[11, 12, 13],
+			[11, 13, 16]
+		];
+		
+		// Render triangles
+		for (t = Triangles)
 		{
-			Node(NodeShape, NodeSize, NodeHeight, NodeRimHeight);
+			Triangle(NX[t[0]], NY[t[0]], NX[t[1]], NY[t[1]], NX[t[2]], NY[t[2]], EdgeHeight, EdgeRimHeight);
 		}
-	}
-
-	// Render edges from center to interior nodes
-	for (i = [0 : 3])
-	{
-		ConnectNodesWithEdge(0, 0, XI[i], YI[i], EdgeWidth, EdgeHeight, EdgeRimHeight, NodeSize);			
-	}
-	
-	// Render edges from interior nodes to exterior nodes on X axis
-	ConnectNodesWithEdge(XI[0], YI[0], XXX[0], YYY[0], EdgeWidth, EdgeHeight, EdgeRimHeight, NodeSize);		
-	ConnectNodesWithEdge(XI[2], YI[2], X[3], Y[3], EdgeWidth, EdgeHeight, EdgeRimHeight, NodeSize);	
-	
-	// Render edges from interior nodes to exterior nodes on Y axis
-	ConnectNodesWithEdge(XI[1], YI[1], XXX[3], YYY[3], EdgeWidth, EdgeHeight, EdgeRimHeight, NodeSize);	
-	ConnectNodesWithEdge(XI[3], YI[3], XXX[9], YYY[9], EdgeWidth, EdgeHeight, EdgeRimHeight, NodeSize);
-
-	// Render edges to connect interior nodes to each other
-	for (i = [0 : 3])
-	{
-		ConnectNodesWithEdge(XI[i], YI[i], XI[(i + 1) % 4], YI[(i + 1) % 4], EdgeWidth, EdgeHeight, EdgeRimHeight, NodeSize);
-	}
-	
-	// Render edges to connect interior nodes to top and bottom diagonals
-	ConnectNodesWithEdge(XI[0], YI[0], XXX[1], YYY[1], EdgeWidth, EdgeHeight, EdgeRimHeight, NodeSize);
-	ConnectNodesWithEdge(XI[2], YI[2], XXX[5], YYY[5], EdgeWidth, EdgeHeight, EdgeRimHeight, NodeSize);
-	ConnectNodesWithEdge(XI[2], YI[2], XXX[7], YYY[7], EdgeWidth, EdgeHeight, EdgeRimHeight, NodeSize);	
-	ConnectNodesWithEdge(XI[0], YI[0], XXX[11], YYY[11], EdgeWidth, EdgeHeight, EdgeRimHeight, NodeSize);
-	
-	// Render edge to connect the "corner" exterior nodes to the X axis
-	ConnectNodesWithEdge(XI[0], YI[0], XXX[2], YYY[2], EdgeWidth, EdgeHeight, EdgeRimHeight, NodeSize);
-	ConnectNodesWithEdge(XI[2], YI[2], XXX[4], YYY[4], EdgeWidth, EdgeHeight, EdgeRimHeight, NodeSize);
-	ConnectNodesWithEdge(XI[2], YI[2], XXX[8], YYY[8], EdgeWidth, EdgeHeight, EdgeRimHeight, NodeSize);	
-	ConnectNodesWithEdge(XI[0], YI[0], XXX[10], YYY[10], EdgeWidth, EdgeHeight, EdgeRimHeight, NodeSize);
-	
-	// Render edges to connect the "corner" exterior nodes to those at X=0 above and below the axis
-	ConnectNodesWithEdge(XI[1], YI[1], XXX[2], YYY[2], EdgeWidth, EdgeHeight, EdgeRimHeight, NodeSize);
-	ConnectNodesWithEdge(XI[1], YI[1], XXX[4], YYY[4], EdgeWidth, EdgeHeight, EdgeRimHeight, NodeSize);
-	ConnectNodesWithEdge(XI[3], YI[3], XXX[8], YYY[8], EdgeWidth, EdgeHeight, EdgeRimHeight, NodeSize);	
-	ConnectNodesWithEdge(XI[3], YI[3], XXX[10], YYY[10], EdgeWidth, EdgeHeight, EdgeRimHeight, NodeSize);	
-	
-	// Fill in lots of triangles
-	Triangle(XXX[0], YYY[0], XXX[1], YYY[1], XI[0], XI[1], EdgeHeight, EdgeRimHeight);
-	Triangle(XI[0], YI[0], XXX[1], YYY[1], XXX[2], YYY[2], EdgeHeight, EdgeRimHeight);
-	Triangle(XI[0], YI[0], XI[1], YI[1], XXX[2], YYY[2], EdgeHeight, EdgeRimHeight);
-	Triangle(XI[1], YI[1], XXX[2], YYY[2], XXX[3], YYY[3], EdgeHeight, EdgeRimHeight);
-	Triangle(XI[1], YI[1], XXX[2], YYY[2], XXX[4], YYY[4], EdgeHeight, EdgeRimHeight);
-	Triangle(XI[1], YI[1], XXX[4], YYY[4], XI[2], YI[2], EdgeHeight, EdgeRimHeight);
-	Triangle(XXX[4], YYY[4], XI[2], YI[2], XXX[5], YYY[5], EdgeHeight, EdgeRimHeight);
-	Triangle(XI[2], YI[2], XXX[5], YYY[5], XXX[6], YYY[6], EdgeHeight, EdgeRimHeight);
-	Triangle(XI[2], YI[2], XXX[6], YYY[6], XXX[7], YYY[7], EdgeHeight, EdgeRimHeight);
-	Triangle(XI[2], YI[2], XXX[7], YYY[7], XXX[8], YYY[8], EdgeHeight, EdgeRimHeight);	
-	Triangle(XI[2], YI[2], XXX[8], YYY[8], XI[3], YI[3], EdgeHeight, EdgeRimHeight);	
-	Triangle(XXX[8], YYY[8], XI[3], YI[3], XXX[9], YYY[9], EdgeHeight, EdgeRimHeight);
-	Triangle(XXX[9], YYY[9], XI[3], YI[3], XXX[10], YYY[10], EdgeHeight, EdgeRimHeight);
-	Triangle(XI[3], YI[3], XXX[10], YYY[10], XI[0], YI[0], EdgeHeight, EdgeRimHeight);
-	Triangle(XXX[11], YYY[11], XXX[10], YYY[10], XI[0], YI[0], EdgeHeight, EdgeRimHeight);
-	Triangle(XXX[11], YYY[11], XI[0], YI[0], XXX[0], YYY[0], EdgeHeight, EdgeRimHeight);
-
-	for (i = [0 : 3])
-	{
-		Triangle(0, 0, XI[i], YI[i], XI[(i + 1) % 4], YI[(i + 1) % 4], EdgeHeight, EdgeRimHeight);
 	}
 }
 
@@ -712,7 +720,7 @@ else if (_Pattern == "Fringe")
 
 else if (_Pattern == "Hexagon")
 {
-	Hexagon(_BaseWidth, _NodeShape, _NodeSize, _NodeHeight);
+	Hexagon(_BaseWidth, _InsideTriangles, _NodeShape, _NodeSize, _NodeHeight);
 }
 else
 {
