@@ -120,6 +120,9 @@ _FringeTriangeHeight = 120;
 // Base width
 _BaseWidth = 100;
 
+// Inside triangles
+_InsideTriangles = true;
+
 // HaCK
 _SquareStep = _FringeColSpace;
 
@@ -543,10 +546,14 @@ module Fringe(FringeCols, FringeRows, FringeColSpace, FringeTriangleHeight, Node
 //
 // Hexagon:
 //
-//		Hexagon with interior goodies, with middle split on exterior edges
+//		Hexagon with interior goodies, with middle split on exterior edges, and optional
+//		interior triangle panels.
+//
+//		Consult https://github.com/jeffbarr/OpenSCADObjects/blob/main/nodes_graph_hexagon_node_ids.jpg
+//		to see how X/Y, XX/YY, XXX/YYY, and XI/YI map to node coordinates.
 //
 
-module Hexagon(BaseWidth, NodeShape, NodeSize, NodeHeight)
+module Hexagon(BaseWidth, InsideTriangles, NodeShape, NodeSize, NodeHeight)
 {
 	// Compute coordinates of each exterior node
 	X = [for (d = [0 : 60 : 359]) BaseWidth * cos(d)];
@@ -667,27 +674,30 @@ module Hexagon(BaseWidth, NodeShape, NodeSize, NodeHeight)
 	ConnectNodesWithEdge(XI[3], YI[3], XXX[8], YYY[8], EdgeWidth, EdgeHeight, EdgeRimHeight, NodeSize);	
 	ConnectNodesWithEdge(XI[3], YI[3], XXX[10], YYY[10], EdgeWidth, EdgeHeight, EdgeRimHeight, NodeSize);	
 	
-	// Fill in lots of triangles
-	Triangle(XXX[0], YYY[0], XXX[1], YYY[1], XI[0], XI[1], EdgeHeight, EdgeRimHeight);
-	Triangle(XI[0], YI[0], XXX[1], YYY[1], XXX[2], YYY[2], EdgeHeight, EdgeRimHeight);
-	Triangle(XI[0], YI[0], XI[1], YI[1], XXX[2], YYY[2], EdgeHeight, EdgeRimHeight);
-	Triangle(XI[1], YI[1], XXX[2], YYY[2], XXX[3], YYY[3], EdgeHeight, EdgeRimHeight);
-	Triangle(XI[1], YI[1], XXX[2], YYY[2], XXX[4], YYY[4], EdgeHeight, EdgeRimHeight);
-	Triangle(XI[1], YI[1], XXX[4], YYY[4], XI[2], YI[2], EdgeHeight, EdgeRimHeight);
-	Triangle(XXX[4], YYY[4], XI[2], YI[2], XXX[5], YYY[5], EdgeHeight, EdgeRimHeight);
-	Triangle(XI[2], YI[2], XXX[5], YYY[5], XXX[6], YYY[6], EdgeHeight, EdgeRimHeight);
-	Triangle(XI[2], YI[2], XXX[6], YYY[6], XXX[7], YYY[7], EdgeHeight, EdgeRimHeight);
-	Triangle(XI[2], YI[2], XXX[7], YYY[7], XXX[8], YYY[8], EdgeHeight, EdgeRimHeight);	
-	Triangle(XI[2], YI[2], XXX[8], YYY[8], XI[3], YI[3], EdgeHeight, EdgeRimHeight);	
-	Triangle(XXX[8], YYY[8], XI[3], YI[3], XXX[9], YYY[9], EdgeHeight, EdgeRimHeight);
-	Triangle(XXX[9], YYY[9], XI[3], YI[3], XXX[10], YYY[10], EdgeHeight, EdgeRimHeight);
-	Triangle(XI[3], YI[3], XXX[10], YYY[10], XI[0], YI[0], EdgeHeight, EdgeRimHeight);
-	Triangle(XXX[11], YYY[11], XXX[10], YYY[10], XI[0], YI[0], EdgeHeight, EdgeRimHeight);
-	Triangle(XXX[11], YYY[11], XI[0], YI[0], XXX[0], YYY[0], EdgeHeight, EdgeRimHeight);
-
-	for (i = [0 : 3])
+	if (InsideTriangles)
 	{
-		Triangle(0, 0, XI[i], YI[i], XI[(i + 1) % 4], YI[(i + 1) % 4], EdgeHeight, EdgeRimHeight);
+		// Fill in lots of triangles
+		Triangle(XXX[0], YYY[0], XXX[1], YYY[1], XI[0], XI[1], EdgeHeight, EdgeRimHeight);
+		Triangle(XI[0], YI[0], XXX[1], YYY[1], XXX[2], YYY[2], EdgeHeight, EdgeRimHeight);
+		Triangle(XI[0], YI[0], XI[1], YI[1], XXX[2], YYY[2], EdgeHeight, EdgeRimHeight);
+		Triangle(XI[1], YI[1], XXX[2], YYY[2], XXX[3], YYY[3], EdgeHeight, EdgeRimHeight);
+		Triangle(XI[1], YI[1], XXX[2], YYY[2], XXX[4], YYY[4], EdgeHeight, EdgeRimHeight);
+		Triangle(XI[1], YI[1], XXX[4], YYY[4], XI[2], YI[2], EdgeHeight, EdgeRimHeight);
+		Triangle(XXX[4], YYY[4], XI[2], YI[2], XXX[5], YYY[5], EdgeHeight, EdgeRimHeight);
+		Triangle(XI[2], YI[2], XXX[5], YYY[5], XXX[6], YYY[6], EdgeHeight, EdgeRimHeight);
+		Triangle(XI[2], YI[2], XXX[6], YYY[6], XXX[7], YYY[7], EdgeHeight, EdgeRimHeight);
+		Triangle(XI[2], YI[2], XXX[7], YYY[7], XXX[8], YYY[8], EdgeHeight, EdgeRimHeight);	
+		Triangle(XI[2], YI[2], XXX[8], YYY[8], XI[3], YI[3], EdgeHeight, EdgeRimHeight);	
+		Triangle(XXX[8], YYY[8], XI[3], YI[3], XXX[9], YYY[9], EdgeHeight, EdgeRimHeight);
+		Triangle(XXX[9], YYY[9], XI[3], YI[3], XXX[10], YYY[10], EdgeHeight, EdgeRimHeight);
+		Triangle(XI[3], YI[3], XXX[10], YYY[10], XI[0], YI[0], EdgeHeight, EdgeRimHeight);
+		Triangle(XXX[11], YYY[11], XXX[10], YYY[10], XI[0], YI[0], EdgeHeight, EdgeRimHeight);
+		Triangle(XXX[11], YYY[11], XI[0], YI[0], XXX[0], YYY[0], EdgeHeight, EdgeRimHeight);
+
+		for (i = [0 : 3])
+		{
+			Triangle(0, 0, XI[i], YI[i], XI[(i + 1) % 4], YI[(i + 1) % 4], EdgeHeight, EdgeRimHeight);
+		}
 	}
 }
 
@@ -712,7 +722,7 @@ else if (_Pattern == "Fringe")
 
 else if (_Pattern == "Hexagon")
 {
-	Hexagon(_BaseWidth, _NodeShape, _NodeSize, _NodeHeight);
+	Hexagon(_BaseWidth, _InsideTriangles, _NodeShape, _NodeSize, _NodeHeight);
 }
 else
 {
