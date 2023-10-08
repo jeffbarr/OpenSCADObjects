@@ -123,6 +123,9 @@ _BaseWidth = 100;
 // Inside triangles
 _InsideTriangles = true;
 
+// Triangle inset
+_TriangleInset = 7;
+
 // HaCK
 _SquareStep = _FringeColSpace;
 
@@ -235,9 +238,9 @@ module ConnectNodesWithEdge(FromX, FromY, ToX, ToY, EdgeWidth, EdgeHeight, EdgeR
 	
 // Triangle inset from the given points, styled like an edge
 // 7 is magic and should be a parameter
-// Good luck understanding this, the 7 and the polygon should be another module
+// Good luck understanding this, the polygon should be another module
 //
-module Triangle(X0, Y0, X1, Y1, X2, Y2, Height, RimHeight)
+module Triangle(X0, Y0, X1, Y1, X2, Y2, Inset, Height, RimHeight)
 {
 	TrianglePoints =
 	[
@@ -251,7 +254,7 @@ module Triangle(X0, Y0, X1, Y1, X2, Y2, Height, RimHeight)
 		/* Triangle */
 		linear_extrude(Height)
 		{
-			offset(-7)
+			offset(-Inset)
 			{
 				polygon(TrianglePoints);
 			}
@@ -264,8 +267,8 @@ module Triangle(X0, Y0, X1, Y1, X2, Y2, Height, RimHeight)
 			{
 				difference()
 				{
-					offset(delta= (-7 - dd)) polygon(TrianglePoints);
-					offset(delta= (-7 - dd - RimThickness)) polygon(TrianglePoints);
+					offset(delta= (-Inset - dd)) polygon(TrianglePoints);
+					offset(delta= (-Inset - dd - RimThickness)) polygon(TrianglePoints);
 				}
 			}
 		}
@@ -553,7 +556,7 @@ module Fringe(FringeCols, FringeRows, FringeColSpace, FringeTriangleHeight, Node
 //		to see how X/Y, XX/YY, XXX/YYY, XI/YI, and NX/NY map to node coordinates.
 //
 
-module Hexagon(BaseWidth, InsideTriangles, NodeShape, NodeSize, NodeHeight)
+module Hexagon(BaseWidth, InsideTriangles, TriangleInset, NodeShape, NodeSize, NodeHeight)
 {
 	// Compute coordinates of each exterior node
 	X = [for (d = [0 : 60 : 359]) BaseWidth * cos(d)];
@@ -694,7 +697,7 @@ module Hexagon(BaseWidth, InsideTriangles, NodeShape, NodeSize, NodeHeight)
 		// Render triangles
 		for (t = Triangles)
 		{
-			Triangle(NX[t[0]], NY[t[0]], NX[t[1]], NY[t[1]], NX[t[2]], NY[t[2]], EdgeHeight, EdgeRimHeight);
+			Triangle(NX[t[0]], NY[t[0]], NX[t[1]], NY[t[1]], NX[t[2]], NY[t[2]], TriangleInset, EdgeHeight, EdgeRimHeight);
 		}
 	}
 }
@@ -720,7 +723,7 @@ else if (_Pattern == "Fringe")
 
 else if (_Pattern == "Hexagon")
 {
-	Hexagon(_BaseWidth, _InsideTriangles, _NodeShape, _NodeSize, _NodeHeight);
+	Hexagon(_BaseWidth, _InsideTriangles, _TriangleInset, _NodeShape, _NodeSize, _NodeHeight);
 }
 else
 {
