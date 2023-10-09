@@ -84,6 +84,12 @@ _RingCount = 5;
 // Ring spacing
 _RingSpace = 20;
 
+// Inside quads
+_InsideQuads = true;
+
+// Quad Inset
+_QuadInset = 7;
+
 /* [Axial Rays] */
 
 // Linear step between nodes
@@ -317,15 +323,76 @@ module Triangle(X0, Y0, X1, Y1, X2, Y2, Inset, Height, RimHeight)
 	}
 }
 
+
+//
+// QuadElement:
+//
+// Render the element that makes up the quadrilateral.
+//
+
+module QuadElement(Points)
+{
+	polygon(Points);
+}
+
+//
+// Quad:
+//
+// Quadrilateral inset from the given points, styled like an edge.
+//
+
+module Quad(X0, Y0, X1, Y1, X2, Y2, X3, Y3, Inset, Height, RimHeight)
+{
+	QuadPoints =
+	[
+		[X0, Y0],
+		[X1, Y1],
+		[X2, Y2],
+		[X3, Y3],
+	];
+	
+	union()
+	{
+		/* Quad */
+		linear_extrude(Height)
+		{
+			offset(-Inset)
+			{
+				QuadElement(QuadPoints);
+			}
+		}
+		
+		/* Rim */
+		for (dd = [0 : 1.5 : 3])
+		{
+			linear_extrude(RimHeight)
+			{
+				difference()
+				{
+					offset(delta= (-Inset - dd)) 
+					{
+						QuadElement(QuadPoints);
+					}
+					
+					offset(delta= (-Inset - dd - RimThickness)) 
+					{
+						QuadElement(QuadPoints);
+					}
+				}
+			}
+		}
+	}
+}
+
 // 
 // CircularRays:
 //
-// Partial or full circle, with optional node at the center, then rings of nodes 
-// connected radially and cicularly.
+// Partial or full circle, with optional node at the center, then rings of nodes,
+// connected radially and cicularly, with optional quadrilaterals between nodes.
 // TODO: Add parameters
 //
 
-module CircularRays(StartRing, RingCount, RingSpace, Step, Limit, Center, CenterX, CenterY, NodeShape, NodeSize, NodeHeight)
+module CircularRays(StartRing, RingCount, RingSpace, Step, Limit, Center, CenterX, CenterY, InsideQuads, QuadInset, NodeShape, NodeSize, NodeHeight)
 {
 	if (Center)
 	{
@@ -391,6 +458,29 @@ module CircularRays(StartRing, RingCount, RingSpace, Step, Limit, Center, Center
 			
 			ConnectNodesWithEdge(RingFromX, RingFromY, RingToX, RingToY, EdgeWidth, EdgeHeight, EdgeRimHeight, NodeSize);		
 
+		}
+	}
+	
+	if (InsideQuads)
+	{
+		// Quadrilaterals between nodes
+		for (Theta1 = [0 : Step : Limit])
+		{
+			for (Ring = [StartRing : RingCount - 1])
+			{
+				Theta2 = (Theta1 + Step) % 360;
+
+				RingX0 = CenterX + (cos(Theta1) * (Ring + 1) * RingSpace);
+				RingY0 = CenterY + (sin(Theta1) * (Ring + 1) * RingSpace);				
+				RingX1 = CenterX + (cos(Theta2) * (Ring + 1) * RingSpace);
+				RingY1 = CenterY + (sin(Theta2) * (Ring + 1) * RingSpace);				
+				RingX2 = CenterX + (cos(Theta2) * Ring * RingSpace);
+				RingY2 = CenterY + (sin(Theta2) * Ring * RingSpace);
+				RingX3 = CenterX + (cos(Theta1) * Ring * RingSpace);
+				RingY3 = CenterY + (sin(Theta1) * Ring * RingSpace);
+					
+				Quad(RingX0, RingY0, RingX1, RingY1, RingX2, RingY2, RingX3, RingY3, QuadInset, EdgeHeight, EdgeRimHeight);
+			}
 		}
 	}
 }
@@ -756,7 +846,7 @@ module Hexagon(BaseWidth, InsideTriangles, TriangleInset, NodeShape, NodeSize, N
 if (_Pattern == "Circular")
 {
 	CircularRays(_StartRing,_RingCount, _RingSpace, _RayStep, _RayLimit, _RayCenter, 
-			     _CenterX, _CenterY,_NodeShape, _NodeSize, _NodeHeight);
+			     _CenterX, _CenterY, _InsideQuads, _QuadInset, _NodeShape, _NodeSize, _NodeHeight);
 }
 
 else if (_Pattern == "Axial")
