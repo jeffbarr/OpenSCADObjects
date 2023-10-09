@@ -257,11 +257,22 @@ module ConnectNodesWithEdge(FromX, FromY, ToX, ToY, EdgeWidth, EdgeHeight, EdgeR
 	}
 }
 
+
+//
+// TriangleElement:
+//
+// Render the element that makes up the triangle.
+//
+
+module TriangleElement(Points)
+{
+	polygon(Points);
+}
+
 //
 // Triangle:
 //
 // Triangle inset from the given points, styled like an edge.
-// Good luck understanding this, the polygon should be another module.
 //
 
 module Triangle(X0, Y0, X1, Y1, X2, Y2, Inset, Height, RimHeight)
@@ -280,7 +291,7 @@ module Triangle(X0, Y0, X1, Y1, X2, Y2, Inset, Height, RimHeight)
 		{
 			offset(-Inset)
 			{
-				polygon(TrianglePoints);
+				TriangleElement(TrianglePoints);
 			}
 		}
 		
@@ -291,8 +302,15 @@ module Triangle(X0, Y0, X1, Y1, X2, Y2, Inset, Height, RimHeight)
 			{
 				difference()
 				{
-					offset(delta= (-Inset - dd)) polygon(TrianglePoints);
-					offset(delta= (-Inset - dd - RimThickness)) polygon(TrianglePoints);
+					offset(delta= (-Inset - dd)) 
+					{
+						TriangleElement(TrianglePoints);
+					}
+					
+					offset(delta= (-Inset - dd - RimThickness)) 
+					{
+						TriangleElement(TrianglePoints);
+					}
 				}
 			}
 		}
