@@ -65,6 +65,7 @@ EdgeHeight = 3.0;
 EdgeWidth = 5.0;
 
 /* [Circular Rays] */
+
 // Draw ring center
 _RayCenter = true;
 
@@ -84,6 +85,7 @@ _RingCount = 5;
 _RingSpace = 20;
 
 /* [Axial Rays] */
+
 // Linear step between nodes
 //_SquareStep = 27;
 
@@ -132,7 +134,12 @@ _SquareStep = _FringeColSpace;
 /* End of customization */
 module __Customizer_Limit__ () {}
 
-// Render a node, with a rim
+//
+// Node:
+//
+// Render a node, with a rim.
+//
+
 module Node(NodeShape, Radius, Height, RimHeight)
 {	
 	// Node rotation
@@ -169,13 +176,22 @@ module Node(NodeShape, Radius, Height, RimHeight)
 	}
 }
 
-// Render the element that makes up the edge
+//
+// EdgeElement:
+//
+// Render the element that makes up the edge.
+//
+
 module EdgeElement(Length, Width)
 {
 	square([Length, Width], center=true);
 }
 
-// Render an edge, with a rim, as long as edge is at least EdgeMinLength long
+//
+// Edge:
+//
+// Render an edge, with a rim, as long as edge is at least EdgeMinLength long.
+//
 
 module Edge(Length, Width, Height, RimHeight)
 {
@@ -210,7 +226,12 @@ module Edge(Length, Width, Height, RimHeight)
 	}
 }
 
-// Connect two nodes using an edge
+//
+// ConnectNodesWithEdge:
+//
+// Connect two nodes using an edge.
+//
+
 module ConnectNodesWithEdge(FromX, FromY, ToX, ToY, EdgeWidth, EdgeHeight, EdgeRimHeight, NodeSize)
 {
 	// Compute angle for edge
@@ -235,11 +256,14 @@ module ConnectNodesWithEdge(FromX, FromY, ToX, ToY, EdgeWidth, EdgeHeight, EdgeR
 		}
 	}
 }
-	
-// Triangle inset from the given points, styled like an edge
-// 7 is magic and should be a parameter
-// Good luck understanding this, the polygon should be another module
+
 //
+// Triangle:
+//
+// Triangle inset from the given points, styled like an edge.
+// Good luck understanding this, the polygon should be another module.
+//
+
 module Triangle(X0, Y0, X1, Y1, X2, Y2, Inset, Height, RimHeight)
 {
 	TrianglePoints =
@@ -275,9 +299,13 @@ module Triangle(X0, Y0, X1, Y1, X2, Y2, Inset, Height, RimHeight)
 	}
 }
 
+// 
+// CircularRays:
+//
 // Partial or full circle, with optional node at the center, then rings of nodes 
 // connected radially and cicularly.
 // TODO: Add parameters
+//
 
 module CircularRays(StartRing, RingCount, RingSpace, Step, Limit, Center, CenterX, CenterY, NodeShape, NodeSize, NodeHeight)
 {
