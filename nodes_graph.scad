@@ -305,15 +305,18 @@ module CircularRays(StartRing, RingCount, RingSpace, Step, Limit, Center, Center
 		}
 	}
 
-	// Radial edges from center to first ring
-	for (Theta = [0 : Step : Limit])
+	if (Center)
 	{
-		RingX = CenterX + (cos(Theta) * RingSpace);
-		RingY = CenterY + (sin(Theta) * RingSpace);
-		
-		ConnectNodesWithEdge(CenterX, CenterY, RingX, RingY, EdgeWidth, EdgeHeight, EdgeRimHeight, NodeSize);
+		// Radial edges from center to first ring
+		for (Theta = [0 : Step : Limit])
+		{
+			RingX = CenterX + (cos(Theta) * RingSpace);
+			RingY = CenterY + (sin(Theta) * RingSpace);
+			
+			ConnectNodesWithEdge(CenterX, CenterY, RingX, RingY, EdgeWidth, EdgeHeight, EdgeRimHeight, NodeSize);
+		}
 	}
-
+	
 	// Radial edges from subsequent rings outward
 	for (Theta = [0 : Step : Limit])
 	{
