@@ -32,14 +32,17 @@ _NodeSize = 7.5;
 // Node shape (0 for circle, , 4 for square, 6 for hexagon)
 _NodeShape = 0; // [0, 4, 6]
 
+// Node magnet holes
+_NodeMagnetHole = "None"; // [None, 2.7 mm, 4.7 mm, 12 mm]
+
+// Node height
+_NodeHeight = 3;
+
 // Center node X
 _CenterX = 0;
 
 // Center node Y
 _CenterY = 0;
-
-// Node height
-_NodeHeight = 3;
 
 // Percentage of full length for edges
 EdgeLengthFactor = 1.0;
@@ -139,43 +142,97 @@ _SquareStep = _FringeColSpace;
 module __Customizer_Limit__ () {}
 
 //
-// Node:
+// Hole:
 //
-// Render a node, with a rim.
+//	Render a magnet hole.
 //
 
-module Node(NodeShape, Radius, Height, RimHeight)
+module Hole(MagnetHole)
+{
+	Radius = 
+		(MagnetHole == "None")   ? 0   :
+		(MagnetHole == "2.7 mm") ? 2.7 :
+		(MagnetHole == "4.7 mm") ? 4.7 :
+		(MagnetHole == "12 mm")  ? 12  :
+	    0;
+
+	Height = 
+		(MagnetHole == "None")   ? 0   :
+		(MagnetHole == "2.7 mm") ? 2   :
+		(MagnetHole == "4.7 mm") ? 2   :
+		(MagnetHole == "12 mm")  ? 2.4 :
+	    0;
+	
+	if (Radius != 0)
+	{	
+		FullRadius = 1.1 * Radius;	// Add some wiggle room
+		
+		linear_extrude(Height)
+		{
+			circle(FullRadius);
+		}
+	}
+}
+
+//
+// NodeGuts:
+//
+//	Render the elements that make up a node.
+//
+
+module NodeGuts(NodeShape, Radius, Height, RimHeight)
+{
+	union()
+	{
+		/* Node */
+		linear_extrude(Height)
+		{
+			circle(Radius, $fn=NodeShape);
+		}
+		
+		/* Rim */	
+		for (dd = [0 : 1.5 : 3])
+		{
+			linear_extrude(RimHeight)
+			{
+				difference()
+				{
+					circle(Radius - dd, $fn=NodeShape);
+					offset(delta=-RimThickness)
+					{
+						circle(Radius - dd, $fn=NodeShape);
+					}
+				}
+			}
+		}
+	}
+}
+
+//
+// Node:
+//
+// Render a node, with a rim and optional hole for magnet.
+//
+
+module Node(NodeShape, Radius, Height, RimHeight, MagnetHole)
 {	
 	// Node rotation
 	NodeRotation = (_NodeShape == 0) ? 0  :	/* Circle  */
 				   (_NodeShape == 4) ? 45 :	/* Square  */
                    (_NodeShape == 6) ? 30 :	/* Hexagon */
                                        0;
-	rotate([0, 0, NodeRotation])
+	difference()
 	{
-	union()
-	{
-			/* Node */
-			linear_extrude(Height)
-			{
-				circle(Radius, $fn=NodeShape);
-			}
-			
-			/* Rim */	
-			for (dd = [0 : 1.5 : 3])
-			{
-				linear_extrude(RimHeight)
-				{
-					difference()
-					{
-						circle(Radius - dd, $fn=NodeShape);
-						offset(delta=-RimThickness)
-						{
-							circle(Radius - dd, $fn=NodeShape);
-						}
-					}
-				}
-			}
+		/* Matter */
+		rotate([0, 0, NodeRotation])
+		{
+			NodeGuts(NodeShape, Radius, Height, RimHeight);
+		}
+		
+		/* Antimatter */
+		translate([0, 0, 0.4])
+		{
+			Hole(MagnetHole);
 		}
 	}
 }
@@ -390,14 +447,14 @@ module Quad(X0, Y0, X1, Y1, X2, Y2, X3, Y3, Inset, Height, RimHeight)
 // TODO: Add parameters
 //
 
-module CircularRays(StartRing, RingCount, RingSpace, Step, Limit, Center, CenterX, CenterY, InsideQuads, QuadInset, NodeShape, NodeSize, NodeHeight)
+module CircularRays(StartRing, RingCount, RingSpace, Step, Limit, Center, CenterX, CenterY, InsideQuads, QuadInset, NodeShape, NodeSize, NodeHeight, NodeMagnetHole)
 {
 	if (Center)
 	{
 		// Render center node
 		translate([CenterX, CenterY, 0])
 		{
-			Node(NodeShape, NodeSize, NodeHeight, NodeRimHeight);
+			Node(NodeShape, NodeSize, NodeHeight, NodeRimHeight, NodeMagnetHole);
 		}
 	}
 	
@@ -411,7 +468,7 @@ module CircularRays(StartRing, RingCount, RingSpace, Step, Limit, Center, Center
 
 			translate([RingX, RingY, 0])
 			{
-				Node(NodeShape, NodeSize, NodeHeight, NodeRimHeight);
+				Node(NodeShape, NodeSize, NodeHeight, NodeRimHeight, NodeMagnetHole);
 			}
 		}
 	}
@@ -500,24 +557,24 @@ module CircularRays(StartRing, RingCount, RingSpace, Step, Limit, Center, Center
 function AxialPointX(i) = i * _SquareStep;
 function AxialPointY(i) = i * _SquareStep;
 
-module AxialRays(Square, SquareStep, SquareCount, NodeShape, NodeSize, NodeHeight, FwdDiagonalEdges, BwdDiagonalEdges, XEdges, YEdges)
+module AxialRays(Square, SquareStep, SquareCount, NodeShape, NodeSize, NodeHeight, NodeMagnetHole, FwdDiagonalEdges, BwdDiagonalEdges, XEdges, YEdges)
 {
 	// Render origin node
-	Node(NodeShape, NodeSize, NodeHeight, NodeRimHeight);
+	Node(NodeShape, NodeSize, NodeHeight, NodeRimHeight, NodeMagnetHole);
 	
 	// Render nodes along X axis
 	for (x = [1 : SquareCount])
 	{
 		translate([AxialPointX(x), AxialPointY(0), 0])
 		{
-			Node(NodeShape, NodeSize, NodeHeight, NodeRimHeight);
+			Node(NodeShape, NodeSize, NodeHeight, NodeRimHeight, NodeMagnetHole);
 		}
 		
 		if (Square)
 		{
 			translate([AxialPointX(x), AxialPointY(SquareCount), 0])
 			{
-				Node(NodeShape, NodeSize, NodeHeight, NodeRimHeight);
+				Node(NodeShape, NodeSize, NodeHeight, NodeRimHeight, NodeMagnetHole);
 			}
 		}
 	}
@@ -527,14 +584,14 @@ module AxialRays(Square, SquareStep, SquareCount, NodeShape, NodeSize, NodeHeigh
 	{
 		translate([AxialPointX(0), AxialPointY(y), 0])
 		{
-			Node(NodeShape, NodeSize, NodeHeight, NodeRimHeight);
+			Node(NodeShape, NodeSize, NodeHeight, NodeRimHeight, NodeMagnetHole);
 		}
 		
 		if (Square)
 		{
 			translate([AxialPointX(SquareCount), AxialPointY(y), 0])
 			{
-				Node(NodeShape, NodeSize, NodeHeight, NodeRimHeight);
+				Node(NodeShape, NodeSize, NodeHeight, NodeRimHeight, , NodeMagnetHole);
 			}
 		}
 	}
@@ -622,7 +679,7 @@ module AxialRays(Square, SquareStep, SquareCount, NodeShape, NodeSize, NodeHeigh
 //	A horizontal grid (FringeCols x FringeRows, then triangles of FringeTriangleHeight dropping down
 //
 
-module Fringe(FringeCols, FringeRows, FringeColSpace, FringeTriangleHeight, NodeShape, NodeSize, NodeHeight, NodeRimHeight)
+module Fringe(FringeCols, FringeRows, FringeColSpace, FringeTriangleHeight, NodeShape, NodeSize, NodeHeight, NodeRimHeight, NodeMagnetHole)
 {
 	// Render grid of nodes for top
 	for (y = [0 : FringeRows - 1])
@@ -631,7 +688,7 @@ module Fringe(FringeCols, FringeRows, FringeColSpace, FringeTriangleHeight, Node
 		{
 			translate([AxialPointX(x), AxialPointY(y), 0])
 			{
-				Node(NodeShape, NodeSize, NodeHeight, NodeRimHeight);
+				Node(NodeShape, NodeSize, NodeHeight, NodeRimHeight, NodeMagnetHole);
 			}
 		}
 	}
@@ -693,7 +750,7 @@ module Fringe(FringeCols, FringeRows, FringeColSpace, FringeTriangleHeight, Node
 //		to see how X/Y, XX/YY, XXX/YYY, XI/YI, and NX/NY map to node coordinates.
 //
 
-module Hexagon(BaseWidth, InsideTriangles, TriangleInset, NodeShape, NodeSize, NodeHeight)
+module Hexagon(BaseWidth, InsideTriangles, TriangleInset, NodeShape, NodeSize, NodeHeight, NodeMagnetHole)
 {
 	// Compute coordinates of each exterior node
 	X = [for (d = [0 : 60 : 359]) BaseWidth * cos(d)];
@@ -794,7 +851,7 @@ module Hexagon(BaseWidth, InsideTriangles, TriangleInset, NodeShape, NodeSize, N
 	{
 		translate([NX[n], NY[n], 0])
 		{
-			Node(NodeShape, NodeSize, NodeHeight, NodeRimHeight);
+			Node(NodeShape, NodeSize, NodeHeight, NodeRimHeight, NodeMagnetHole);
 		}
 	}
 
@@ -843,24 +900,22 @@ module Hexagon(BaseWidth, InsideTriangles, TriangleInset, NodeShape, NodeSize, N
 
 if (_Pattern == "Circular")
 {
-	CircularRays(_CircStartRing,_CircRingCount, _CircRingSpace, _CircRayStep, _CircRayLimit, _CircRayCenter, 
-			     _CenterX, _CenterY, _CircInsideQuads, _CircQuadInset, _NodeShape, _NodeSize, _NodeHeight);
+	CircularRays(_CircStartRing,_CircRingCount, _CircRingSpace, _CircRayStep, _CircRayLimit, _CircRayCenter, _CenterX, _CenterY, _CircInsideQuads, _CircQuadInset, _NodeShape, _NodeSize, _NodeHeight, _NodeMagnetHole);
 }
 
 else if (_Pattern == "Axial")
 {
-	AxialRays(true, _SquareStep, _AxSquareCount, _NodeShape, _NodeSize, _NodeHeight, 
-			  _AxFwdDiagonalEdges, _AxBwdDiagonalEdges, _AxXEdges, _AxYEdges);}
+	AxialRays(true, _SquareStep, _AxSquareCount, _NodeShape, _NodeSize, _NodeHeight, _NodeMagnetHole, _AxFwdDiagonalEdges, _AxBwdDiagonalEdges, _AxXEdges, _AxYEdges);
+}
 
 else if (_Pattern == "Fringe")
 {
-	Fringe(_FringeCols, _FringeRows, _FringeColSpace, _FringeTriangeHeight, _NodeShape, _NodeSize,
-			_NodeHeight, NodeRimHeight);
+	Fringe(_FringeCols, _FringeRows, _FringeColSpace, _FringeTriangeHeight, _NodeShape, _NodeSize, _NodeHeight, NodeRimHeight, _NodeMagnetHole);
 }
 
 else if (_Pattern == "Hexagon")
 {
-	Hexagon(_HexBaseWidth, _HexInsideTriangles, _HexTriangleInset, _NodeShape, _NodeSize, _NodeHeight);
+	Hexagon(_HexBaseWidth, _HexInsideTriangles, _HexTriangleInset, _NodeShape, _NodeSize, _NodeHeight, _NodeMagnetHole);
 }
 else
 {
