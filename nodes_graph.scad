@@ -15,14 +15,12 @@
 * This code is powerful yet messy. TODO:
 *	
 * --> Fix HACK that intertwines Fringe metrics in the wrong way with Step:
-*     _SquareStep = _FringeColSpace.
+*     _[Ax]SquareStep = _FringeColSpace.
 *
 * --> Move more parameters to "_" and never use them in modules
 *
 * --> Render edges that overlap (mostly in Axial) together so that the
 *     pattern on top looks better.
-*
-* --> Prefix all config variables with the pattern that they affect.
 */
 
 // Pattern
@@ -67,28 +65,28 @@ EdgeWidth = 5.0;
 /* [Circular Rays] */
 
 // Draw ring center
-_RayCenter = true;
+_CircRayCenter = true;
 
 // Angular step between rays
-_RayStep = 45;
+_CircRayStep = 45;
 
 // Degrees of rays
-_RayLimit = 360;
+_CircRayLimit = 360;
 
 // First ring
-_StartRing = 1;
+_CircStartRing = 1;
 
 // Ring count
-_RingCount = 5;
+_CircRingCount = 5;
 
 // Ring spacing
-_RingSpace = 20;
+_CircRingSpace = 20;
 
 // Inside quads
-_InsideQuads = true;
+_CircInsideQuads = true;
 
 // Quad Inset
-_QuadInset = 7;
+_CircQuadInset = 7;
 
 /* [Axial Rays] */
 
@@ -96,7 +94,7 @@ _QuadInset = 7;
 //_SquareStep = 27;
 
 // Number of nodes on X and Y axis
-_SquareCount = 3;
+_AxSquareCount = 3;
 
 // Options for interior edges:
 // Forward diagonal
@@ -104,10 +102,10 @@ _SquareCount = 3;
 // X-aligned
 // Y-aligned
 
-_FwdDiagonalEdges = false;
-_BwdDiagonalEdges = false;
-_XEdges           = true;
-_YEdges           = true;
+_AxFwdDiagonalEdges = false;
+_AxBwdDiagonalEdges = false;
+_AxXEdges           = true;
+_AxYEdges           = true;
 
 /* [Fringe] */
 
@@ -126,13 +124,13 @@ _FringeTriangeHeight = 120;
 /* [Hexagon] */
 
 // Base width
-_BaseWidth = 100;
+_HexBaseWidth = 100;
 
 // Inside triangles
-_InsideTriangles = true;
+_HexInsideTriangles = true;
 
 // Triangle inset
-_TriangleInset = 7;
+_HexTriangleInset = 7;
 
 // HaCK
 _SquareStep = _FringeColSpace;
@@ -845,14 +843,14 @@ module Hexagon(BaseWidth, InsideTriangles, TriangleInset, NodeShape, NodeSize, N
 
 if (_Pattern == "Circular")
 {
-	CircularRays(_StartRing,_RingCount, _RingSpace, _RayStep, _RayLimit, _RayCenter, 
-			     _CenterX, _CenterY, _InsideQuads, _QuadInset, _NodeShape, _NodeSize, _NodeHeight);
+	CircularRays(_CircStartRing,_CircRingCount, _CircRingSpace, _CircRayStep, _CircRayLimit, _CircRayCenter, 
+			     _CenterX, _CenterY, _CircInsideQuads, _CircQuadInset, _NodeShape, _NodeSize, _NodeHeight);
 }
 
 else if (_Pattern == "Axial")
 {
-	AxialRays(true, _SquareStep, _SquareCount, _NodeShape, _NodeSize, _NodeHeight, 
-			  _FwdDiagonalEdges, _BwdDiagonalEdges, _XEdges, _YEdges);}
+	AxialRays(true, _SquareStep, _AxSquareCount, _NodeShape, _NodeSize, _NodeHeight, 
+			  _AxFwdDiagonalEdges, _AxBwdDiagonalEdges, _AxXEdges, _AxYEdges);}
 
 else if (_Pattern == "Fringe")
 {
@@ -862,7 +860,7 @@ else if (_Pattern == "Fringe")
 
 else if (_Pattern == "Hexagon")
 {
-	Hexagon(_BaseWidth, _InsideTriangles, _TriangleInset, _NodeShape, _NodeSize, _NodeHeight);
+	Hexagon(_HexBaseWidth, _HexInsideTriangles, _HexTriangleInset, _NodeShape, _NodeSize, _NodeHeight);
 }
 else
 {
