@@ -38,12 +38,6 @@ _NodeMagnetHole = "None"; // [None, 2.7 mm, 4.7 mm, 12 mm]
 // Node height
 _NodeHeight = 3;
 
-// Center node X
-_CenterX = 0;
-
-// Center node Y
-_CenterY = 0;
-
 // Percentage of full length for edges
 EdgeLengthFactor = 1.0;
 
@@ -447,15 +441,12 @@ module Quad(X0, Y0, X1, Y1, X2, Y2, X3, Y3, Inset, Height, RimHeight)
 // TODO: Add parameters
 //
 
-module CircularRays(StartRing, RingCount, RingSpace, Step, Limit, Center, CenterX, CenterY, InsideQuads, QuadInset, NodeShape, NodeSize, NodeHeight, NodeMagnetHole)
+module CircularRays(StartRing, RingCount, RingSpace, Step, Limit, Center, InsideQuads, QuadInset, NodeShape, NodeSize, NodeHeight, NodeMagnetHole)
 {
 	if (Center)
 	{
 		// Render center node
-		translate([CenterX, CenterY, 0])
-		{
-			Node(NodeShape, NodeSize, NodeHeight, NodeRimHeight, NodeMagnetHole);
-		}
+		Node(NodeShape, NodeSize, NodeHeight, NodeRimHeight, NodeMagnetHole);
 	}
 	
 	// Concentric rings of nodes
@@ -463,8 +454,8 @@ module CircularRays(StartRing, RingCount, RingSpace, Step, Limit, Center, Center
 	{
 		for (Ring = [StartRing : RingCount])
 		{
-			RingX = CenterX + (cos(Theta) * Ring * RingSpace);
-			RingY = CenterY + (sin(Theta) * Ring * RingSpace);
+			RingX = cos(Theta) * Ring * RingSpace;
+			RingY = sin(Theta) * Ring * RingSpace;
 
 			translate([RingX, RingY, 0])
 			{
@@ -478,10 +469,10 @@ module CircularRays(StartRing, RingCount, RingSpace, Step, Limit, Center, Center
 		// Radial edges from center to first ring
 		for (Theta = [0 : Step : Limit])
 		{
-			RingX = CenterX + (cos(Theta) * RingSpace);
-			RingY = CenterY + (sin(Theta) * RingSpace);
+			RingX = cos(Theta) * RingSpace;
+			RingY = sin(Theta) * RingSpace;
 			
-			ConnectNodesWithEdge(CenterX, CenterY, RingX, RingY, EdgeWidth, EdgeHeight, EdgeRimHeight, NodeSize);
+			ConnectNodesWithEdge(0, 0, RingX, RingY, EdgeWidth, EdgeHeight, EdgeRimHeight, NodeSize);
 		}
 	}
 	
@@ -490,11 +481,11 @@ module CircularRays(StartRing, RingCount, RingSpace, Step, Limit, Center, Center
 	{
 		for (Ring = [StartRing : RingCount - 1])
 		{
-			RingFromX = CenterX + (cos(Theta) * Ring * RingSpace);
-			RingFromY = CenterY + (sin(Theta) * Ring * RingSpace);
+			RingFromX = cos(Theta) * Ring * RingSpace;
+			RingFromY = sin(Theta) * Ring * RingSpace;
 
-			RingToX = CenterX + (cos(Theta) * (Ring + 1) * RingSpace);
-			RingToY = CenterY + (sin(Theta) * (Ring + 1) * RingSpace);
+			RingToX = cos(Theta) * (Ring + 1) * RingSpace;
+			RingToY = sin(Theta) * (Ring + 1) * RingSpace;
 				
 			ConnectNodesWithEdge(RingFromX, RingFromY, RingToX, RingToY, EdgeWidth, EdgeHeight, EdgeRimHeight, NodeSize);
 		}
@@ -505,11 +496,11 @@ module CircularRays(StartRing, RingCount, RingSpace, Step, Limit, Center, Center
 	{
 		for (Theta = [0 : Step : Limit - 1])
 		{
-			RingFromX = CenterX + (cos(Theta) * Ring * RingSpace);
-			RingFromY = CenterY + (sin(Theta) * Ring * RingSpace);
+			RingFromX = cos(Theta) * Ring * RingSpace;
+			RingFromY = sin(Theta) * Ring * RingSpace;
 
-			RingToX = CenterX + (cos(Theta + Step) * Ring * RingSpace);
-			RingToY = CenterY + (sin(Theta + Step) * Ring * RingSpace);
+			RingToX = cos(Theta + Step) * Ring * RingSpace;
+			RingToY = sin(Theta + Step) * Ring * RingSpace;
 			
 			ConnectNodesWithEdge(RingFromX, RingFromY, RingToX, RingToY, EdgeWidth, EdgeHeight, EdgeRimHeight, NodeSize);		
 
@@ -525,14 +516,14 @@ module CircularRays(StartRing, RingCount, RingSpace, Step, Limit, Center, Center
 			{
 				Theta2 = (Theta1 + Step) % 360;
 
-				RingX0 = CenterX + (cos(Theta1) * (Ring + 1) * RingSpace);
-				RingY0 = CenterY + (sin(Theta1) * (Ring + 1) * RingSpace);				
-				RingX1 = CenterX + (cos(Theta2) * (Ring + 1) * RingSpace);
-				RingY1 = CenterY + (sin(Theta2) * (Ring + 1) * RingSpace);				
-				RingX2 = CenterX + (cos(Theta2) * Ring * RingSpace);
-				RingY2 = CenterY + (sin(Theta2) * Ring * RingSpace);
-				RingX3 = CenterX + (cos(Theta1) * Ring * RingSpace);
-				RingY3 = CenterY + (sin(Theta1) * Ring * RingSpace);
+				RingX0 = cos(Theta1) * (Ring + 1) * RingSpace;
+				RingY0 = sin(Theta1) * (Ring + 1) * RingSpace;				
+				RingX1 = cos(Theta2) * (Ring + 1) * RingSpace;
+				RingY1 = sin(Theta2) * (Ring + 1) * RingSpace;				
+				RingX2 = cos(Theta2) * Ring * RingSpace;
+				RingY2 = sin(Theta2) * Ring * RingSpace;
+				RingX3 = cos(Theta1) * Ring * RingSpace;
+				RingY3 = sin(Theta1) * Ring * RingSpace;
 					
 				Quad(RingX0, RingY0, RingX1, RingY1, RingX2, RingY2, RingX3, RingY3, QuadInset, EdgeHeight, EdgeRimHeight);
 			}
@@ -900,7 +891,7 @@ module Hexagon(BaseWidth, InsideTriangles, TriangleInset, NodeShape, NodeSize, N
 
 if (_Pattern == "Circular")
 {
-	CircularRays(_CircStartRing,_CircRingCount, _CircRingSpace, _CircRayStep, _CircRayLimit, _CircRayCenter, _CenterX, _CenterY, _CircInsideQuads, _CircQuadInset, _NodeShape, _NodeSize, _NodeHeight, _NodeMagnetHole);
+	CircularRays(_CircStartRing,_CircRingCount, _CircRingSpace, _CircRayStep, _CircRayLimit, _CircRayCenter, _CircInsideQuads, _CircQuadInset, _NodeShape, _NodeSize, _NodeHeight, _NodeMagnetHole);
 }
 
 else if (_Pattern == "Axial")
