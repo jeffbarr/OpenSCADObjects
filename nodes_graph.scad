@@ -510,7 +510,7 @@ module CircularRays(StartRing, RingCount, RingSpace, Step, Limit, Center, Inside
 	if (InsideQuads)
 	{
 		// Quadrilaterals between nodes
-		for (Theta1 = [0 : Step : Limit])
+		for (Theta1 = [0 : Step : Limit - 1])
 		{
 			for (Ring = [StartRing : RingCount - 1])
 			{
