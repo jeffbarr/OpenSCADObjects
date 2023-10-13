@@ -136,6 +136,24 @@ _SquareStep = _FringeColSpace;
 module __Customizer_Limit__ () {}
 
 //
+// Map all of the possible values for _NodeMagnetHole into a diameter and a height:
+//
+
+function MagnetDiameter(MagnetHole) = 
+	(MagnetHole == "None")   ? 0   :
+	(MagnetHole == "2.7 mm") ? 2.7 :
+	(MagnetHole == "4.7 mm") ? 4.7 :
+	(MagnetHole == "12 mm")  ? 12  :
+	0;
+
+function MagnetHeight(MagnetHole) =
+	(MagnetHole == "None")   ? 0   :
+	(MagnetHole == "2.7 mm") ? 2   :
+	(MagnetHole == "4.7 mm") ? 2   :
+	(MagnetHole == "12 mm")  ? 2.4 :
+	0;
+
+//
 // Hole:
 //
 //	Render a magnet hole.
@@ -143,27 +161,16 @@ module __Customizer_Limit__ () {}
 
 module Hole(MagnetHole)
 {
-	Radius = 
-		(MagnetHole == "None")   ? 0   :
-		(MagnetHole == "2.7 mm") ? 2.7 :
-		(MagnetHole == "4.7 mm") ? 4.7 :
-		(MagnetHole == "12 mm")  ? 12  :
-	    0;
-
-	Height = 
-		(MagnetHole == "None")   ? 0   :
-		(MagnetHole == "2.7 mm") ? 2   :
-		(MagnetHole == "4.7 mm") ? 2   :
-		(MagnetHole == "12 mm")  ? 2.4 :
-	    0;
+	Diameter = MagnetDiameter(MagnetHole);
+	Height   = MagnetHeight(MagnetHole);
 	
-	if (Radius != 0)
+	if (Diameter != 0)
 	{	
-		FullRadius = 1.1 * Radius;	// Add some wiggle room
+		FullDiameter = 1.1 * Diameter;	// Add some wiggle room
 		
 		linear_extrude(Height)
 		{
-			circle(FullRadius);
+			circle(FullDiameter);
 		}
 	}
 }
