@@ -85,6 +85,9 @@ _CircInsideQuads = true;
 // Quad Inset
 _CircQuadInset = 7;
 
+// Half-nodes at start and end
+_CircHalfNodes = false;
+
 /* [Axial Rays] */
 
 // Linear step between nodes
@@ -212,10 +215,13 @@ module NodeGuts(NodeShape, Radius, Height, RimHeight)
 //
 // Node:
 //
-// Render a node, with a rim and optional hole for magnet.
+// Render a node, with a rim and optional hole for magnet. 
+//
+//	PlusX must be true to render the part of the node at X > 0
+//	MinuxX must be true to render the part of the node at X < 0
 //
 
-module Node(NodeShape, Radius, Height, RimHeight, MagnetHole)
+module Node(NodeShape, Radius, Height, RimHeight, MagnetHole, PlusX=true, MinusX=true)
 {	
 	// Node rotation
 	NodeRotation = (_NodeShape == 0) ? 0  :	/* Circle  */
@@ -230,10 +236,28 @@ module Node(NodeShape, Radius, Height, RimHeight, MagnetHole)
 			NodeGuts(NodeShape, Radius, Height, RimHeight);
 		}
 		
-		/* Antimatter */
+		/* Antimatter magnet hole */
 		translate([0, 0, 0.4])
 		{
 			Hole(MagnetHole);
+		}
+		
+		/* Optionally remove +Y half */
+		if (!PlusX)
+		{
+			translate([-Radius, 0, 0])
+			{
+				cube([2 * Radius, Radius, Height + RimHeight]);
+			}
+		}
+
+		/* Optionally remove -Y half */
+		if (!MinusX)
+		{
+			translate([-Radius, -Radius, 0])
+			{
+				cube([2 * Radius, Radius, Height + RimHeight]);
+			}
 		}
 	}
 }
@@ -445,10 +469,15 @@ module Quad(X0, Y0, X1, Y1, X2, Y2, X3, Y3, Inset, Height, RimHeight)
 //
 // Partial or full circle, with optional node at the center, then rings of nodes,
 // connected radially and cicularly, with optional quadrilaterals between nodes.
+//
+// If HalfNodes is set, then the first and last nodes in the ring are PlusX half
+// only. This makes it easier to print a pair of semi-circular rings that can be
+// joined with straight pieces.
+//
 // TODO: Add parameters
 //
 
-module CircularRays(StartRing, RingCount, RingSpace, Step, Limit, Center, InsideQuads, QuadInset, NodeShape, NodeSize, NodeHeight, NodeMagnetHole)
+module CircularRays(StartRing, RingCount, RingSpace, Step, Limit, Center, InsideQuads, QuadInset, NodeShape, NodeSize, NodeHeight, NodeMagnetHole, HalfNodes)
 {
 	if (Center)
 	{
@@ -466,7 +495,12 @@ module CircularRays(StartRing, RingCount, RingSpace, Step, Limit, Center, Inside
 
 			translate([RingX, RingY, 0])
 			{
-				Node(NodeShape, NodeSize, NodeHeight, NodeRimHeight, NodeMagnetHole);
+				MinusXHalf =
+					(!HalfNodes)
+				     ||
+					(HalfNodes && (Theta > 0) && (Theta < Limit));
+				
+				Node(NodeShape, NodeSize, NodeHeight, NodeRimHeight, NodeMagnetHole, true, MinusXHalf);
 			}
 		}
 	}
@@ -898,7 +932,7 @@ module Hexagon(BaseWidth, InsideTriangles, TriangleInset, NodeShape, NodeSize, N
 
 if (_Pattern == "Circular")
 {
-	CircularRays(_CircStartRing,_CircRingCount, _CircRingSpace, _CircRayStep, _CircRayLimit, _CircRayCenter, _CircInsideQuads, _CircQuadInset, _NodeShape, _NodeSize, _NodeHeight, _NodeMagnetHole);
+	CircularRays(_CircStartRing,_CircRingCount, _CircRingSpace, _CircRayStep, _CircRayLimit, _CircRayCenter, _CircInsideQuads, _CircQuadInset, _NodeShape, _NodeSize, _NodeHeight, _NodeMagnetHole, _CircHalfNodes);
 }
 
 else if (_Pattern == "Axial")
