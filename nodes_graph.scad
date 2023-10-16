@@ -14,14 +14,9 @@
 *
 * This code is powerful yet messy. TODO:
 *	
-* --> Implement HalfEdges & HalfNodes for Axial, start and end separate.
-*
 * --> Rename Axial to Grid
 *
 * --> Fix Fringe to have proper args
-*
-* --> Fix HACK that intertwines Fringe metrics in the wrong way with Step:
-*     _[Ax]SquareStep = _FringeColSpace.
 *
 * --> Implement separate triangle pattern
 *
@@ -123,10 +118,29 @@ _AxColStep = 50;
 // X-aligned
 // Y-aligned
 
+// Forward diagonal edges
 _AxFwdDiagonalEdges = false;
+
+// Backward diagonal edges
 _AxBwdDiagonalEdges = false;
-_AxXEdges           = true;
-_AxYEdges           = true;
+
+// X edges
+_AxXEdges = true;
+
+// Y edges
+_AxYEdges = true;
+
+// Half nodes, first row
+_AxHalfNodesFirst = false;
+
+// Half nodes, last row
+_AxHalfNodesLast = false;
+
+// Half edges, first row
+_AxHalfEdgesFirst = false;
+
+// Half edges, last row
+_AxHalfEdgesLast = false;
 
 /* ************************************************************** */
 
@@ -158,9 +172,6 @@ _HexInsideTriangles = true;
 _HexTriangleInset = 7;
 
 /* ************************************************************** */
-
-// HaCK
-_SquareStep = _FringeColSpace;
 
 /* End of customization */
 module __Customizer_Limit__ () {}
@@ -645,11 +656,13 @@ module CircularRays(StartRing, RingCount, RingSpace, Step, Limit, Center, Inside
 // XEdges
 // YEdges
 //
+// Optional half edges and half nodes, for first and last row.
+//
 
 function AxialPointX(i, ColStep) = i * ColStep;
 function AxialPointY(i, RowStep) = i * RowStep;
 
-module AxialRays(Rows, Cols, RowStep, ColStep, NodeShape, NodeSize, NodeHeight, NodeMagnetHole, FwdDiagonalEdges, BwdDiagonalEdges, XEdges, YEdges)
+module AxialRays(Rows, Cols, RowStep, ColStep, NodeShape, NodeSize, NodeHeight, NodeMagnetHole, FwdDiagonalEdges, BwdDiagonalEdges, XEdges, YEdges, HalfNodesFirst, HalfNodesLast, HalfEdgesFirst, HalfEdgesLast)
 {
 	// Render grid of nodes
 	for (x = [0 : Cols - 1])
@@ -658,7 +671,10 @@ module AxialRays(Rows, Cols, RowStep, ColStep, NodeShape, NodeSize, NodeHeight, 
 		{
 			translate([AxialPointX(x, ColStep), AxialPointY(y, RowStep), 0])
 			{
-				Node(NodeShape, NodeSize, NodeHeight, NodeRimHeight, NodeMagnetHole);
+				MinusX = (y != 0) || (y == 0 && !HalfNodesFirst);
+				PlusX  = (y != (Rows - 1)) || (y == (Rows - 1) && !HalfNodesLast);
+				
+				Node(NodeShape, NodeSize, NodeHeight, NodeRimHeight, NodeMagnetHole, PlusX, MinusX);
 			}
 		}
 	}
@@ -670,8 +686,11 @@ module AxialRays(Rows, Cols, RowStep, ColStep, NodeShape, NodeSize, NodeHeight, 
 		{
 			for (y = [0 : Rows - 1])
 			{
+				MinusX = (y != 0) || (y == 0 && !HalfEdgesFirst);
+				PlusX  = (y != (Rows - 1)) || (y == (Rows - 1) && !HalfEdgesLast);
+				
 				ConnectNodesWithEdge(AxialPointX(x, ColStep), AxialPointY(y, RowStep), AxialPointX(x + 1, ColStep), AxialPointY(y, RowStep), 
-									 EdgeWidth, EdgeHeight, EdgeRimHeight, NodeSize);		
+									 EdgeWidth, EdgeHeight, EdgeRimHeight, NodeSize, PlusX, MinusX);		
 			}
 		}
 	}
@@ -684,7 +703,8 @@ module AxialRays(Rows, Cols, RowStep, ColStep, NodeShape, NodeSize, NodeHeight, 
 			for (x = [0 : Cols - 1])
 			{
 				ConnectNodesWithEdge(AxialPointX(x, ColStep), AxialPointY(y, RowStep), AxialPointX(x, ColStep), AxialPointY(y + 1, RowStep), 
-									 EdgeWidth, EdgeHeight, EdgeRimHeight, NodeSize);				}
+									 EdgeWidth, EdgeHeight, EdgeRimHeight, NodeSize);
+			}
 		}
 	}
 		
@@ -949,7 +969,7 @@ if (_Pattern == "Circular")
 else if (_Pattern == "Axial")
 {
 	// Make Square a config
-	AxialRays(_AxRows, _AxCols, _AxRowStep, _AxColStep,  _NodeShape, _NodeSize, _NodeHeight, _NodeMagnetHole, _AxFwdDiagonalEdges, _AxBwdDiagonalEdges, _AxXEdges, _AxYEdges);
+	AxialRays(_AxRows, _AxCols, _AxRowStep, _AxColStep,  _NodeShape, _NodeSize, _NodeHeight, _NodeMagnetHole, _AxFwdDiagonalEdges, _AxBwdDiagonalEdges, _AxXEdges, _AxYEdges, _AxHalfNodesFirst, _AxHalfNodesLast, _AxHalfEdgesFirst, _AxHalfEdgesLast);
 }
 
 else if (_Pattern == "Fringe")
