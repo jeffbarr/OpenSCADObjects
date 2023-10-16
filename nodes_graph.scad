@@ -5,8 +5,8 @@
 *                 If RingCount is > 1, some inner rings are skipped to allow creation
 *                 of hollow circles or semi-circles.
 *
-* Axial Rays - An "L" or a square of nodes, with diagonal, vertical, horizontal 
-*              edges or some combo.
+* Axial Rays - A rectangle of nodes, with diagonal, vertical, horizontal edges or 
+*			   some combo.
 *
 * Fringe - A rectangle with triangles hanging down.
 *
@@ -14,8 +14,16 @@
 *
 * This code is powerful yet messy. TODO:
 *	
+* --> Implement HalfEdges & HalfNodes for Axial, start and end separate.
+*
+* --> Rename Axial to Grid
+*
+* --> Fix Fringe to have proper args
+*
 * --> Fix HACK that intertwines Fringe metrics in the wrong way with Step:
 *     _[Ax]SquareStep = _FringeColSpace.
+*
+* --> Implement separate triangle pattern
 *
 * --> Move more parameters to "_" and never use them in modules
 *
@@ -59,6 +67,8 @@ EdgeHeight = 3.0;
 // Edge width
 EdgeWidth = 5.0;
 
+/* ************************************************************** */
+
 /* [Circular Rays] */
 
 // Draw ring center
@@ -91,13 +101,21 @@ _CircHalfNodes = false;
 // Half-edges at start and end
 _CircHalfEdges = false;
 
+/* ************************************************************** */
+
 /* [Axial Rays] */
 
-// Linear step between nodes
-//_SquareStep = 27;
+// Number of rows
+_AxRows = 4;
 
-// Number of nodes on X and Y axis
-_AxSquareCount = 3;
+// Number of columns
+_AxCols = 8;
+
+// Step between rows
+_AxRowStep = 30;
+
+// Step between columns
+_AxColStep = 50;
 
 // Options for interior edges:
 // Forward diagonal
@@ -109,6 +127,8 @@ _AxFwdDiagonalEdges = false;
 _AxBwdDiagonalEdges = false;
 _AxXEdges           = true;
 _AxYEdges           = true;
+
+/* ************************************************************** */
 
 /* [Fringe] */
 
@@ -124,6 +144,8 @@ _FringeColSpace = 30;
 // Height of each triangular fringe
 _FringeTriangeHeight = 120;
 
+/* ************************************************************** */
+
 /* [Hexagon] */
 
 // Base width
@@ -134,6 +156,8 @@ _HexInsideTriangles = true;
 
 // Triangle inset
 _HexTriangleInset = 7;
+
+/* ************************************************************** */
 
 // HaCK
 _SquareStep = _FringeColSpace;
@@ -616,130 +640,77 @@ module CircularRays(StartRing, RingCount, RingSpace, Step, Limit, Center, Inside
 //
 // Nodes along X and Y axis, connected on the axes and:
 //
-// FwdDiagonalEdges TODO (does not work with !Square)
+// FwdDiagonalEdges
 // BwdDiagonalEdges 
 // XEdges
 // YEdges
 //
-// TODO: add parameters
-// If Square is set, render a square else render a triangle
-//
 
-function AxialPointX(i) = i * _SquareStep;
-function AxialPointY(i) = i * _SquareStep;
+function AxialPointX(i, ColStep) = i * ColStep;
+function AxialPointY(i, RowStep) = i * RowStep;
 
-module AxialRays(Square, SquareStep, SquareCount, NodeShape, NodeSize, NodeHeight, NodeMagnetHole, FwdDiagonalEdges, BwdDiagonalEdges, XEdges, YEdges)
+module AxialRays(Rows, Cols, RowStep, ColStep, NodeShape, NodeSize, NodeHeight, NodeMagnetHole, FwdDiagonalEdges, BwdDiagonalEdges, XEdges, YEdges)
 {
-	// Render origin node
-	Node(NodeShape, NodeSize, NodeHeight, NodeRimHeight, NodeMagnetHole);
-	
-	// Render nodes along X axis
-	for (x = [1 : SquareCount])
+	// Render grid of nodes
+	for (x = [0 : Cols - 1])
 	{
-		translate([AxialPointX(x), AxialPointY(0), 0])
+		for (y = [0 : Rows - 1])
 		{
-			Node(NodeShape, NodeSize, NodeHeight, NodeRimHeight, NodeMagnetHole);
-		}
-		
-		if (Square)
-		{
-			translate([AxialPointX(x), AxialPointY(SquareCount), 0])
+			translate([AxialPointX(x, ColStep), AxialPointY(y, RowStep), 0])
 			{
 				Node(NodeShape, NodeSize, NodeHeight, NodeRimHeight, NodeMagnetHole);
 			}
 		}
 	}
 	
-	// Render nodes along Y axis
-	for (y = [1 : SquareCount])
-	{
-		translate([AxialPointX(0), AxialPointY(y), 0])
-		{
-			Node(NodeShape, NodeSize, NodeHeight, NodeRimHeight, NodeMagnetHole);
-		}
-		
-		if (Square)
-		{
-			translate([AxialPointX(SquareCount), AxialPointY(y), 0])
-			{
-				Node(NodeShape, NodeSize, NodeHeight, NodeRimHeight, , NodeMagnetHole);
-			}
-		}
-	}
-	
-	if (BwdDiagonalEdges)
-	{
-		// Render backward diagonal edges 
-		for (i = [1 : SquareCount])
-		{
-			ConnectNodesWithEdge(AxialPointX(i), AxialPointY(0), AxialPointX(0), AxialPointY(i), 
-								 EdgeWidth, EdgeHeight, EdgeRimHeight, NodeSize);	
-			
-			if (Square)
-			{
-				ConnectNodesWithEdge(AxialPointX(i), AxialPointY(SquareCount), AxialPointX(SquareCount), AxialPointY(i), 
-									 EdgeWidth, EdgeHeight, EdgeRimHeight, NodeSize);				
-			}
-		}
-	}
-	
-	if (FwdDiagonalEdges)
-	{
-		// Render forward diagonal edges 
-		for (i = [0 : SquareCount])
-		{
-			ConnectNodesWithEdge(AxialPointX(i), AxialPointY(0), AxialPointX(SquareCount), AxialPointY(SquareCount - i), 
-								 EdgeWidth, EdgeHeight, EdgeRimHeight, NodeSize);	
-		}
-		
-		for (i = [1 : SquareCount])
-		{
-				ConnectNodesWithEdge(AxialPointX(0), AxialPointY(i), AxialPointX(SquareCount - i), 
-									 AxialPointY(SquareCount), EdgeWidth, EdgeHeight, EdgeRimHeight, NodeSize);
-		}
-	}
-	
-	// Render edges along top & bottom X axis
-	for (i = [0 : SquareCount - 1])
-	{
-		ConnectNodesWithEdge(AxialPointX(i), AxialPointY(0), AxialPointX(i+1), AxialPointY(0), 
-							 EdgeWidth, EdgeHeight, EdgeRimHeight, NodeSize);		
-	
-		if (Square)
-		{
-			ConnectNodesWithEdge(AxialPointX(i), AxialPointY(SquareCount),AxialPointX(i+1), AxialPointY(SquareCount), 
-								 EdgeWidth, EdgeHeight, EdgeRimHeight, NodeSize);
-		}
-	}
-	
-	// Render interior X edges
+	// Render edges along X axis
 	if (XEdges)
 	{
-		for (i = [1 : SquareCount - 1])
+		for (x = [0 : Cols - 2])
 		{
-			ConnectNodesWithEdge(AxialPointX(0), AxialPointY(i), AxialPointX(SquareCount), AxialPointY(i), EdgeWidth, EdgeHeight, EdgeRimHeight, NodeSize);
+			for (y = [0 : Rows - 1])
+			{
+				ConnectNodesWithEdge(AxialPointX(x, ColStep), AxialPointY(y, RowStep), AxialPointX(x + 1, ColStep), AxialPointY(y, RowStep), 
+									 EdgeWidth, EdgeHeight, EdgeRimHeight, NodeSize);		
+			}
 		}
 	}
 	
-	// Render edges along left and right Y axis
-		for (i = [0 : SquareCount - 1])
-	{
-		ConnectNodesWithEdge(AxialPointX(0), AxialPointY(i), AxialPointX(0), AxialPointY(i+1), 
-							 EdgeWidth, EdgeHeight, EdgeRimHeight, NodeSize);		
-	
-		if (Square)
-		{
-			ConnectNodesWithEdge(AxialPointX(SquareCount), AxialPointY(i), AxialPointX(SquareCount), AxialPointY(i+1), 
-								 EdgeWidth, EdgeHeight, EdgeRimHeight, NodeSize);		
-		}
-	}
-	
-	// Render interior Y edges
+	// Render edges along Y axis
 	if (YEdges)
 	{
-		for (i = [1 : SquareCount - 1])
+		for (y = [0 : Rows - 2])
 		{
-			ConnectNodesWithEdge(AxialPointX(i), AxialPointY(0), AxialPointX(i), AxialPointY(SquareCount), EdgeWidth, EdgeHeight, EdgeRimHeight, NodeSize);
+			for (x = [0 : Cols - 1])
+			{
+				ConnectNodesWithEdge(AxialPointX(x, ColStep), AxialPointY(y, RowStep), AxialPointX(x, ColStep), AxialPointY(y + 1, RowStep), 
+									 EdgeWidth, EdgeHeight, EdgeRimHeight, NodeSize);				}
+		}
+	}
+		
+	// Render forward diagonal edges
+	if (FwdDiagonalEdges)
+	{
+		for (x = [0 : Cols - 2])
+		{
+			for (y = [0 : Rows - 2])
+			{
+				ConnectNodesWithEdge(AxialPointX(x, ColStep), AxialPointY(y, RowStep), AxialPointX(x + 1, ColStep), AxialPointY(y + 1, RowStep), 
+									 EdgeWidth, EdgeHeight, EdgeRimHeight, NodeSize);					
+			}
+		}
+	}
+	
+	// Render backward diagonal edges
+	if (BwdDiagonalEdges)
+	{
+		for (x = [1 : Cols - 1])
+		{
+			for (y = [0 : Rows - 2])
+			{
+				ConnectNodesWithEdge(AxialPointX(x, ColStep), AxialPointY(y, RowStep), AxialPointX(x - 1, ColStep), AxialPointY(y + 1, RowStep), 
+									 EdgeWidth, EdgeHeight, EdgeRimHeight, NodeSize);					
+			}
 		}
 	}
 }
@@ -747,7 +718,8 @@ module AxialRays(Square, SquareStep, SquareCount, NodeShape, NodeSize, NodeHeigh
 // 
 // Fringe:
 // 
-//	A horizontal grid (FringeCols x FringeRows, then triangles of FringeTriangleHeight dropping down
+//	A horizontal grid (FringeCols x FringeRows, then triangles of FringeTriangleHeight dropping down.
+//	TODO - Fix to add ColSpace and RowSpace properly.
 //
 
 module Fringe(FringeCols, FringeRows, FringeColSpace, FringeTriangleHeight, NodeShape, NodeSize, NodeHeight, NodeRimHeight, NodeMagnetHole)
@@ -976,7 +948,8 @@ if (_Pattern == "Circular")
 
 else if (_Pattern == "Axial")
 {
-	AxialRays(true, _SquareStep, _AxSquareCount, _NodeShape, _NodeSize, _NodeHeight, _NodeMagnetHole, _AxFwdDiagonalEdges, _AxBwdDiagonalEdges, _AxXEdges, _AxYEdges);
+	// Make Square a config
+	AxialRays(_AxRows, _AxCols, _AxRowStep, _AxColStep,  _NodeShape, _NodeSize, _NodeHeight, _NodeMagnetHole, _AxFwdDiagonalEdges, _AxBwdDiagonalEdges, _AxXEdges, _AxYEdges);
 }
 
 else if (_Pattern == "Fringe")
