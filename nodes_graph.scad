@@ -85,6 +85,12 @@ _CircInsideQuads = true;
 // Quad Inset
 _CircQuadInset = 7;
 
+// Half-nodes at start and end
+_CircHalfNodes = false;
+
+// Half-edges at start and end
+_CircHalfEdges = false;
+
 /* [Axial Rays] */
 
 // Linear step between nodes
@@ -212,10 +218,13 @@ module NodeGuts(NodeShape, Radius, Height, RimHeight)
 //
 // Node:
 //
-// Render a node, with a rim and optional hole for magnet.
+// Render a node, with a rim and optional hole for magnet. 
+//
+//	PlusX must be true to render the part of the node at X > 0
+//	MinuxX must be true to render the part of the node at X < 0
 //
 
-module Node(NodeShape, Radius, Height, RimHeight, MagnetHole)
+module Node(NodeShape, Radius, Height, RimHeight, MagnetHole, PlusX=true, MinusX=true)
 {	
 	// Node rotation
 	NodeRotation = (_NodeShape == 0) ? 0  :	/* Circle  */
@@ -230,10 +239,28 @@ module Node(NodeShape, Radius, Height, RimHeight, MagnetHole)
 			NodeGuts(NodeShape, Radius, Height, RimHeight);
 		}
 		
-		/* Antimatter */
+		/* Antimatter magnet hole */
 		translate([0, 0, 0.4])
 		{
 			Hole(MagnetHole);
+		}
+		
+		/* Optionally remove +Y half */
+		if (!PlusX)
+		{
+			translate([-Radius, 0, 0])
+			{
+				cube([2 * Radius, Radius, Height + RimHeight]);
+			}
+		}
+
+		/* Optionally remove -Y half */
+		if (!MinusX)
+		{
+			translate([-Radius, -Radius, 0])
+			{
+				cube([2 * Radius, Radius, Height + RimHeight]);
+			}
 		}
 	}
 }
@@ -255,36 +282,61 @@ module EdgeElement(Length, Width)
 // Render an edge, with a rim, as long as edge is at least EdgeMinLength long.
 //
 
-module Edge(Length, Width, Height, RimHeight)
+module Edge(Length, Width, Height, RimHeight, PlusX, MinusX)
 {
 	if (Length >= EdgeMinLength)
 	{
-		union()
+		difference()
 		{
-			/* Edge */
+			/* Matter */
+			union()
 			{
-				linear_extrude(Height)
+				/* Edge */
 				{
-					EdgeElement(Length, Width);
-				}
-			}
-			
-			/* Rim */
-			for (dd = [0 : 1.6 : 3.2])
-			{
-				linear_extrude(RimHeight)
-				{
-					difference()
+					linear_extrude(Height)
 					{
-						EdgeElement(Length - dd, Width - dd);
-						offset(delta=-RimThickness)
+						EdgeElement(Length, Width);
+					}
+				}
+				
+				/* Rim */
+				for (dd = [0 : 1.6 : 3.2])
+				{
+					linear_extrude(RimHeight)
+					{
+						difference()
 						{
 							EdgeElement(Length - dd, Width - dd);
+							offset(delta=-RimThickness)
+							{
+								EdgeElement(Length - dd, Width - dd);
+							}
 						}
 					}
 				}
 			}
+			
+			/* Antimatter */
+			
+			/* Optionally remove +X half */
+			if (!PlusX)
+			{
+				translate([-Length / 2, 0, 0])
+				{
+					cube([Length, Width / 2, RimHeight]);
+				}
+			}
+			
+			/* Optionally remove -X half */
+			if (!MinusX)
+			{
+				translate([-Length / 2, -Width / 2, 0])
+				{
+					cube([Length, Width / 2, RimHeight]);
+				}
+			}
 		}
+		
 	}
 }
 
@@ -294,7 +346,7 @@ module Edge(Length, Width, Height, RimHeight)
 // Connect two nodes using an edge.
 //
 
-module ConnectNodesWithEdge(FromX, FromY, ToX, ToY, EdgeWidth, EdgeHeight, EdgeRimHeight, NodeSize)
+module ConnectNodesWithEdge(FromX, FromY, ToX, ToY, EdgeWidth, EdgeHeight, EdgeRimHeight, NodeSize, PlusX=true, MinusX=true)
 {
 	// Compute angle for edge
 	DeltaX = (ToX - FromX);
@@ -314,7 +366,7 @@ module ConnectNodesWithEdge(FromX, FromY, ToX, ToY, EdgeWidth, EdgeHeight, EdgeR
 	{
 		rotate([0, 0, Theta])
 		{
-			Edge(EdgeLength, EdgeWidth, EdgeHeight, EdgeRimHeight);
+			Edge(EdgeLength, EdgeWidth, EdgeHeight, EdgeRimHeight, PlusX, MinusX);
 		}
 	}
 }
@@ -445,10 +497,15 @@ module Quad(X0, Y0, X1, Y1, X2, Y2, X3, Y3, Inset, Height, RimHeight)
 //
 // Partial or full circle, with optional node at the center, then rings of nodes,
 // connected radially and cicularly, with optional quadrilaterals between nodes.
+//
+// If HalfNodes or HalfEdges is set, then the first and last nodes  or edges in the ring 
+// are PlusX/MinusX half only. This makes it easier to print a pair of semi-circular rings that 
+// can be joined with straight pieces. 
+//
 // TODO: Add parameters
 //
 
-module CircularRays(StartRing, RingCount, RingSpace, Step, Limit, Center, InsideQuads, QuadInset, NodeShape, NodeSize, NodeHeight, NodeMagnetHole)
+module CircularRays(StartRing, RingCount, RingSpace, Step, Limit, Center, InsideQuads, QuadInset, NodeShape, NodeSize, NodeHeight, NodeMagnetHole, HalfNodes, HalfEdges)
 {
 	if (Center)
 	{
@@ -466,7 +523,12 @@ module CircularRays(StartRing, RingCount, RingSpace, Step, Limit, Center, Inside
 
 			translate([RingX, RingY, 0])
 			{
-				Node(NodeShape, NodeSize, NodeHeight, NodeRimHeight, NodeMagnetHole);
+				MinusXHalf =
+					(!HalfNodes)
+				     ||
+					(HalfNodes && (Theta > 0) && (Theta < Limit));
+				
+				Node(NodeShape, NodeSize, NodeHeight, NodeRimHeight, NodeMagnetHole, true, MinusXHalf);
 			}
 		}
 	}
@@ -493,8 +555,19 @@ module CircularRays(StartRing, RingCount, RingSpace, Step, Limit, Center, Inside
 
 			RingToX = cos(Theta) * (Ring + 1) * RingSpace;
 			RingToY = sin(Theta) * (Ring + 1) * RingSpace;
-				
-			ConnectNodesWithEdge(RingFromX, RingFromY, RingToX, RingToY, EdgeWidth, EdgeHeight, EdgeRimHeight, NodeSize);
+			
+			//
+			// Hacky, special-cased (half-circle only) hiding of half-edges (PluX or MinusX):
+			//
+			// 1. Hide MinusXHalf if HalfEdges set and Theta is 0
+			//
+			// 2. Hide PlusXHalf if HalfEdges set and Theta is 180
+			//
+			
+			ShowMinusXHalf = (Theta != 0 && HalfEdges)   || !HalfEdges; 
+			ShowPlusXHalf  = (Theta != 180 && HalfEdges) || !HalfEdges; 
+			
+			ConnectNodesWithEdge(RingFromX, RingFromY, RingToX, RingToY, EdgeWidth, EdgeHeight, EdgeRimHeight, NodeSize, ShowPlusXHalf, ShowMinusXHalf);
 		}
 	}
 
@@ -898,7 +971,7 @@ module Hexagon(BaseWidth, InsideTriangles, TriangleInset, NodeShape, NodeSize, N
 
 if (_Pattern == "Circular")
 {
-	CircularRays(_CircStartRing,_CircRingCount, _CircRingSpace, _CircRayStep, _CircRayLimit, _CircRayCenter, _CircInsideQuads, _CircQuadInset, _NodeShape, _NodeSize, _NodeHeight, _NodeMagnetHole);
+	CircularRays(_CircStartRing,_CircRingCount, _CircRingSpace, _CircRayStep, _CircRayLimit, _CircRayCenter, _CircInsideQuads, _CircQuadInset, _NodeShape, _NodeSize, _NodeHeight, _NodeMagnetHole, _CircHalfNodes, _CircHalfEdges);
 }
 
 else if (_Pattern == "Axial")
