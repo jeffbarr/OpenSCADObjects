@@ -5,7 +5,7 @@
 *                 If RingCount is > 1, some inner rings are skipped to allow creation
 *                 of hollow circles or semi-circles.
 *
-* Axial Rays - A rectangle of nodes, with diagonal, vertical, horizontal edges or 
+* Grid Rays - A rectangle of nodes, with diagonal, vertical, horizontal edges or 
 *			   some combo.
 *
 * Fringe - A rectangle with triangles hanging down.
@@ -14,8 +14,6 @@
 *
 * This code is powerful yet messy. TODO:
 *	
-* --> Rename Axial to Grid
-*
 * --> Fix Fringe to have proper args
 *
 * --> Implement separate triangle pattern
@@ -27,7 +25,7 @@
 */
 
 // Pattern
-_Pattern = "Circular"; // [Circular, Axial, Fringe, Hexagon]
+_Pattern = "Circular"; // [Circular, Grid, Fringe, Hexagon]
 
 // Node radius
 _NodeSize = 7.5;
@@ -98,19 +96,19 @@ _CircHalfEdges = false;
 
 /* ************************************************************** */
 
-/* [Axial Rays] */
+/* [Grid Rays] */
 
 // Number of rows
-_AxRows = 4;
+_GridRows = 4;
 
 // Number of columns
-_AxCols = 8;
+_GridCols = 8;
 
 // Step between rows
-_AxRowStep = 30;
+_GridRowStep = 30;
 
 // Step between columns
-_AxColStep = 50;
+_GridColStep = 50;
 
 // Options for interior edges:
 // Forward diagonal
@@ -119,28 +117,28 @@ _AxColStep = 50;
 // Y-aligned
 
 // Forward diagonal edges
-_AxFwdDiagonalEdges = false;
+_GridFwdDiagonalEdges = false;
 
 // Backward diagonal edges
-_AxBwdDiagonalEdges = false;
+_GridBwdDiagonalEdges = false;
 
 // X edges
-_AxXEdges = true;
+_GridXEdges = true;
 
 // Y edges
-_AxYEdges = true;
+_GridYEdges = true;
 
 // Half nodes, first row
-_AxHalfNodesFirst = false;
+_GridHalfNodesFirst = false;
 
 // Half nodes, last row
-_AxHalfNodesLast = false;
+_GridHalfNodesLast = false;
 
 // Half edges, first row
-_AxHalfEdgesFirst = false;
+_GridHalfEdgesFirst = false;
 
 // Half edges, last row
-_AxHalfEdgesLast = false;
+_GridHalfEdgesLast = false;
 
 /* ************************************************************** */
 
@@ -647,9 +645,9 @@ module CircularRays(StartRing, RingCount, RingSpace, Step, Limit, Center, Inside
 }
 
 //
-// AxialRays:
+// GridRays:
 //
-// Nodes along X and Y axis, connected on the axes and:
+// Grid of nodes, connected on the axes and optional:
 //
 // FwdDiagonalEdges
 // BwdDiagonalEdges 
@@ -659,17 +657,17 @@ module CircularRays(StartRing, RingCount, RingSpace, Step, Limit, Center, Inside
 // Optional half edges and half nodes, for first and last row.
 //
 
-function AxialPointX(i, ColStep) = i * ColStep;
-function AxialPointY(i, RowStep) = i * RowStep;
+function GridPointX(i, ColStep) = i * ColStep;
+function GridPointY(i, RowStep) = i * RowStep;
 
-module AxialRays(Rows, Cols, RowStep, ColStep, NodeShape, NodeSize, NodeHeight, NodeMagnetHole, FwdDiagonalEdges, BwdDiagonalEdges, XEdges, YEdges, HalfNodesFirst, HalfNodesLast, HalfEdgesFirst, HalfEdgesLast)
+module GridRays(Rows, Cols, RowStep, ColStep, NodeShape, NodeSize, NodeHeight, NodeMagnetHole, FwdDiagonalEdges, BwdDiagonalEdges, XEdges, YEdges, HalfNodesFirst, HalfNodesLast, HalfEdgesFirst, HalfEdgesLast)
 {
 	// Render grid of nodes
 	for (x = [0 : Cols - 1])
 	{
 		for (y = [0 : Rows - 1])
 		{
-			translate([AxialPointX(x, ColStep), AxialPointY(y, RowStep), 0])
+			translate([GridPointX(x, ColStep), GridPointY(y, RowStep), 0])
 			{
 				MinusX = (y != 0) || (y == 0 && !HalfNodesFirst);
 				PlusX  = (y != (Rows - 1)) || (y == (Rows - 1) && !HalfNodesLast);
@@ -689,7 +687,7 @@ module AxialRays(Rows, Cols, RowStep, ColStep, NodeShape, NodeSize, NodeHeight, 
 				MinusX = (y != 0) || (y == 0 && !HalfEdgesFirst);
 				PlusX  = (y != (Rows - 1)) || (y == (Rows - 1) && !HalfEdgesLast);
 				
-				ConnectNodesWithEdge(AxialPointX(x, ColStep), AxialPointY(y, RowStep), AxialPointX(x + 1, ColStep), AxialPointY(y, RowStep), 
+				ConnectNodesWithEdge(GridPointX(x, ColStep), GridPointY(y, RowStep), GridPointX(x + 1, ColStep), GridPointY(y, RowStep), 
 									 EdgeWidth, EdgeHeight, EdgeRimHeight, NodeSize, PlusX, MinusX);		
 			}
 		}
@@ -702,7 +700,7 @@ module AxialRays(Rows, Cols, RowStep, ColStep, NodeShape, NodeSize, NodeHeight, 
 		{
 			for (x = [0 : Cols - 1])
 			{
-				ConnectNodesWithEdge(AxialPointX(x, ColStep), AxialPointY(y, RowStep), AxialPointX(x, ColStep), AxialPointY(y + 1, RowStep), 
+				ConnectNodesWithEdge(GridPointX(x, ColStep), GridPointY(y, RowStep), GridPointX(x, ColStep), GridPointY(y + 1, RowStep), 
 									 EdgeWidth, EdgeHeight, EdgeRimHeight, NodeSize);
 			}
 		}
@@ -715,7 +713,7 @@ module AxialRays(Rows, Cols, RowStep, ColStep, NodeShape, NodeSize, NodeHeight, 
 		{
 			for (y = [0 : Rows - 2])
 			{
-				ConnectNodesWithEdge(AxialPointX(x, ColStep), AxialPointY(y, RowStep), AxialPointX(x + 1, ColStep), AxialPointY(y + 1, RowStep), 
+				ConnectNodesWithEdge(GridPointX(x, ColStep), GridPointY(y, RowStep), GridPointX(x + 1, ColStep), GridPointY(y + 1, RowStep), 
 									 EdgeWidth, EdgeHeight, EdgeRimHeight, NodeSize);					
 			}
 		}
@@ -728,7 +726,7 @@ module AxialRays(Rows, Cols, RowStep, ColStep, NodeShape, NodeSize, NodeHeight, 
 		{
 			for (y = [0 : Rows - 2])
 			{
-				ConnectNodesWithEdge(AxialPointX(x, ColStep), AxialPointY(y, RowStep), AxialPointX(x - 1, ColStep), AxialPointY(y + 1, RowStep), 
+				ConnectNodesWithEdge(GridPointX(x, ColStep), GridPointY(y, RowStep), GridPointX(x - 1, ColStep), GridPointY(y + 1, RowStep), 
 									 EdgeWidth, EdgeHeight, EdgeRimHeight, NodeSize);					
 			}
 		}
@@ -749,7 +747,7 @@ module Fringe(FringeCols, FringeRows, FringeColSpace, FringeTriangleHeight, Node
 	{
 		for (x = [0 : FringeCols - 1])
 		{
-			translate([AxialPointX(x), AxialPointY(y), 0])
+			translate([GridPointX(x), GridPointY(y), 0])
 			{
 				Node(NodeShape, NodeSize, NodeHeight, NodeRimHeight, NodeMagnetHole);
 			}
@@ -759,10 +757,10 @@ module Fringe(FringeCols, FringeRows, FringeColSpace, FringeTriangleHeight, Node
 	// Render edges along top & bottom X axis
 	for (i = [0 : FringeCols - 2])
 	{
-		ConnectNodesWithEdge(AxialPointX(i), AxialPointY(0), AxialPointX(i + 1), AxialPointY(0), 
+		ConnectNodesWithEdge(GridPointX(i), GridPointY(0), GridPointX(i + 1), GridPointY(0), 
 							 EdgeWidth, EdgeHeight, EdgeRimHeight, NodeSize);		
 
-		ConnectNodesWithEdge(AxialPointX(i), AxialPointY(FringeRows - 1),AxialPointX(i + 1), AxialPointY(FringeRows - 1), 
+		ConnectNodesWithEdge(GridPointX(i), GridPointY(FringeRows - 1),GridPointX(i + 1), GridPointY(FringeRows - 1), 
 							 EdgeWidth, EdgeHeight, EdgeRimHeight, NodeSize);
 	}
 	
@@ -771,7 +769,7 @@ module Fringe(FringeCols, FringeRows, FringeColSpace, FringeTriangleHeight, Node
 	{
 		for (j = [0 : FringeCols - 1])
 		{
-			ConnectNodesWithEdge(AxialPointX(j), AxialPointY(i), AxialPointX(j), AxialPointY(i + 1), 
+			ConnectNodesWithEdge(GridPointX(j), GridPointY(i), GridPointX(j), GridPointY(i + 1), 
 							 EdgeWidth, EdgeHeight, EdgeRimHeight, NodeSize);		
 		}
 	}
@@ -784,11 +782,11 @@ module Fringe(FringeCols, FringeRows, FringeColSpace, FringeTriangleHeight, Node
 		TriangleNodeIndex = t * 2;
 		
 		// Triangle points
-		T0X = AxialPointX(TriangleNodeIndex);
-		T0Y = AxialPointY(FringeRows - 1);
+		T0X = GridPointX(TriangleNodeIndex);
+		T0Y = GridPointY(FringeRows - 1);
 		
-		T1X = AxialPointX(TriangleNodeIndex + 1);
-		T1Y = AxialPointY(FringeRows - 1);
+		T1X = GridPointX(TriangleNodeIndex + 1);
+		T1Y = GridPointY(FringeRows - 1);
 		
 		T2X = T0X + (FringeColSpace / 2);
 		T2Y = T1Y + FringeTriangleHeight;
@@ -966,10 +964,9 @@ if (_Pattern == "Circular")
 	CircularRays(_CircStartRing,_CircRingCount, _CircRingSpace, _CircRayStep, _CircRayLimit, _CircRayCenter, _CircInsideQuads, _CircQuadInset, _NodeShape, _NodeSize, _NodeHeight, _NodeMagnetHole, _CircHalfNodes, _CircHalfEdges);
 }
 
-else if (_Pattern == "Axial")
+else if (_Pattern == "Grid")
 {
-	// Make Square a config
-	AxialRays(_AxRows, _AxCols, _AxRowStep, _AxColStep,  _NodeShape, _NodeSize, _NodeHeight, _NodeMagnetHole, _AxFwdDiagonalEdges, _AxBwdDiagonalEdges, _AxXEdges, _AxYEdges, _AxHalfNodesFirst, _AxHalfNodesLast, _AxHalfEdgesFirst, _AxHalfEdgesLast);
+	GridRays(_GridRows, _GridCols, _GridRowStep, _GridColStep,  _NodeShape, _NodeSize, _NodeHeight, _NodeMagnetHole, _GridFwdDiagonalEdges, _GridBwdDiagonalEdges, _GridXEdges, _GridYEdges, _GridHalfNodesFirst, _GridHalfNodesLast, _GridHalfEdgesFirst, _GridHalfEdgesLast);
 }
 
 else if (_Pattern == "Fringe")
@@ -985,5 +982,3 @@ else
 {
 	echo("Unknown pattern ", _Pattern);
 }
-
-
