@@ -82,5 +82,7 @@ A tiled grid of [AWS Service Icons](https://github.com/WayneStallwood/AWS-Tile-G
 
 This file is fully customizer-enabled.
 
+## [dentist_square.scad](https://github.com/jeffbarr/OpenSCADObjects/blob/main/dentist_square.scad)
 
-
+An OpenSCAD replica of an interesting pattern that I found and captured in my dentist's office.
+![Dentist Square](https://github.com/jeffbarr/OpenSCADObjects/blob/main/dentist_square_sample.jpg)
