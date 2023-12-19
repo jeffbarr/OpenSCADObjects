@@ -12,6 +12,14 @@ _SpaceX = 33;
 // Y Space
 _SpaceY = 12;
 
+// Alternate spacing on even and odd rows
+_EvenOddLayout = true;
+
+// Scale style
+_ScaleStyle = "Ring"; // ["Ring", "???"]
+
+/* [Ring-Style Scale] */
+
 // Inner radius of ring
 _ScaleRingInnerRadius = 10;
 
@@ -19,23 +27,20 @@ _ScaleRingInnerRadius = 10;
 _ScaleRingOuterRadius = 16;
 
 // Ring thickness
-_ScaleRingThickness = 4;
+_ScaleRingThickness = 4;			// 0.20
 
 // Ring base depth
 _ScaleRingBaseDepth = 10;
 
+// Ring vertical stretch
+_ScaleRingVerticalStretch = 1.0;	// 0.10
+
 // Ring tilt
 _ScaleRingTilt = 45;
 
-// Alternate spacing on even and odd rows
-_EvenOddLayout = true;
-
-// Scale style
-_ScaleStyle = "Ring"; // ["Ring", "???"]
-
 // Ring with base
 
-module Ring(Tilt, InnerRadius, OuterRadius, RingBaseDepth, RingThickness)
+module Ring(Tilt, InnerRadius, OuterRadius, RingBaseDepth, RingThickness, RingVerticalStretch)
 {
 	// Compute height of leading edge of ring
 	EdgeHeight = RingThickness * sin(90 - Tilt);
@@ -44,7 +49,6 @@ module Ring(Tilt, InnerRadius, OuterRadius, RingBaseDepth, RingThickness)
 	EdgeOut = RingThickness * cos(Tilt);
 	
 	// Base
-	
 	translate([0, -EdgeOut, 0])
 	{
 		color("green") cube([2 * OuterRadius, RingBaseDepth, EdgeHeight]);
@@ -59,19 +63,22 @@ module Ring(Tilt, InnerRadius, OuterRadius, RingBaseDepth, RingThickness)
 			{
 				linear_extrude(RingThickness)
 				{
-					difference()
+					scale([1, RingVerticalStretch, 1])
 					{
-						// Matter - Ring
 						difference()
 						{
-							circle(OuterRadius);
-							circle(InnerRadius);
-						}
-						
-						// Anti-matter - Minus-Y half
-						translate([-OuterRadius, 2 * -OuterRadius, 0])
-						{
-							square(2 * OuterRadius, OuterRadius);
+							// Matter - Ring
+							difference()
+							{
+								circle(OuterRadius);
+								circle(InnerRadius);
+							}
+							
+							// Anti-matter - Minus-Y half
+							translate([-OuterRadius, 2 * -OuterRadius, 0])
+							{
+								square(2 * OuterRadius, OuterRadius);
+							}
 						}
 					}
 				}
@@ -81,23 +88,23 @@ module Ring(Tilt, InnerRadius, OuterRadius, RingBaseDepth, RingThickness)
 
 }
 
-module OneScaleRing(Tilt, InnerRadius, OuterRadius, RingBaseDepth, RingThickness)
+module OneScaleRing(Tilt, InnerRadius, OuterRadius, RingBaseDepth, RingThickness, RingVerticalStretch)
 {
 	translate([0, RingThickness, 0])
 	{
-		Ring(Tilt, InnerRadius, OuterRadius, RingBaseDepth, RingThickness);
+		Ring(Tilt, InnerRadius, OuterRadius, RingBaseDepth, RingThickness, RingVerticalStretch);
 	}
 }
 
-module OneScale(ScaleStyle, Tilt, InnerRadius, OuterRadius, RingBaseDepth, RingThickness)
+module OneScale(ScaleStyle, Tilt, InnerRadius, OuterRadius, RingBaseDepth, RingThickness, RingVerticalStretch)
 {
 	if (ScaleStyle == "Ring")
 	{
-		OneScaleRing(Tilt, InnerRadius, OuterRadius, RingBaseDepth, RingThickness);
+		OneScaleRing(Tilt, InnerRadius, OuterRadius, RingBaseDepth, RingThickness, RingVerticalStretch);
 	}
 }
 
-module Panel(CountX, CountY, SpaceX, SpaceY, EvenOddLayout, ScaleStyle, Tilt, InnerRadius, OuterRadius, RingBaseDepth, RingThickness)
+module Panel(CountX, CountY, SpaceX, SpaceY, EvenOddLayout, ScaleStyle, Tilt, InnerRadius, OuterRadius, RingBaseDepth, RingThickness, RingVerticalStretch)
 {
 	// All the scales
 	for (x = [0 : CountX - 1])
@@ -112,7 +119,7 @@ module Panel(CountX, CountY, SpaceX, SpaceY, EvenOddLayout, ScaleStyle, Tilt, In
 			
 			translate([PointX, PointY, 0])
 			{
-				OneScale(ScaleStyle, Tilt, InnerRadius, OuterRadius, RingBaseDepth, RingThickness);
+				OneScale(ScaleStyle, Tilt, InnerRadius, OuterRadius, RingBaseDepth, RingThickness, RingVerticalStretch);
 			}
 		}
 	}
@@ -122,7 +129,7 @@ module main()
 {
 	intersection()
 	{
-		Panel(_CountX, _CountY, _SpaceX, _SpaceY, _EvenOddLayout, _ScaleStyle, _ScaleRingTilt, _ScaleRingInnerRadius, _ScaleRingOuterRadius, _ScaleRingBaseDepth, _ScaleRingThickness);
+		Panel(_CountX, _CountY, _SpaceX, _SpaceY, _EvenOddLayout, _ScaleStyle, _ScaleRingTilt, _ScaleRingInnerRadius, _ScaleRingOuterRadius, _ScaleRingBaseDepth, _ScaleRingThickness, _ScaleRingVerticalStretch);
 		
 		cube([1000, 1000, 100]);
 	}
