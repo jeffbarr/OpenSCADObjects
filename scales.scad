@@ -10,7 +10,7 @@ _CountY = 10;
 _SpaceX = 33;
 
 // Y Space
-_SpaceY = 14;
+_SpaceY = 12;
 
 // Inner radius of ring
 _ScaleRingInnerRadius = 10;
@@ -26,6 +26,9 @@ _ScaleRingBaseDepth = 10;
 
 // Ring tilt
 _ScaleRingTilt = 45;
+
+// Alternate spacing on even and odd rows
+_EvenOddLayout = true;
 
 // Scale style
 _ScaleStyle = "Ring"; // ["Ring", "???"]
@@ -94,14 +97,17 @@ module OneScale(ScaleStyle, Tilt, InnerRadius, OuterRadius, RingBaseDepth, RingT
 	}
 }
 
-module Panel(CountX, CountY, SpaceX, SpaceY, ScaleStyle, Tilt, InnerRadius, OuterRadius, RingBaseDepth, RingThickness)
+module Panel(CountX, CountY, SpaceX, SpaceY, EvenOddLayout, ScaleStyle, Tilt, InnerRadius, OuterRadius, RingBaseDepth, RingThickness)
 {
 	// All the scales
 	for (x = [0 : CountX - 1])
 	{
 		for (y = [0 : CountY - 1])
 		{
-			PointX = x * SpaceX;
+			PointX = EvenOddLayout && ((y % 2) == 1) ? 
+						(x * SpaceX) + (SpaceX / 2)  :
+					    (x * SpaceX);
+			
 			PointY = y * SpaceY;
 			
 			translate([PointX, PointY, 0])
@@ -116,7 +122,7 @@ module main()
 {
 	intersection()
 	{
-		Panel(_CountX, _CountY, _SpaceX, _SpaceY, _ScaleStyle, _ScaleRingTilt, _ScaleRingInnerRadius, _ScaleRingOuterRadius, _ScaleRingBaseDepth, _ScaleRingThickness);
+		Panel(_CountX, _CountY, _SpaceX, _SpaceY, _EvenOddLayout, _ScaleStyle, _ScaleRingTilt, _ScaleRingInnerRadius, _ScaleRingOuterRadius, _ScaleRingBaseDepth, _ScaleRingThickness);
 		
 		cube([1000, 1000, 100]);
 	}
