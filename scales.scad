@@ -41,6 +41,26 @@ _ScaleRingVerticalStretch = 1.0;	// 0.10
 // Ring tilt
 _ScaleRingTilt = 45;
 
+module _end_config() {}
+
+// Full list of parameters
+_Params =
+[
+	["CountX", 						_CountX],
+	["CountY", 						_CountY],
+	["SpaceX",						_SpaceX],
+	["SpaceY", 						_SpaceY],
+	["EvenOddLayout", 				_EvenOddLayout],
+	["ScaleStyle",					_ScaleStyle],
+	["ScaleRingShape",				_ScaleRingShape],
+	["ScaleRingTilt",				_ScaleRingTilt],
+	["ScaleRingInnerRadius",		_ScaleRingInnerRadius],
+	["ScaleRingOuterRadius",		_ScaleRingOuterRadius],
+	["ScaleRingBaseDepth",			_ScaleRingBaseDepth], 
+	["ScaleRingThickness",			_ScaleRingThickness],
+	["ScaleRingVerticalStretch",	_ScaleRingVerticalStretch]	
+];
+
 // Ring with base
 
 module Ring(Shape, Tilt, InnerRadius, OuterRadius, RingBaseDepth, RingThickness, RingVerticalStretch)
@@ -141,6 +161,16 @@ module Panel(CountX, CountY, SpaceX, SpaceY, EvenOddLayout, ScaleStyle, Shape, T
 	}
 }
 
+// Generate a legend to capture all of the parameters
+module Legend(Items)
+{
+	for (i = [0 : len(Items) - 1])
+	{
+		Item = Items[i];
+		echo(Item[0], "=", Item[1]);
+	}
+}
+
 module main()
 {
 	intersection()
@@ -149,6 +179,9 @@ module main()
 		
 		cube([1000, 1000, 100]);
 	}
+	
+	Legend(_Params);
+
 }
 
 main();
