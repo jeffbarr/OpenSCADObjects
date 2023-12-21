@@ -20,6 +20,9 @@ _ScaleStyle = "Ring"; // ["Ring", "???"]
 
 /* [Ring-Style Scale] */
 
+// Ring shape
+_ScaleRingShape = "Circle"; // ["Circle", "Triangle", "Hexagon", "Octagon"]
+
 // Inner radius of ring
 _ScaleRingInnerRadius = 10;
 
@@ -40,7 +43,7 @@ _ScaleRingTilt = 45;
 
 // Ring with base
 
-module Ring(Tilt, InnerRadius, OuterRadius, RingBaseDepth, RingThickness, RingVerticalStretch)
+module Ring(Shape, Tilt, InnerRadius, OuterRadius, RingBaseDepth, RingThickness, RingVerticalStretch)
 {
 	// Compute height of leading edge of ring
 	EdgeHeight = RingThickness * sin(90 - Tilt);
@@ -48,6 +51,19 @@ module Ring(Tilt, InnerRadius, OuterRadius, RingBaseDepth, RingThickness, RingVe
 	// Compute how far top of leading edge sticks out
 	EdgeOut = RingThickness * cos(Tilt);
 	
+	// Map shape to number of sides and rotation
+	Sides = 
+		(Shape == "Circle")   ? 99 :
+		(Shape == "Triangle") ? 4  :
+	    (Shape == "Hexagon")  ? 6  :
+	    (Shape == "Octagon")  ? 8  :
+	                            0;
+
+	if (Sides == 0)
+	{
+		echo("Ring: Unknown shape: ", Shape);
+	}
+		
 	// Base
 	translate([0, -EdgeOut, 0])
 	{
@@ -70,8 +86,8 @@ module Ring(Tilt, InnerRadius, OuterRadius, RingBaseDepth, RingThickness, RingVe
 							// Matter - Ring
 							difference()
 							{
-								circle(OuterRadius);
-								circle(InnerRadius);
+								circle(OuterRadius, $fn=Sides);
+								circle(InnerRadius, $fn=Sides);
 							}
 							
 							// Anti-matter - Minus-Y half
@@ -88,23 +104,23 @@ module Ring(Tilt, InnerRadius, OuterRadius, RingBaseDepth, RingThickness, RingVe
 
 }
 
-module OneScaleRing(Tilt, InnerRadius, OuterRadius, RingBaseDepth, RingThickness, RingVerticalStretch)
+module OneScaleRing(Shape, Tilt, InnerRadius, OuterRadius, RingBaseDepth, RingThickness, RingVerticalStretch)
 {
 	translate([0, RingThickness, 0])
 	{
-		Ring(Tilt, InnerRadius, OuterRadius, RingBaseDepth, RingThickness, RingVerticalStretch);
+		Ring(Shape, Tilt, InnerRadius, OuterRadius, RingBaseDepth, RingThickness, RingVerticalStretch);
 	}
 }
 
-module OneScale(ScaleStyle, Tilt, InnerRadius, OuterRadius, RingBaseDepth, RingThickness, RingVerticalStretch)
+module OneScale(ScaleStyle, Shape, Tilt, InnerRadius, OuterRadius, RingBaseDepth, RingThickness, RingVerticalStretch)
 {
 	if (ScaleStyle == "Ring")
 	{
-		OneScaleRing(Tilt, InnerRadius, OuterRadius, RingBaseDepth, RingThickness, RingVerticalStretch);
+		OneScaleRing(Shape, Tilt, InnerRadius, OuterRadius, RingBaseDepth, RingThickness, RingVerticalStretch);
 	}
 }
 
-module Panel(CountX, CountY, SpaceX, SpaceY, EvenOddLayout, ScaleStyle, Tilt, InnerRadius, OuterRadius, RingBaseDepth, RingThickness, RingVerticalStretch)
+module Panel(CountX, CountY, SpaceX, SpaceY, EvenOddLayout, ScaleStyle, Shape, Tilt, InnerRadius, OuterRadius, RingBaseDepth, RingThickness, RingVerticalStretch)
 {
 	// All the scales
 	for (x = [0 : CountX - 1])
@@ -119,7 +135,7 @@ module Panel(CountX, CountY, SpaceX, SpaceY, EvenOddLayout, ScaleStyle, Tilt, In
 			
 			translate([PointX, PointY, 0])
 			{
-				OneScale(ScaleStyle, Tilt, InnerRadius, OuterRadius, RingBaseDepth, RingThickness, RingVerticalStretch);
+				OneScale(ScaleStyle, Shape, Tilt, InnerRadius, OuterRadius, RingBaseDepth, RingThickness, RingVerticalStretch);
 			}
 		}
 	}
@@ -129,7 +145,7 @@ module main()
 {
 	intersection()
 	{
-		Panel(_CountX, _CountY, _SpaceX, _SpaceY, _EvenOddLayout, _ScaleStyle, _ScaleRingTilt, _ScaleRingInnerRadius, _ScaleRingOuterRadius, _ScaleRingBaseDepth, _ScaleRingThickness, _ScaleRingVerticalStretch);
+		Panel(_CountX, _CountY, _SpaceX, _SpaceY, _EvenOddLayout, _ScaleStyle, _ScaleRingShape,_ScaleRingTilt, _ScaleRingInnerRadius, _ScaleRingOuterRadius, _ScaleRingBaseDepth, _ScaleRingThickness, _ScaleRingVerticalStretch);
 		
 		cube([1000, 1000, 100]);
 	}
