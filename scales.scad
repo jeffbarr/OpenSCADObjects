@@ -15,6 +15,9 @@ _SpaceY = 12;
 // Alternate spacing on even and odd rows
 _EvenOddLayout = true;
 
+// Rotate 180 on odd rows
+_EvenOddRotate = false;
+
 // Scale style
 _ScaleStyle = "Ring"; // ["Ring", "???"]
 
@@ -51,6 +54,7 @@ _Params =
 	["SpaceX",						_SpaceX],
 	["SpaceY", 						_SpaceY],
 	["EvenOddLayout", 				_EvenOddLayout],
+	["EvenOddRotate",				_EvenOddRotate],
 	["ScaleStyle",					_ScaleStyle],
 	["ScaleRingShape",				_ScaleRingShape],
 	["ScaleRingTilt",				_ScaleRingTilt],
@@ -140,22 +144,39 @@ module OneScale(ScaleStyle, Shape, Tilt, InnerRadius, OuterRadius, RingBaseDepth
 	}
 }
 
-module Panel(CountX, CountY, SpaceX, SpaceY, EvenOddLayout, ScaleStyle, Shape, Tilt, InnerRadius, OuterRadius, RingBaseDepth, RingThickness, RingVerticalStretch)
+module Panel(CountX, CountY, SpaceX, SpaceY, EvenOddLayout, EvenOddRotate, ScaleStyle, Shape, Tilt, InnerRadius, OuterRadius, RingBaseDepth, RingThickness, RingVerticalStretch)
 {
 	// All the scales
 	for (x = [0 : CountX - 1])
 	{
 		for (y = [0 : CountY - 1])
 		{
-			PointX = EvenOddLayout && ((y % 2) == 1) ? 
-						(x * SpaceX) + (SpaceX / 2)  :
+			Odd = ((y % 2) == 1);
+			
+			PointX = EvenOddLayout && Odd           ? 
+						(x * SpaceX) + (SpaceX / 2) :
 					    (x * SpaceX);
 			
 			PointY = y * SpaceY;
 			
 			translate([PointX, PointY, 0])
 			{
-				OneScale(ScaleStyle, Shape, Tilt, InnerRadius, OuterRadius, RingBaseDepth, RingThickness, RingVerticalStretch);
+				if (EvenOddRotate && Odd)
+				{
+					rotate([0, 0, 180])
+					{
+						// FIXME: Y is not quite right
+						translate([-OuterRadius * 2, -SpaceY, 0])
+						{
+							OneScale(ScaleStyle, Shape, Tilt, InnerRadius, OuterRadius, RingBaseDepth, RingThickness, RingVerticalStretch);
+						}
+					}
+				}
+				else
+				{
+					OneScale(ScaleStyle, Shape, Tilt, InnerRadius, OuterRadius, RingBaseDepth, RingThickness, RingVerticalStretch);
+				
+				}
 			}
 		}
 	}
@@ -175,7 +196,7 @@ module main()
 {
 	intersection()
 	{
-		Panel(_CountX, _CountY, _SpaceX, _SpaceY, _EvenOddLayout, _ScaleStyle, _ScaleRingShape,_ScaleRingTilt, _ScaleRingInnerRadius, _ScaleRingOuterRadius, _ScaleRingBaseDepth, _ScaleRingThickness, _ScaleRingVerticalStretch);
+		Panel(_CountX, _CountY, _SpaceX, _SpaceY, _EvenOddLayout, _EvenOddRotate, _ScaleStyle, _ScaleRingShape,_ScaleRingTilt, _ScaleRingInnerRadius, _ScaleRingOuterRadius, _ScaleRingBaseDepth, _ScaleRingThickness, _ScaleRingVerticalStretch);
 		
 		cube([1000, 1000, 100]);
 	}
