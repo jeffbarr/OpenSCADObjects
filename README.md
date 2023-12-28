@@ -95,3 +95,11 @@ This file is fully customizer-enabled.
 
 An OpenSCAD replica of an interesting pattern that I found and captured in my dentist's office.
 ![Dentist Square](https://github.com/jeffbarr/OpenSCADObjects/blob/main/dentist_square_sample.jpg)
+
+## [https://github.com/jeffbarr/OpenSCADObjects/blob/main/rhombitrihexagon.scad](https://github.com/jeffbarr/OpenSCADObjects/blob/main/rhombitrihexagon.scad)
+
+A [Rhobitrihexagon](https://en.wikipedia.org/wiki/Rhombitrihexagonal_tiling):
+
+![Rhombitrihexagon](https://github.com/jeffbarr/OpenSCADObjects/blob/main/rth_small_sample.png)
+
+One input value (*_HexRadius*) controls the size of all of the elements in the XY plane. The heights of the hexagons, squares, and triangles can be set individually. Read [this post](https://medium.com/@nextjeff/3d-printing-rhombitrihexagons-d9aa5c4a1251) to learn more about the code.
