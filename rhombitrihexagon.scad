@@ -28,10 +28,10 @@ module __end_cust() {};
 
 module Rhombitrihexagon(HexRadius, Inset, HexHeight, SquareHeight, TriangleHeight, SquareList, TriangleList)
 {
-	// Compute apothem of hexagon then use it to compute radius of dodecahedron
+	// Compute apothem of hexagon then use it to compute radius of dodecagon
 	Apothem = 0.5 * sqrt(3) * HexRadius;
 	
-	// Compute radius of dodecahedron
+	// Compute radius of dodecagon
 	DodRadius = sqrt((HexRadius / 2 * HexRadius / 2) + ((Apothem + HexRadius) * (Apothem + HexRadius)));
 	
 	// Compute hexagon points
