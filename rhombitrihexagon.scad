@@ -21,6 +21,72 @@ _TriangleHeight = 1.2;
 module __end_cust() {};
 
 //
+// Render a square
+//
+
+module SquareShape(Points, Inset, Height)
+{
+	color("blue")
+	{	
+		linear_extrude(Height)
+		{
+			offset(-Inset)
+			{
+				polygon(Points);
+			}
+		}
+	}
+}
+
+//
+// Render a triangle
+//
+
+module TriangleShape(Points, Inset, Height)
+{
+	color("red")
+	{	
+		linear_extrude(Height)
+		{
+			offset(-Inset)
+			{
+				polygon(Points);
+			}
+		}
+	}
+}
+
+//
+// Render a hexagon
+//
+
+module HexagonShape(Points, Inset, Height)
+{	
+	linear_extrude(Height)
+	{
+		offset(-Inset)
+		{
+			polygon(Points);
+		}
+	}
+}
+
+//
+// Render a dodecagon
+//
+
+module DodecagonShape(Points, Inset, Height)
+{	
+	linear_extrude(Height)
+	{
+		offset(-Inset)
+		{
+			polygon(Points);
+		}
+	}
+}
+
+//
 // Render all or part of a rhombitrihexagon, with given inset and heights
 //
 // Squares and triangles are numbered counter-clockwise, with 0 intersecting the Y axis on the +x side.
@@ -119,39 +185,22 @@ module Rhombitrihexagon(HexRadius, Inset, HexHeight, SquareHeight, TriangleHeigh
 	Triangles = [Triangle0, Triangle1, Triangle2, Triangle3, Triangle4, Triangle5];
 	
 	// Render desired squares
-	color("blue")
-	linear_extrude(SquareHeight)
+	for (Square = SquareList)
 	{
-		for (Square = SquareList)
-		{
-			offset(-Inset)
-			{
-				polygon(Squares[Square]);
-			}
-		}
+		SquareShape(Squares[Square], Inset, SquareHeight);
 	}
 
 	// Render desired triangles
-	color("red")
-	linear_extrude(TriangleHeight)
+	for (Triangle = TriangleList)
 	{
-		for (Triangle = TriangleList)
-		{
-			offset(-Inset) polygon(Triangles[Triangle]);
-		}
+		TriangleShape(Triangles[Triangle], Inset, TriangleHeight);
 	}
 
 	// Render hexagon
-	linear_extrude(HexHeight)	
-	{
-		offset(-Inset) polygon(HexPoints);
-	}
+	HexagonShape(HexPoints, Inset, HexHeight);
 	
 	// Render dodecahedron (testing only)
-	linear_extrude(HexHeight - 0.6)
-	{
-		//polygon(DodPoints);
-	}
+	//DodecagonShape(DodPoints, 0, HexHeight - 0.6);
 }
 
 module main()
