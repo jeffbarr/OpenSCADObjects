@@ -99,7 +99,7 @@ An OpenSCAD replica of an interesting pattern that I found and captured in my de
 
 ## [rhombitrihexagon.scad](https://github.com/jeffbarr/OpenSCADObjects/blob/main/rhombitrihexagon.scad)
 
-A [Rhobitrihexagon](https://en.wikipedia.org/wiki/Rhombitrihexagonal_tiling):
+A [Rhombitrihexagon](https://en.wikipedia.org/wiki/Rhombitrihexagonal_tiling):
 
 ![Rhombitrihexagon](https://github.com/jeffbarr/OpenSCADObjects/blob/main/rth_small_sample.png)
 
