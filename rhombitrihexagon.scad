@@ -24,28 +24,32 @@ _RimThickness = 0.4;
 // Rim height
 _RimHeight = 2.4;
 
+// Gap between rim elements
+_RimGap = 1.5;
+
+// Max rim elements on a shape
+_RimMaxElements = 99;
+
 module __end_cust() {};
 
 //
 // Render a rim for a polygon
 //
 
-module RimShape(Points, Inset, Thickness, Height)
+module RimShape(Points, Inset, Thickness, Height, Gap, MaxElements)
 {
-	//echo(Thickness, Height);
-	
-	for (dd = [0 : 1.5 : 3])
+	for (r = [0 : MaxElements - 1])
 	{
 		linear_extrude(Height)
 		{
 			difference()
 			{
-				offset(delta=-(Inset + dd)) 
+				offset(delta=-(Inset + (r * Gap))) 
 				{
 					polygon(Points);
 				}
 				
-				offset(delta=-(Thickness + Inset + dd))
+				offset(delta=-(Thickness + Inset + (r * Gap)))
 				{
 					polygon(Points);
 				}
@@ -58,7 +62,7 @@ module RimShape(Points, Inset, Thickness, Height)
 // Render a square
 //
 
-module SquareShape(Points, Inset, Height, RimThickness, RimHeight)
+module SquareShape(Points, Inset, Height, RimThickness, RimHeight, RimGap, RimMaxElements)
 {
 	color("blue")
 	{	
@@ -74,7 +78,7 @@ module SquareShape(Points, Inset, Height, RimThickness, RimHeight)
 			}
 
 			// Rim
-			RimShape(Points, Inset, RimThickness, RimHeight);
+			RimShape(Points, Inset, RimThickness, RimHeight, RimGap, RimMaxElements);
 		}
 	}
 }
@@ -83,7 +87,7 @@ module SquareShape(Points, Inset, Height, RimThickness, RimHeight)
 // Render a triangle
 //
 
-module TriangleShape(Points, Inset, Height, RimThickness, RimHeight)
+module TriangleShape(Points, Inset, Height, RimThickness, RimHeight, RimGap, RimMaxElements)
 {
 	color("red")
 	{	
@@ -99,7 +103,7 @@ module TriangleShape(Points, Inset, Height, RimThickness, RimHeight)
 			}
 			
 			// Rim
-			RimShape(Points, Inset, RimThickness, RimHeight);
+			RimShape(Points, Inset, RimThickness, RimHeight, RimGap, RimMaxElements);
 		}	
 	}
 }
@@ -108,7 +112,7 @@ module TriangleShape(Points, Inset, Height, RimThickness, RimHeight)
 // Render a hexagon
 //
 
-module HexagonShape(Points, Inset, Height, RimThickness, RimHeight)
+module HexagonShape(Points, Inset, Height, RimThickness, RimHeight, RimGap, RimMaxElements)
 {	
 	union()
 	{
@@ -122,7 +126,7 @@ module HexagonShape(Points, Inset, Height, RimThickness, RimHeight)
 		}
 			
 		// Rim
-		RimShape(Points, Inset, RimThickness, RimHeight);
+		RimShape(Points, Inset, RimThickness, RimHeight, RimGap, RimMaxElements);
 	}
 }
 
@@ -130,7 +134,7 @@ module HexagonShape(Points, Inset, Height, RimThickness, RimHeight)
 // Render a dodecagon
 //
 
-module DodecagonShape(Points, Inset, Height, RimThickness, RimHeight)
+module DodecagonShape(Points, Inset, Height, RimThickness, RimHeight, RimGap, RimMaxElements)
 {	
 	linear_extrude(Height)
 	{
@@ -147,7 +151,7 @@ module DodecagonShape(Points, Inset, Height, RimThickness, RimHeight)
 // Squares and triangles are numbered counter-clockwise, with 0 intersecting the Y axis on the +x side.
 //
 
-module Rhombitrihexagon(HexRadius, Inset, HexHeight, SquareHeight, TriangleHeight, SquareList, TriangleList, RimThickness, RimHeight)
+module Rhombitrihexagon(HexRadius, Inset, HexHeight, SquareHeight, TriangleHeight, SquareList, TriangleList, RimThickness, RimHeight, RimGap, RimMaxElements)
 {
 	// Compute apothem of hexagon then use it to compute radius of dodecagon
 	Apothem = 0.5 * sqrt(3) * HexRadius;
@@ -242,20 +246,20 @@ module Rhombitrihexagon(HexRadius, Inset, HexHeight, SquareHeight, TriangleHeigh
 	// Render desired squares
 	for (Square = SquareList)
 	{
-		SquareShape(Squares[Square], Inset, SquareHeight, RimThickness, RimHeight);
+		SquareShape(Squares[Square], Inset, SquareHeight, RimThickness, RimHeight, RimGap, RimMaxElements);
 	}
 
 	// Render desired triangles
 	for (Triangle = TriangleList)
 	{
-		TriangleShape(Triangles[Triangle], Inset, TriangleHeight, RimThickness, RimHeight);
+		TriangleShape(Triangles[Triangle], Inset, TriangleHeight, RimThickness, RimHeight, RimGap, RimMaxElements);
 	}
 
 	// Render hexagon
-	HexagonShape(HexPoints, Inset, HexHeight, RimThickness, RimHeight);
+	HexagonShape(HexPoints, Inset, HexHeight, RimThickness, RimHeight, RimGap, RimMaxElements);
 	
 	// Render dodecahedron (testing only)
-	//DodecagonShape(DodPoints, 0, HexHeight - 0.6, RimThickness, RimHeight);
+	//DodecagonShape(DodPoints, 0, HexHeight - 0.6, RimThickness, RimHeight, RimGap, RimMaxElements);
 }
 
 module main()
@@ -283,40 +287,40 @@ module main()
 	// Row 0
 	translate([0, 0, 0])
 	{
-		Rhombitrihexagon(_HexRadius, _Inset, _HexHeight, _SquareHeight, _TriangleHeight, AllSquares, AllTriangles, _RimThickness, _RimHeight);
+		Rhombitrihexagon(_HexRadius, _Inset, _HexHeight, _SquareHeight, _TriangleHeight, AllSquares, AllTriangles, _RimThickness, _RimHeight, _RimGap, _RimMaxElements);
 	}
 	
-	translate([SpaceX, 0, 0])
+	/*translate([SpaceX, 0, 0])
 	{
-		Rhombitrihexagon(_HexRadius, _Inset, _HexHeight, _SquareHeight, _TriangleHeight, AllSquares, AllTriangles, _RimThickness, _RimHeight);
+		Rhombitrihexagon(_HexRadius, _Inset, _HexHeight, _SquareHeight, _TriangleHeight, AllSquares, AllTriangles, _RimThickness, _RimHeight _RimGap, _RimMaxElements);
 	}
 	
 	// Row 1
 	translate([0, SpaceY, 0])
 	{
-		Rhombitrihexagon(_HexRadius, _Inset, _HexHeight, _SquareHeight, _TriangleHeight, NextSquares, NextTriangles, _RimThickness, _RimHeight);	
+		Rhombitrihexagon(_HexRadius, _Inset, _HexHeight, _SquareHeight, _TriangleHeight, NextSquares, NextTriangles, _RimThickness, _RimHeight _RimGap, _RimMaxElements);	
 	}
 	
 	translate([SpaceX, SpaceY, 0])
 	{
-		Rhombitrihexagon(_HexRadius, _Inset, _HexHeight, _SquareHeight, _TriangleHeight, NextSquares, NextTriangles, _RimThickness, _RimHeight);
+		Rhombitrihexagon(_HexRadius, _Inset, _HexHeight, _SquareHeight, _TriangleHeight, NextSquares, NextTriangles, _RimThickness, _RimHeight _RimGap, _RimMaxElements);
 	}
 
 	// Fill in between row
 	translate([SpaceX / 2, -SpaceY / 2, 0])
 	{
-		Rhombitrihexagon(_HexRadius, _Inset, _HexHeight, _SquareHeight, _TriangleHeight, [3, 4, 5], [4, 5], _RimThickness, _RimHeight);
+		Rhombitrihexagon(_HexRadius, _Inset, _HexHeight, _SquareHeight, _TriangleHeight, [3, 4, 5], [4, 5], _RimThickness, _RimHeight _RimGap, _RimMaxElements);
 	}
 	
 	translate([SpaceX / 2, SpaceY / 2, 0])
 	{
-		Rhombitrihexagon(_HexRadius, _Inset, _HexHeight, _SquareHeight, _TriangleHeight, FirstMidSquares, FirstMidTriangles, _RimThickness, _RimHeight);
+		Rhombitrihexagon(_HexRadius, _Inset, _HexHeight, _SquareHeight, _TriangleHeight, FirstMidSquares, FirstMidTriangles, _RimThickness, _RimHeight _RimGap, _RimMaxElements);
 	}
 
 	translate([SpaceX / 2, SpaceY + SpaceY / 2, 0])
 	{
-		Rhombitrihexagon(_HexRadius, _Inset, _HexHeight, _SquareHeight, _TriangleHeight, [0, 1, 2, 4], [1, 2], _RimThickness, _RimHeight);	
-	}
+		Rhombitrihexagon(_HexRadius, _Inset, _HexHeight, _SquareHeight, _TriangleHeight, [0, 1, 2, 4], [1, 2], _RimThickness, _RimHeight, _RimGap, _RimMaxElements);	
+	}*/
 }
 
 main();
