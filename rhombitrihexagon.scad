@@ -10,7 +10,7 @@ _HexRadius = 17.5;
 _Inset = 0.5;
 
 // Hexagon height
-_HexHeight = 2;
+_HexHeight = 2.0;
 
 // Square height
 _SquareHeight = 1.6;
@@ -270,12 +270,6 @@ module main()
 	NextSquares   = [0, 1, 2, 3, 5];
 	NextTriangles = [0, 1, 2, 3];
 	
-	FirstMidSquares   = [4];
-	FirstMidTriangles = [];
-	
-	NoSquares   = [];
-	NoTriangles = [];
-	
 	// Compute X Spacing
 	B = _HexRadius * sin(60);
 	SpaceX = _HexRadius + B + _HexRadius + B + _HexRadius;
@@ -283,44 +277,46 @@ module main()
 	// Compute Y Spacing
 	SpaceY = B + _HexRadius + B;
 
-	// Grid of  at full spacing
-	// Row 0
-	translate([0, 0, 0])
-	{
-		Rhombitrihexagon(_HexRadius, _Inset, _HexHeight, _SquareHeight, _TriangleHeight, AllSquares, AllTriangles, _RimThickness, _RimHeight, _RimGap, _RimMaxElements);
-	}
-	
-	/*translate([SpaceX, 0, 0])
-	{
-		Rhombitrihexagon(_HexRadius, _Inset, _HexHeight, _SquareHeight, _TriangleHeight, AllSquares, AllTriangles, _RimThickness, _RimHeight _RimGap, _RimMaxElements);
-	}
-	
-	// Row 1
-	translate([0, SpaceY, 0])
-	{
-		Rhombitrihexagon(_HexRadius, _Inset, _HexHeight, _SquareHeight, _TriangleHeight, NextSquares, NextTriangles, _RimThickness, _RimHeight _RimGap, _RimMaxElements);	
-	}
-	
-	translate([SpaceX, SpaceY, 0])
-	{
-		Rhombitrihexagon(_HexRadius, _Inset, _HexHeight, _SquareHeight, _TriangleHeight, NextSquares, NextTriangles, _RimThickness, _RimHeight _RimGap, _RimMaxElements);
-	}
+	// Gap between rhombitrihexagons for debugging (set to 0 for production)
+	Explode = 0;
 
-	// Fill in between row
-	translate([SpaceX / 2, -SpaceY / 2, 0])
+	CountX = 3; CountY = 4; 
+	
+	// Grid of nearly complete rhombitrihexagons at integer coordinates
+	for (X = [0 : CountX - 1])
 	{
-		Rhombitrihexagon(_HexRadius, _Inset, _HexHeight, _SquareHeight, _TriangleHeight, [3, 4, 5], [4, 5], _RimThickness, _RimHeight _RimGap, _RimMaxElements);
+		for (Y = [0 : CountY - 1])
+		{
+			// Compute location
+			PointX = X * (SpaceX + Explode);
+			PointY = Y * (SpaceY + Explode);
+
+			// Figure out which squares and triangles to render
+			RenderSquares   = (Y == 0) ? AllSquares   : NextSquares;
+			RenderTriangles = (Y == 0) ? AllTriangles : NextTriangles;
+			
+			translate([PointX, PointY, 0])
+			{
+				Rhombitrihexagon(_HexRadius, _Inset, _HexHeight, _SquareHeight, _TriangleHeight, RenderSquares, RenderTriangles, _RimThickness, _RimHeight, _RimGap, _RimMaxElements);
+			}
+		}
 	}
 	
-	translate([SpaceX / 2, SpaceY / 2, 0])
+	// Grid of very partial rhombitrihexagons at 0.5 coordinates
+	for (X = [0 : CountX - 2])
 	{
-		Rhombitrihexagon(_HexRadius, _Inset, _HexHeight, _SquareHeight, _TriangleHeight, FirstMidSquares, FirstMidTriangles, _RimThickness, _RimHeight _RimGap, _RimMaxElements);
-	}
+		for (Y = [0 : CountY - 1])
+		{
+			// Compute location
+			PointX = (X * (SpaceX + Explode)) + SpaceX / 2 + Explode / 2;
+			PointY = (Y * (SpaceY + Explode)) + SpaceY / 2 + Explode / 2;
 
-	translate([SpaceX / 2, SpaceY + SpaceY / 2, 0])
-	{
-		Rhombitrihexagon(_HexRadius, _Inset, _HexHeight, _SquareHeight, _TriangleHeight, [0, 1, 2, 4], [1, 2], _RimThickness, _RimHeight, _RimGap, _RimMaxElements);	
-	}*/
+			translate([PointX, PointY, 0])
+			{
+				Rhombitrihexagon(_HexRadius, _Inset, _HexHeight, _SquareHeight, _TriangleHeight, [4], [], _RimThickness, _RimHeight, _RimGap, _RimMaxElements);
+			}
+		}
+	}
 }
 
 main();
