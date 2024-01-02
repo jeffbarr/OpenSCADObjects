@@ -12,7 +12,7 @@ Here's a review of each one:
 * [aws_fabric_tiles.scad](https://github.com/jeffbarr/OpenSCADObjects#aws_fabric_tilesscad)
 * [dentist_square.scad](https://github.com/jeffbarr/OpenSCADObjects#dentist_squarescad)
 * [rhombitrihexagon.scad](https://github.com/jeffbarr/OpenSCADObjects#rhombitrihexagonscad)
-* [talons.scad](https://github.com/jeffbarr/OpenSCADObjects#talons)
+* [talons.scad](https://github.com/jeffbarr/OpenSCADObjects#talonsscad)
 
 ## [neo_strip.scad](https://github.com/jeffbarr/OpenSCADObjects/blob/main/neo_strip.scad)
 
