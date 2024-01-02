@@ -3,15 +3,15 @@ This repository contains a collection of [OpenSCAD](https://openscad.org/) objec
 
 Here's a review of each one:
 
-* [neo_strip.scad](https://github.com/jeffbarr/OpenSCADObjects#neo_stripscad)
-* [quads.scad](https://github.com/jeffbarr/OpenSCADObjects#quadsscad)
-* [super_hexagons.scad](https://github.com/jeffbarr/OpenSCADObjects#super_hexagonsscad)
-* [nodes_edges.scad](https://github.com/jeffbarr/OpenSCADObjects#nodes_edgesscad)
-* [nodes_graph.scad](https://github.com/jeffbarr/OpenSCADObjects#nodes_graphscad)
-* [spikes.scad](https://github.com/jeffbarr/OpenSCADObjects#spikesscad)
 * [aws_fabric_tiles.scad](https://github.com/jeffbarr/OpenSCADObjects#aws_fabric_tilesscad)
 * [dentist_square.scad](https://github.com/jeffbarr/OpenSCADObjects#dentist_squarescad)
+* [neo_strip.scad](https://github.com/jeffbarr/OpenSCADObjects#neo_stripscad)
+* [nodes_edges.scad](https://github.com/jeffbarr/OpenSCADObjects#nodes_edgesscad)
+* [nodes_graph.scad](https://github.com/jeffbarr/OpenSCADObjects#nodes_graphscad)
+* [quads.scad](https://github.com/jeffbarr/OpenSCADObjects#quadsscad)
 * [rhombitrihexagon.scad](https://github.com/jeffbarr/OpenSCADObjects#rhombitrihexagonscad)
+* [spikes.scad](https://github.com/jeffbarr/OpenSCADObjects#spikesscad)
+* [super_hexagons.scad](https://github.com/jeffbarr/OpenSCADObjects#super_hexagonsscad)
 * [talons.scad](https://github.com/jeffbarr/OpenSCADObjects#talonsscad)
 
 ## [neo_strip.scad](https://github.com/jeffbarr/OpenSCADObjects/blob/main/neo_strip.scad)
