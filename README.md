@@ -12,6 +12,7 @@ Here's a review of each one:
 * [aws_fabric_tiles.scad](https://github.com/jeffbarr/OpenSCADObjects#aws_fabric_tilesscad)
 * [dentist_square.scad](https://github.com/jeffbarr/OpenSCADObjects#dentist_squarescad)
 * [rhombitrihexagon.scad](https://github.com/jeffbarr/OpenSCADObjects#rhombitrihexagonscad)
+* [talons.scad](https://github.com/jeffbarr/OpenSCADObjects#talons)
 
 ## [neo_strip.scad](https://github.com/jeffbarr/OpenSCADObjects/blob/main/neo_strip.scad)
 
@@ -104,3 +105,10 @@ A [Rhombitrihexagon](https://en.wikipedia.org/wiki/Rhombitrihexagonal_tiling):
 ![Rhombitrihexagon](https://github.com/jeffbarr/OpenSCADObjects/blob/main/rth_small_sample.png)
 
 One input value (*_HexRadius*) controls the size of all of the elements in the XY plane. The heights of the hexagons, squares, and triangles can be set individually. Read [this post](https://medium.com/@nextjeff/3d-printing-rhombitrihexagons-d9aa5c4a1251) to learn more about the code.
+
+## [talons.scad](https://github.com/jeffbarr/OpenSCADObjects/blob/main/talons.scad)
+
+A grid or ring of talons, fully customizer enabled, lots of parameters.
+
+![Sample Talons](https://github.com/jeffbarr/OpenSCADObjects/blob/main/talons_sample.jpg)
+
