@@ -92,7 +92,7 @@ A variant of [nodes_edges.scad](https://github.com/jeffbarr/OpenSCADObjects/blob
 
 Sample:
 
-![Nodes Graphs Sample](https://github.com/jeffbarr/OpenSCADObjects/blob/main/nodes_graph_sample.jpg)
+![Nodes Graphs Sample](https://github.com/jeffbarr/OpenSCADObjects/blob/main/images/nodes_graph_sample.jpg)
 
 Mostly customizer-enabled, choosing the desired output is accomplished by editing the code.
 
@@ -100,7 +100,7 @@ Mostly customizer-enabled, choosing the desired output is accomplished by editin
 
 Spikes on rafts:
 
-![Spikes on Rafts](https://github.com/jeffbarr/OpenSCADObjects/blob/main/spikes_sample.png)
+![Spikes on Rafts](https://github.com/jeffbarr/OpenSCADObjects/blob/main/images/spikes_sample.png)
 
 *_RaftCount* sets the number of rafts, each one separated by *_RaftSpaceX* and *_Raftheight* thick. Each raft has a grid of *_SpikeCountX* by *_SpikeCountY* spikes, and each spike is *_SpikeCylHeight* + *_SpikeTipHeight* high. Spikes can be cylindrical or pyramidal. Each cylindrical spike is *_SpikeRadius* around. Each pyramidal spike is on a square base *_PyrBase* wide and deep, and *_PyrHeight* tall, ith walls *_PyrWall* thick. Spikes of either type are spaced on the raft based on *_SpikeSpaceX* and *_SpikeSpaceY*. 
 
@@ -110,7 +110,7 @@ This file is fully customizer-enabled.
 
 A [Rhombitrihexagon](https://en.wikipedia.org/wiki/Rhombitrihexagonal_tiling):
 
-![Rhombitrihexagon](https://github.com/jeffbarr/OpenSCADObjects/blob/main/rth_small_sample.png)
+![Rhombitrihexagon](https://github.com/jeffbarr/OpenSCADObjects/blob/main/images/rth_small_sample.png)
 
 One input value (*_HexRadius*) controls the size of all of the elements in the XY plane. The heights of the hexagons, squares, and triangles can be set individually. Read [this post](https://medium.com/@nextjeff/3d-printing-rhombitrihexagons-d9aa5c4a1251) to learn more about the code.
 
@@ -118,11 +118,11 @@ One input value (*_HexRadius*) controls the size of all of the elements in the X
 
 A grid or ring of talons, fully Customizer enabled, lots of parameters.
 
-![Sample Talons](https://github.com/jeffbarr/OpenSCADObjects/blob/main/talons_sample.jpg)
+![Sample Talons](https://github.com/jeffbarr/OpenSCADObjects/blob/main/images/talons_sample.jpg)
 
 Here's the Customizer:
 
-![Talons Customizer](https://github.com/jeffbarr/OpenSCADObjects/blob/main/talons_customizer.png)
+![Talons Customizer](https://github.com/jeffbarr/OpenSCADObjects/blob/main/images/talons_customizer.png)
 
 There are two layouts, *Grid* and *Ring*. If *SolidBase* is set, then talons are on a solid base that is *BaseThickness* high. Grid bases surround the talon grid with a border that is *BaseBorder* wide. Ring bases consist of a ring that has *RingBaseOuterRadius*, with a *RingBaseInnerRadius* hole in the center. Each talon is the intersection of two arcs of  *TalonRadius* , with the arcs separated by *TalonOffset*, and each talon *TalonThickness* wide. Talons are rotated by *TalonRotation*, with additional rotation for Ring bases.
 
