@@ -25,7 +25,7 @@ This file is fully customizer-enabled.
 ## [dentist_square.scad](https://github.com/jeffbarr/OpenSCADObjects/blob/main/dentist_square.scad)
 
 An OpenSCAD replica of an interesting pattern that I found and captured in my dentist's office.
-![Dentist Square](https://github.com/jeffbarr/OpenSCADObjects/blob/main/dentist_square_sample.jpg)
+![Dentist Square](https://github.com/jeffbarr/OpenSCADObjects/blob/main/images/dentist_square_sample.jpg)
 
 ## [neo_strip.scad](https://github.com/jeffbarr/OpenSCADObjects/blob/main/neo_strip.scad)
 
