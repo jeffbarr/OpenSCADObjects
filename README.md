@@ -114,6 +114,8 @@ A [Rhombitrihexagon](https://en.wikipedia.org/wiki/Rhombitrihexagonal_tiling):
 
 One input value (*_HexRadius*) controls the size of all of the elements in the XY plane. The heights of the hexagons, squares, and triangles can be set individually. Read [this post](https://medium.com/@nextjeff/3d-printing-rhombitrihexagons-d9aa5c4a1251) to learn more about the code.
 
+![Rhombitrihexagon Sample](https://github.com/jeffbarr/OpenSCADObjects/blob/main/images/rth_sample.png)
+
 ## [talons.scad](https://github.com/jeffbarr/OpenSCADObjects/blob/main/talons.scad)
 
 A grid or ring of talons, fully Customizer enabled, lots of parameters.
