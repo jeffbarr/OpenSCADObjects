@@ -108,7 +108,17 @@ One input value (*_HexRadius*) controls the size of all of the elements in the X
 
 ## [talons.scad](https://github.com/jeffbarr/OpenSCADObjects/blob/main/talons.scad)
 
-A grid or ring of talons, fully customizer enabled, lots of parameters.
+A grid or ring of talons, fully Customizer enabled, lots of parameters.
 
 ![Sample Talons](https://github.com/jeffbarr/OpenSCADObjects/blob/main/talons_sample.jpg)
+
+Here's the Customizer:
+
+![Talons Customizer](https://github.com/jeffbarr/OpenSCADObjects/blob/main/talons_customizer.png)
+
+There are two layouts, *Grid* and *Ring*. If *SolidBase* is set, then talons are on a solid base that is *BaseThickness* high. Grid bases surround the talon grid with a border that is *BaseBorder* wide. Ring bases consist of a ring that has *RingBaseOuterRadius*, with a *RingBaseInnerRadius* hole in the center. Each talon is the intersection of two arcs of  *TalonRadius* , with the arcs separated by *TalonOffset*, and each talon *TalonThickness* wide. Talons are rotated by *TalonRotation*, with additional rotation for Ring bases.
+
+Grid bases have *CountX* by *CountY* talons, spaced *SpaceX* and *SpaceY* apart, with talons on odd rows centered between those on even rows.
+
+Ring bases have the primary ring of *MainRingTalonCount* talons at *MainFirstRingRadius*, then stepped by *MainRingRadiusStep* for *MainRingCount* times. There's also a secondary "fill" ring of *FillRingTalonCount* talons, starting at *FillFirstRingRadius*, then stepped by *FillRingRadiusStep* for *FillRingTalonCount* times. The ring itself is rotated by *FillRingRotate*.
 
