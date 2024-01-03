@@ -76,13 +76,13 @@ This file is fully customizer-enabled:
 
 Nodes and edges in an offset grid:
 
-![Nodes and Edges Sample](https://github.com/jeffbarr/OpenSCADObjects/blob/main/nodes_edges_sample.png)
+![Nodes and Edges Sample](https://github.com/jeffbarr/OpenSCADObjects/blob/main/images/nodes_edges_sample.png)
 
 *NodeSize* controls the size of each node, and there are *CountX* rows and *CountY* columns of nodes. They are spaced by *SpaceX* from column to column, and *SpaceY* from row to row. *NodeHeight* and *EdgeHeight* set the height of nodes and edges; *NodeRimHeight* and *EdgeRimHeight* do the same for the 3-concentric rim on nodes and edges, each of which is *RimThickness* thick. *EdgeWidth* is the width of each edge. *EdgeLengthXFactor* and *EdgeLengthXYFactor* are percentages that control the length of the X-aligned, and XY diagonal edges. 
 
 Here's a sample in black and silver:
 
-![Nodes and Edges Black and Silver](https://github.com/jeffbarr/OpenSCADObjects/blob/main/nodes_edges_black_silver.jpg)
+![Nodes and Edges Black and Silver](https://github.com/jeffbarr/OpenSCADObjects/blob/main/images/nodes_edges_black_silver.jpg)
 
 This file is fully customizer-enabled.
 
