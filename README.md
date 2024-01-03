@@ -14,6 +14,19 @@ Here's a review of each one:
 * [super_hexagons.scad](https://github.com/jeffbarr/OpenSCADObjects#super_hexagonsscad)
 * [talons.scad](https://github.com/jeffbarr/OpenSCADObjects#talonsscad)
 
+## [aws_fabric_tiles.scad](https://github.com/jeffbarr/OpenSCADObjects/blob/main/aws_fabric_tiles.scad)
+
+A tiled grid of [AWS Service Icons](https://github.com/WayneStallwood/AWS-Tile-Generator/samples). The STL files from that repo must be in the same directory as this script. Tiles are scaled by *TileScale* and then placed *SpaceX* and *SpaceY* apart, for a total of *CountX* columns and *CountY* rows.
+
+![AWS Fabric Tiles](https://github.com/jeffbarr/OpenSCADObjects/blob/main/aws_fabric_tiles_sample.jpg)
+
+This file is fully customizer-enabled.
+
+## [dentist_square.scad](https://github.com/jeffbarr/OpenSCADObjects/blob/main/dentist_square.scad)
+
+An OpenSCAD replica of an interesting pattern that I found and captured in my dentist's office.
+![Dentist Square](https://github.com/jeffbarr/OpenSCADObjects/blob/main/dentist_square_sample.jpg)
+
 ## [neo_strip.scad](https://github.com/jeffbarr/OpenSCADObjects/blob/main/neo_strip.scad)
 
 A 2-piece channel and matching cover for Adafruit [NeoPixels](https://www.adafruit.com/category/168), designed to hold the strips tightly and to diffuse the light into a softer glow. The channel is sized to fit strips within the weatherproof casing;
@@ -84,19 +97,6 @@ Spikes on rafts:
 *_RaftCount* sets the number of rafts, each one separated by *_RaftSpaceX* and *_Raftheight* thick. Each raft has a grid of *_SpikeCountX* by *_SpikeCountY* spikes, and each spike is *_SpikeCylHeight* + *_SpikeTipHeight* high. Spikes can be cylindrical or pyramidal. Each cylindrical spike is *_SpikeRadius* around. Each pyramidal spike is on a square base *_PyrBase* wide and deep, and *_PyrHeight* tall, ith walls *_PyrWall* thick. Spikes of either type are spaced on the raft based on *_SpikeSpaceX* and *_SpikeSpaceY*. 
 
 This file is fully customizer-enabled.
-
-## [aws_fabric_tiles.scad](https://github.com/jeffbarr/OpenSCADObjects/blob/main/aws_fabric_tiles.scad)
-
-A tiled grid of [AWS Service Icons](https://github.com/WayneStallwood/AWS-Tile-Generator/samples). The STL files from that repo must be in the same directory as this script. Tiles are scaled by *TileScale* and then placed *SpaceX* and *SpaceY* apart, for a total of *CountX* columns and *CountY* rows.
-
-![AWS Fabric Tiles](https://github.com/jeffbarr/OpenSCADObjects/blob/main/aws_fabric_tiles_sample.jpg)
-
-This file is fully customizer-enabled.
-
-## [dentist_square.scad](https://github.com/jeffbarr/OpenSCADObjects/blob/main/dentist_square.scad)
-
-An OpenSCAD replica of an interesting pattern that I found and captured in my dentist's office.
-![Dentist Square](https://github.com/jeffbarr/OpenSCADObjects/blob/main/dentist_square_sample.jpg)
 
 ## [rhombitrihexagon.scad](https://github.com/jeffbarr/OpenSCADObjects/blob/main/rhombitrihexagon.scad)
 
