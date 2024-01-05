@@ -1,12 +1,12 @@
 // negative_shapes carved from a slab
 
-// Taper the shapes
+//
+// Final clip to get rid of element borders for partial elements
 //
 // Add texture to base
-//	Per-base
-//	Per-element 
-//	Per-space between element
 //  Make texture height and thickness into parameters
+//	Better compute size
+//	Grid texture should be adjacent to cut lines
 //
 // Very fancy rotate
 //   MAJOR time - sequence through element shapes
@@ -39,8 +39,17 @@ _BaseGap = 1;
 
 _ElementShape = "Circle"; // [Circle, Triangle, Square, Hexagon, Octagon]
 
-// Element Size
+// Element size
 _ElementSize = 6;
+
+// Element border
+_ElementBorder = false;
+
+// Element border thickness
+_ElementBorderThickness = 2;
+
+// Element border height
+_ElementBorderHeight = 0.4;
 
 /* [Texture] */
 
@@ -161,6 +170,35 @@ module 	ElementGrid(CountX, CountY, SpaceX, SpaceY, BaseThickness, Gap, ElementS
 	}
 }
 
+// Render a grid of element borders
+module ElementGridBorder(CountX, CountY, SpaceX, SpaceY, Gap, Shape, ElementSize, ElementBorderThickness, ElementBorderHeight)
+{
+	Sides = ShapeToSides(Shape);
+	Angle = ShapeToAngle(Shape);
+			
+	for (X = [0 : CountX ])
+	{
+		for (Y = [0 : CountY])
+		{
+			// Compute center of cell
+			PointX = X * (SpaceX + Gap);
+			PointY = Y * (SpaceY + Gap);
+			
+			translate([PointX, PointY, 0])
+			{
+				linear_extrude(ElementBorderHeight)
+				{
+					difference()
+					{
+						circle(r=ElementSize + ElementBorderThickness, $fn=Sides);
+						circle(r=ElementSize, $fn=Sides);
+					}
+				}
+			}
+		}
+	}
+}
+
 // Map a texture shape to the number of sides
 function ShapeToSides(Shape) =
 (
@@ -178,7 +216,7 @@ function ShapeToAngle(Shape) =
 (
 	(Shape == "None"     ?  0    :
 	 Shape == "Circle"   ?  0    : 
-	 Shape == "Triangle" ?  3    :
+	 Shape == "Triangle" ?  0    :
 	 Shape == "Square"   ?  45   :
 	 Shape == "Hexagon"  ?  0    :
 	 Shape == "Octagon"  ?  22.5 :
@@ -241,7 +279,7 @@ module Texture(Shape, Width, Depth, Style, Space)
 }
 
 // Render base, elements, and texture
-module BasePlusElements(BaseWidth, BaseDepth, BaseThickness, CountX, CountY, SpaceX, SpaceY, Gap, ElementShape, ElementSize, TextureShape, TextureStyle, TextureSpace)
+module BasePlusElements(BaseWidth, BaseDepth, BaseThickness, CountX, CountY, SpaceX, SpaceY, Gap, ElementShape, ElementSize, ElementBorder, ElementBorderThickness, ElementBorderHeight, TextureShape, TextureStyle, TextureSpace)
 {
 	difference()
 	{
@@ -257,18 +295,30 @@ module BasePlusElements(BaseWidth, BaseDepth, BaseThickness, CountX, CountY, Spa
 				{
 					Texture(TextureShape, BaseWidth, BaseDepth, TextureStyle, TextureSpace);
 				}
+				
+				// Element borders
+				if (ElementBorder)
+				{
+					translate([0, 0, BaseThickness])
+					{
+						ElementGridBorder(CountX, CountY, SpaceX, SpaceY, Gap, ElementShape, ElementSize, ElementBorderThickness, ElementBorderHeight);
+					}
+				}
 			}
 		}
 		
 		// Anti-matter
 		{
-			// Cuts between elements
-			Cuts("X", 0, CountX, SpaceX, BaseWidth, BaseDepth, Gap);
-			Cuts("Y", 0, CountY, SpaceY, BaseWidth, BaseDepth, Gap);
-			
-			// Elements
-			// 5 is a hack to make the elements tall enough to clip out texture
-			ElementGrid(CountX, CountY, SpaceX, SpaceY, BaseThickness + 5, Gap, ElementShape, ElementSize);
+			union()
+			{
+				// Cuts between elements
+				Cuts("X", 0, CountX, SpaceX, BaseWidth, BaseDepth, Gap);
+				Cuts("Y", 0, CountY, SpaceY, BaseWidth, BaseDepth, Gap);
+				
+				// Elements
+				// 5 is a hack to make the elements tall enough to clip out texture
+				ElementGrid(CountX, CountY, SpaceX, SpaceY, BaseThickness + 5, Gap, ElementShape, ElementSize);
+			}
 		}
 	}
 }
@@ -294,7 +344,7 @@ module main()
 		{
 			translate([-_BaseWidth / 2, -_BaseDepth / 2, 0])
 			{
-				BasePlusElements(_BaseWidth, _BaseDepth, _BaseThickness, _CountX, _CountY, _SpaceX, _SpaceY, _BaseGap, _ElementShape, _ElementSize, _TextureShape, _TextureStyle, _TextureSpace);
+				BasePlusElements(_BaseWidth, _BaseDepth, _BaseThickness, _CountX, _CountY, _SpaceX, _SpaceY, _BaseGap, _ElementShape, _ElementSize, _ElementBorder, _ElementBorderThickness, _ElementBorderHeight, _TextureShape, _TextureStyle, _TextureSpace);
 			}
 		}
 	}
@@ -302,9 +352,11 @@ module main()
 	{
 		translate([-_BaseWidth / 2, -_BaseDepth / 2, 0])
 		{
-			BasePlusElements(_BaseWidth, _BaseDepth, _BaseThickness, _CountX, _CountY, _SpaceX, _SpaceY, _BaseGap, _ElementShape, _ElementSize, _TextureShape, _TextureStyle, _TextureSpace);
+			BasePlusElements(_BaseWidth, _BaseDepth, _BaseThickness, _CountX, _CountY, _SpaceX, _SpaceY, _BaseGap, _ElementShape, _ElementSize, _ElementBorder, _ElementBorderThickness, _ElementBorderHeight, _TextureShape, _TextureStyle, _TextureSpace);
 		}
 	}
 }
+
+
 
 main();
