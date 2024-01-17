@@ -10,6 +10,7 @@ Here's a review of each one:
 * [nodes_graph.scad](https://github.com/jeffbarr/OpenSCADObjects#nodes_graphscad)
 * [quads.scad](https://github.com/jeffbarr/OpenSCADObjects#quadsscad)
 * [rhombitrihexagon.scad](https://github.com/jeffbarr/OpenSCADObjects#rhombitrihexagonscad)
+* [scales.scad](https://github.com/jeffbarr/OpenSCADObjects#scalesscad)
 * [spikes.scad](https://github.com/jeffbarr/OpenSCADObjects#spikesscad)
 * [super_hexagons.scad](https://github.com/jeffbarr/OpenSCADObjects#super_hexagonsscad)
 * [talons.scad](https://github.com/jeffbarr/OpenSCADObjects#talonsscad)
@@ -95,6 +96,20 @@ Sample:
 ![Nodes Graphs Sample](https://github.com/jeffbarr/OpenSCADObjects/blob/main/images/nodes_graph_sample.jpg)
 
 Mostly customizer-enabled, choosing the desired output is accomplished by editing the code.
+
+## [scales.scad](https://github.com/jeffbarr/OpenSCADObjects/blob/main/scales.scad)
+
+All kinds of scales:
+
+![Scales](https://github.com/jeffbarr/OpenSCADObjects/blob/main/images/scales_sample.png)
+
+*CountX* and *CountY* set the number of scales in the X and Y direction, spaced *SpaceX* and *SpaceY* apart. If *EvenOddLayout* is set, scales on odd values of Y are offset by *SpaceX* / 2. If *EvenOddRotate* is set, those scales are rotated 180 degrees on the Z axis. 
+
+The only supported *ScaleStyle* is "Ring". Within that, *ScaleRingShape* can be "Circle", "Triangle", "Hexagon", or "Octagon". The remaining parameters in this section control the size and thickness of each ring.
+
+Fully customizer-enabled:
+
+![Scales Customizer](https://github.com/jeffbarr/OpenSCADObjects/blob/main/images/scales_customizer.png)
 
 ## [spikes.scad](https://github.com/jeffbarr/OpenSCADObjects/blob/main/spikes.scad)
 
