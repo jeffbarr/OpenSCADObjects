@@ -352,7 +352,12 @@ module main()
 	{
 		translate([-_BaseWidth / 2, -_BaseDepth / 2, 0])
 		{
-			BasePlusElements(_BaseWidth, _BaseDepth, _BaseThickness, _CountX, _CountY, _SpaceX, _SpaceY, _BaseGap, _ElementShape, _ElementSize, _ElementBorder, _ElementBorderThickness, _ElementBorderHeight, _TextureShape, _TextureStyle, _TextureSpace);
+			intersection()
+			{
+				BasePlusElements(_BaseWidth, _BaseDepth, _BaseThickness, _CountX, _CountY, _SpaceX, _SpaceY, _BaseGap, _ElementShape, _ElementSize, _ElementBorder, _ElementBorderThickness, _ElementBorderHeight, _TextureShape, _TextureStyle, _TextureSpace);
+				
+				Base(_BaseWidth, _BaseDepth, 99); // HACK ^^ 99
+			}
 		}
 	}
 }
