@@ -35,6 +35,12 @@ _BaseThickness = 2;
 // Gap
 _BaseGap = 1;
 
+// Cut in X direction
+_CutX = true;
+
+// Cut in Y direction
+_CutY = true;
+
 /* [Element] */
 
 _ElementShape = "Circle"; // [Circle, Triangle, Square, Hexagon, Octagon]
@@ -279,7 +285,7 @@ module Texture(Shape, Width, Depth, Style, Space)
 }
 
 // Render base, elements, and texture
-module BasePlusElements(BaseWidth, BaseDepth, BaseThickness, CountX, CountY, SpaceX, SpaceY, Gap, ElementShape, ElementSize, ElementBorder, ElementBorderThickness, ElementBorderHeight, TextureShape, TextureStyle, TextureSpace)
+module BasePlusElements(BaseWidth, BaseDepth, BaseThickness, CountX, CountY, CutX, CutY, SpaceX, SpaceY, Gap, ElementShape, ElementSize, ElementBorder, ElementBorderThickness, ElementBorderHeight, TextureShape, TextureStyle, TextureSpace)
 {
 	difference()
 	{
@@ -311,9 +317,16 @@ module BasePlusElements(BaseWidth, BaseDepth, BaseThickness, CountX, CountY, Spa
 		{
 			union()
 			{
-				// Cuts between elements
-				Cuts("X", 0, CountX, SpaceX, BaseWidth, BaseDepth, Gap);
-				Cuts("Y", 0, CountY, SpaceY, BaseWidth, BaseDepth, Gap);
+				// Cuts between elements (this looks wrong but it is not)
+				if (CutY)
+				{
+					Cuts("X", 0, CountX, SpaceX, BaseWidth, BaseDepth, Gap);
+				}
+				
+				if (CutX)
+				{
+					Cuts("Y", 0, CountY, SpaceY, BaseWidth, BaseDepth, Gap);
+				}
 				
 				// Elements
 				// 5 is a hack to make the elements tall enough to clip out texture
@@ -344,7 +357,7 @@ module main()
 		{
 			translate([-_BaseWidth / 2, -_BaseDepth / 2, 0])
 			{
-				BasePlusElements(_BaseWidth, _BaseDepth, _BaseThickness, _CountX, _CountY, _SpaceX, _SpaceY, _BaseGap, _ElementShape, _ElementSize, _ElementBorder, _ElementBorderThickness, _ElementBorderHeight, _TextureShape, _TextureStyle, _TextureSpace);
+				BasePlusElements(_BaseWidth, _BaseDepth, _BaseThickness, _CountX, _CountY,  _CutX, _CutY, _SpaceX, _SpaceY, _BaseGap, _ElementShape, _ElementSize, _ElementBorder, _ElementBorderThickness, _ElementBorderHeight, _TextureShape, _TextureStyle, _TextureSpace);
 			}
 		}
 	}
@@ -354,7 +367,7 @@ module main()
 		{
 			intersection()
 			{
-				BasePlusElements(_BaseWidth, _BaseDepth, _BaseThickness, _CountX, _CountY, _SpaceX, _SpaceY, _BaseGap, _ElementShape, _ElementSize, _ElementBorder, _ElementBorderThickness, _ElementBorderHeight, _TextureShape, _TextureStyle, _TextureSpace);
+				BasePlusElements(_BaseWidth, _BaseDepth, _BaseThickness, _CountX, _CountY, _CutX, _CutY, _SpaceX, _SpaceY, _BaseGap, _ElementShape, _ElementSize, _ElementBorder, _ElementBorderThickness, _ElementBorderHeight, _TextureShape, _TextureStyle, _TextureSpace);
 				
 				Base(_BaseWidth, _BaseDepth, 99); // HACK ^^ 99
 			}
