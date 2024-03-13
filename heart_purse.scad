@@ -16,7 +16,7 @@
 // TODO:
 //
 // - Figure out why 7 (BlackMagicOriginOffset) is needed
-// - Additional separators closer to top for better balance, get metrics by building a better "heart" module
+// - Create a better heart module that can also generate metrics
 // - Fix inner brim
 // - Option to print separate side parts that click in
 // - Option grid of hearts
@@ -270,8 +270,8 @@ module HeartArcSeparators(BaseThickness, ArcRadius, Height, Size, Gap, Count, In
 	}
 }
 
-// Separator holes, to be used as negative volume
-module HeartSeparatorHoles(Depth, Wiggle, Size, Gap, Count, Inset)
+// Separator holes on X and Y axis, to be used as negative volume
+module HeartLineSeparatorHoles(Depth, Wiggle, Size, Gap, Count, Inset)
 {
 	HalfWiggle = Wiggle / 2;
 	
@@ -293,6 +293,69 @@ module HeartSeparatorHoles(Depth, Wiggle, Size, Gap, Count, Inset)
 		{
 			cube([Size + Wiggle, Size + Wiggle, Depth + .002]);
 		}
+	}
+}
+
+// Separator holes on arcs, to be used as negative volume
+module HeartArcSeparatorHoles(ArcRadius, Depth, Wiggle, Size, Gap, Count, Inset)
+{
+	HalfWiggle = Wiggle / 2;
+		
+	// Compute angle between separators to achieve gap
+	ThetaGap = Gap / ArcRadius * (180 / PI);
+		
+	// X Arc separator holes
+	{
+		// Compute center of X axis arc
+		X_ArcCenterX = (2 * ArcRadius);
+		X_ArcCenterY = ArcRadius;
+		
+		for (x = [0 : Count - 1])
+		{
+			Theta = x * ThetaGap;
+			
+			PointX = X_ArcCenterX + (ArcRadius - Inset) * cos(Theta - 90);
+			PointY = X_ArcCenterY + (ArcRadius - Inset) * sin(Theta - 90);
+			
+			translate([PointX - HalfWiggle, PointY - HalfWiggle, -.001])
+			{
+				rotate([0, 0, Theta])
+				{
+					cube([Size + Wiggle, Size + Wiggle, Depth + .002]);
+				}
+			}
+		}
+		
+		// Debug
+		//translate([X_ArcCenterX, X_ArcCenterY, 5]) color("orange") circle(r=ArcRadius);
+	}
+
+	// Y Arc separators
+	{
+		// Compute center of Y axis arc
+		Y_ArcCenterX = ArcRadius;
+		Y_ArcCenterY = (2 * ArcRadius);
+
+		for (y = [0 : Count - 1])
+		{
+			Theta = 90 - (y * ThetaGap);
+
+			PointX = Y_ArcCenterX + (ArcRadius - Inset - BlackMagicOriginOffset) * cos(Theta + 90);
+			PointY = Y_ArcCenterY + (ArcRadius - Inset - BlackMagicOriginOffset) * sin(Theta + 90);
+			
+			echo(PointX, PointY);
+			
+			translate([PointX - HalfWiggle, PointY - HalfWiggle, -.001])
+			{
+				rotate([0, 0, Theta])
+				{
+					cube([Size + Wiggle, Size + Wiggle, Depth + .002]);
+				}
+			}
+		}
+		
+		// Debug
+		//translate([Y_ArcCenterX, Y_ArcCenterY, 5]) color("orange") circle(r=ArcRadius);
 	}
 }
 
@@ -336,7 +399,7 @@ module RenderHeartMatter(HeartThickness, HeartStartR, HeartEndR, HeartStepR, Hea
 }
 
 // Render the antimatter - optional hinge and optional separator holes
-module RenderHeartAntiMatter(HingeCut, HeartThickness, HeartEndR, SeparatorHoles, SeparatorHoleDepth, SeparatorHoleWiggle, SeparatorSize, SeparatorGap, SeparatorCount, SeparatorInset)
+module RenderHeartAntiMatter(HingeCut, HeartThickness, HeartEndR, SeparatorHoles, SeparatorHoleDepth, SeparatorHoleWiggle, SeparatorSize, SeparatorGap, SeparatorCount, ArcSeparatorCount, SeparatorInset)
 {
 		if (HingeCut)
 		{
@@ -345,7 +408,8 @@ module RenderHeartAntiMatter(HingeCut, HeartThickness, HeartEndR, SeparatorHoles
 		
 		if (SeparatorHoles)
 		{
-			HeartSeparatorHoles(SeparatorHoleDepth, SeparatorHoleWiggle, SeparatorSize, SeparatorGap, SeparatorCount, SeparatorInset);
+			HeartLineSeparatorHoles(SeparatorHoleDepth, SeparatorHoleWiggle, SeparatorSize, SeparatorGap, SeparatorCount, SeparatorInset);
+			HeartArcSeparatorHoles(HeartEndR, SeparatorHoleDepth, SeparatorHoleWiggle, SeparatorSize, SeparatorGap, ArcSeparatorCount, SeparatorInset);
 		}
 }
 
@@ -360,7 +424,7 @@ module main()
 		
 		// Anti-matter: Optional hinge and optional hinge holes
 		{
-			RenderHeartAntiMatter(_HingeCut, _HeartThickness, _HeartEndR, _SeparatorHoles, _SeparatorHoleDepth, _SeparatorHoleWiggle, _SeparatorSize, _SeparatorGap, _SeparatorCount, _SeparatorInset);
+			RenderHeartAntiMatter(_HingeCut, _HeartThickness, _HeartEndR, _SeparatorHoles, _SeparatorHoleDepth, _SeparatorHoleWiggle, _SeparatorSize, _SeparatorGap, _SeparatorCount, _ArcSeparatorCount, _SeparatorInset);
 		}
 	}
 }
