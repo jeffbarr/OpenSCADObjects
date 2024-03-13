@@ -2,6 +2,7 @@
 
 //
 // This is a hacky work in progress that was done under deadline pressure.
+// Unholy mess of hacks layered on other hacks, with magic numbers and workarounds.
 //
 // To use it:
 //
@@ -14,7 +15,7 @@
 
 // TODO:
 //
-// - Figure out why 1.6 (BlackMagicOriginOffset) is needed
+// - Figure out why 7 (BlackMagicOriginOffset) is needed
 // - Additional separators closer to top for better balance, get metrics by building a better "heart" module
 // - Fix inner brim
 // - Option to print separate side parts that click in
@@ -35,7 +36,7 @@ _HeartWidth = 10;
 _HeartStartR = 20;
 
 // Wnding heart radius
-_HeartEndR = 70;
+_HeartEndR = 65;
 
 // Heart radius step
 _HeartStepR = 15;
@@ -66,7 +67,10 @@ _SeparatorSize = 7;
 _SeparatorGap = 20;
 
 // Separator count
-_SeparatorCount = 6;
+_SeparatorCount = 5;
+
+// Arc separator count
+_ArcSeparatorCount = 4;
 
 // Separator inset from x or y axis
 _SeparatorInset = 1.5;
@@ -87,13 +91,14 @@ _BrimWidth = 0.6;
 // Brim height
 _BrimHeight = 0.4;
 
+module _end_custom() {}
+
 // Sanity check
 assert(!(_Separators && _SeparatorHoles), "Pick either separators or holes, not both!");
 assert(!(_Separators && _Brim), "Don't use brim and separators together!");
 
 // Black Magic - This makes the heart land at 0,0
-BlackMagicOriginOffset = 1.6;
-//BlackMagicOriginOffset = 0.0;
+BlackMagicOriginOffset = 7;
 
 // Heart module based on math and code from https://openhome.cc/eGossip/OpenSCAD/Heart.html
 module heart_sub_component(radius)
@@ -155,6 +160,7 @@ module HeartRings(Thickness, HeartStartR, HeartEndR, HeartStepR, HeartWidth, Bri
 {
     for (r = [HeartStartR : HeartStepR : HeartEndR])
     {
+		echo(r);
         linear_extrude(Thickness)
         {    
             HollowHeart(r, HeartWidth);
@@ -177,13 +183,14 @@ module HeartRings(Thickness, HeartStartR, HeartEndR, HeartStepR, HeartWidth, Bri
     }
 }
 
-// Separators
-module HeartSeparators(BaseThickness, Height, Size, Gap, Count, Inset)
+// Separators on line
+module HeartLineSeparators(BaseThickness, Height, Size, Gap, Count, Inset)
 {
 	// X Axis separators
-	for (x = [0 : Count])
+	for (x = [0 : Count - 1])
 	{
 		PointX = x * Gap + Inset;
+
 		translate([PointX, Inset, BaseThickness])
 		{
 			cube([Size, Size, Height]);
@@ -191,13 +198,75 @@ module HeartSeparators(BaseThickness, Height, Size, Gap, Count, Inset)
 	}
 
 	// Y Axis separators
-	for (y = [1 : Count])
+	for (y = [1 : Count - 1])
 	{
 		PointY = y * Gap;
 		translate([Inset, PointY, BaseThickness])
 		{
 			cube([Size, Size, Height]);
 		}
+	}
+}
+
+// Separators on arc
+module HeartArcSeparators(BaseThickness, ArcRadius, Height, Size, Gap, Count, Inset)
+{
+	// Compute angle between separators to achieve gap
+	ThetaGap = Gap / ArcRadius * (180 / PI);
+	echo("HeartArcSeparators: ThetaGap=", ThetaGap);
+		
+	// X Arc separators
+	{
+		// Compute center of X axis arc
+		X_ArcCenterX = (2 * ArcRadius);
+		X_ArcCenterY = ArcRadius;
+		
+		for (x = [0 : Count - 1])
+		{
+			Theta = x * ThetaGap;
+			
+			PointX = X_ArcCenterX + (ArcRadius - Inset) * cos(Theta - 90);
+			PointY = X_ArcCenterY + (ArcRadius - Inset) * sin(Theta - 90);
+			
+			echo(PointX, PointY);
+			
+			translate([PointX, PointY, BaseThickness])
+			{
+				rotate([0, 0, Theta])
+				color("blue")
+				cube([Size, Size, Height]);
+			}
+		}
+		
+		// Debug
+		//translate([X_ArcCenterX, X_ArcCenterY, 5]) color("orange") circle(r=ArcRadius);
+	}
+	
+	// Y Arc separators
+	{
+		// Compute center of Y axis arc
+		Y_ArcCenterX = ArcRadius;
+		Y_ArcCenterY = (2 * ArcRadius);
+
+		for (y = [0 : Count - 1])
+		{
+			Theta = 90 - (y * ThetaGap);
+
+			PointX = Y_ArcCenterX + (ArcRadius - Inset - BlackMagicOriginOffset) * cos(Theta + 90);
+			PointY = Y_ArcCenterY + (ArcRadius - Inset - BlackMagicOriginOffset) * sin(Theta + 90);
+			
+			echo(PointX, PointY);
+			
+			translate([PointX, PointY , BaseThickness])
+			{
+				rotate([0, 0, Theta])
+				color("green")
+				cube([Size, Size, Height]);
+			}
+		}
+		
+		// Debug
+		//translate([Y_ArcCenterX, Y_ArcCenterY, 5]) color("orange") circle(r=ArcRadius);
 	}
 }
 
@@ -254,14 +323,15 @@ module RenderHingeCut(Portion, Thickness, Length)
 	}
 }
 
-// Render the matter - heart itself aned optional separators
-module RenderHeartMatter(HeartThickness, HeartStartR, HeartEndR, HeartStepR, HeartWidth, Separators, SeparatorHeight, SeparatorSize, SeparatorGap, SeparatorCount, SeparatorInset, Brim, BrimWidth, BrimHeight)
+// Render the matter - heart itself and optional separators
+module RenderHeartMatter(HeartThickness, HeartStartR, HeartEndR, HeartStepR, HeartWidth, Separators, SeparatorHeight, SeparatorSize, SeparatorGap, SeparatorCount, ArcSeparatorCount, SeparatorInset, Brim, BrimWidth, BrimHeight)
 {
 	RenderHearts(HeartThickness, HeartStartR, HeartEndR, HeartStepR, HeartWidth, Brim, BrimWidth, BrimHeight);
 
 	if (Separators)
 	{
-		HeartSeparators(HeartThickness, SeparatorHeight, SeparatorSize, SeparatorGap, SeparatorCount, SeparatorInset);
+		HeartLineSeparators(HeartThickness, SeparatorHeight, SeparatorSize, SeparatorGap, SeparatorCount, SeparatorInset);
+		HeartArcSeparators(HeartThickness, HeartEndR, SeparatorHeight, SeparatorSize, SeparatorGap, ArcSeparatorCount, SeparatorInset);
 	}
 }
 
@@ -285,7 +355,7 @@ module main()
 	{
 		// Matter: Heart and optional separators
 		{
-			RenderHeartMatter(_HeartThickness, _HeartStartR, _HeartEndR, _HeartStepR, _HeartWidth, _Separators, _SeparatorHeight, _SeparatorSize, _SeparatorGap, _SeparatorCount, _SeparatorInset, _Brim, _BrimWidth, _BrimHeight);
+			RenderHeartMatter(_HeartThickness, _HeartStartR, _HeartEndR, _HeartStepR, _HeartWidth, _Separators, _SeparatorHeight, _SeparatorSize, _SeparatorGap, _SeparatorCount, _ArcSeparatorCount, _SeparatorInset, _Brim, _BrimWidth, _BrimHeight);
 		}
 		
 		// Anti-matter: Optional hinge and optional hinge holes
@@ -296,8 +366,3 @@ module main()
 }
 
 main();
-	
-//translate([0, -5, 0]) cube([30, 5, 1], center=false);
-/*linear_extrude(1)
-translate([50, 50, 0])
-Heart(50);*/
