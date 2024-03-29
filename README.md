@@ -5,6 +5,7 @@ Here's a review of each one:
 
 * [aws_fabric_tiles.scad](https://github.com/jeffbarr/OpenSCADObjects#aws_fabric_tilesscad)
 * [dentist_square.scad](https://github.com/jeffbarr/OpenSCADObjects#dentist_squarescad)
+* [impossible_ring.scad](http://github.com/jeffbarr/OpenSCADObjects#impossibleringscad)
 * [neo_strip.scad](https://github.com/jeffbarr/OpenSCADObjects#neo_stripscad)
 * [nodes_edges.scad](https://github.com/jeffbarr/OpenSCADObjects#nodes_edgesscad)
 * [nodes_graph.scad](https://github.com/jeffbarr/OpenSCADObjects#nodes_graphscad)
@@ -27,6 +28,12 @@ This file is fully customizer-enabled.
 
 An OpenSCAD replica of an interesting pattern that I found and captured in my dentist's office.
 ![Dentist Square](https://github.com/jeffbarr/OpenSCADObjects/blob/main/images/dentist_square_sample.jpg)
+
+## [impossible_ring.scad](https://github.com/jeffbarr/OpenSCADObjects/blob/main/impossible_ring.scad)
+
+A tower of rings supported by round separators, fully customizer-enabled:
+
+![Impossible Rings](https://github.com/jeffbarr/OpenSCADObjects/blob/main/images/impossible_ring_sample.jpg)
 
 ## [neo_strip.scad](https://github.com/jeffbarr/OpenSCADObjects/blob/main/neo_strip.scad)
 
