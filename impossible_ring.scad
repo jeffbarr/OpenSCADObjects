@@ -1,25 +1,43 @@
 // Impossible (not really) Ring
 //
 // TODO:
-// * Per-level ring radius with angled separators
-//		_BottomRingRadius
-//		_TopRingRadius
-//	    Computed tilt
+//
+// - Either top and bottom sizes, or array (to allow for in/out taper)
 //
 // - Magnet option chooser:
 //   - Small
 //   - Large
 //   - Custom
 // - Separator shape
+//
 // - Compute and echo space between separators
 // - Related way to create a "wall"
 // - Related way to create rounded rectangle
 //
-// Ring that fits a soda can: 5, 45, 45, 10, 3, 22, 16
+// Some useful presets:
+// * Ring that fits a soda can: 5, 45, 45, 10, 3, 22, 16
 //
+// * Small diametric magnet: 14.0, 3.5, 2.0, 0.8 -- for _RingInset = 12
+// * Large diametric magnet: 14.0, 7.0, 2.0, 0.8 -- for _RingInset = 19
 //
-// Small diametric magnet: 14.0, 3.5, 2.0, 0.8 -- for _RingInset = 12
-// Large diametric magnet: 14.0, 7.0, 2.0, 0.8 -- for _RingInset = 19
+// BUGS:
+//
+// * Expanding rings (wider at top than bottom), the separators are one Z level too low. Tilt is 
+//   miscalculated when the triangle is pointing out, perhaps subtract 180?
+//
+// * The inner edge of tilted separators hangs out a bit to the inside of each ring, 
+//   causing printing problems. Perhaps render the entire thing and subtract the space inside of 
+//   each ring to clear it (except first one if there's a solid bottom). Or, flatten out the 
+//   inside part of each separator.
+//
+// TO TEST / IMPLEMENT:
+//
+// * Full expanding rings
+// * Partial expanding rings
+// * Full contracting rings
+// * Partial contracting rings
+// * Vertical (same size top and bottom) rings
+//
 
 // Ring count
 _LayerCount = 1;
@@ -133,15 +151,14 @@ module RenderSeparatorWithMagnetHole(Radius, Height, MagnetSlotHeight, MagnetWid
 }
 
 // Render entire ring of separators with optional magnet holes at the specified angles
-module RenderSeparators(Count, Radius, Inset, Height, Length, Tilt, MagnetSlots, MagnetAngles, MagnetSlotHeight, MagnetWidthDepth, MagnetHeight, MagnetInset)
+module RenderSeparators(Count, Radius, RingThickness, Inset, Height, Length, Tilt, MagnetSlots, MagnetAngles, MagnetSlotHeight, MagnetWidthDepth, MagnetHeight, MagnetInset)
 {
-
 	for (Theta = [0 : 360 / Count : 359])
 	{
 		PointX = cos(Theta) * (Radius - (Inset / 2));
 		PointY = sin(Theta) * (Radius - (Inset / 2));
 		
-		translate([PointX, PointY, 0])
+		translate([PointX, PointY, -RingThickness])
 		{
 			MagnetHere = MagnetSlots && (len(search(Theta, MagnetAngles)) > 0);
 					
@@ -151,11 +168,12 @@ module RenderSeparators(Count, Radius, Inset, Height, Length, Tilt, MagnetSlots,
 				echo("Need a magnet at ", Theta);
 				
 				// Does not work for 270, but 90 and 180 are the most important cases
-				SeparatorRotate = (Theta == 90) ? -90 : 0;
-				
-				rotate([0, 0, SeparatorRotate])
+				SeparatorRotate = (Theta == 90)  ? -90 : 
+				                  (Theta == 180) ? 180 : 0;
+
+				rotate([0, -Tilt, Theta])
 				{
-					//ROTATE AND TILT
+					rotate([0, 0, SeparatorRotate])
 					RenderSeparatorWithMagnetHole(Inset / 2, Length, MagnetSlotHeight, MagnetWidthDepth, MagnetHeight, MagnetInset);
 				}
 			}
@@ -168,6 +186,26 @@ module RenderSeparators(Count, Radius, Inset, Height, Length, Tilt, MagnetSlots,
 			}
 		}
 	}
+}
+
+//
+// Render entire ring of separators inside of a clipping box. 
+// The box removes the parts of the separator that extend above or below the rings.
+//
+module RenderSeparatorsInBox(Count, Radius, RingThickness, Inset, Height, Length, Tilt, MagnetSlots, MagnetAngles, MagnetSlotHeight, MagnetWidthDepth, MagnetHeight, MagnetInset)
+{
+	intersection()
+	{
+		// Separators
+		RenderSeparators(Count, Radius, RingThickness, Inset, Height, Length, Tilt, MagnetSlots, MagnetAngles, MagnetSlotHeight, MagnetWidthDepth, MagnetHeight, MagnetInset);
+		
+		// Box
+		translate([-Radius, -Radius, 0])
+		{
+			cube([2 * Radius, 2 * Radius, Height], center=false);
+		}
+	}
+		
 }
 
 // Render entire column of rings and separators, with optional magnet holes in separator, for the separators listed in MagnetAngles
@@ -187,8 +225,8 @@ module RenderColumn(BottomRingRadius, TopRingRadius, RingInset, SolidBase, Layer
 		ThisRingRadius = BottomRingRadius + (l * RingRadiusStep);
 		LastRingRadius = ThisRingRadius - RingRadiusStep;
 		
-		SeparatorLength = sqrt(((ThisRingRadius - LastRingRadius) ^ 2) + (SeparatorHeight ^ 2));
-		SeparatorTilt   = 90 - atan(SeparatorHeight / (LastRingRadius - ThisRingRadius));
+		SeparatorLength = sqrt(((ThisRingRadius - LastRingRadius) ^ 2) + (SeparatorHeight  ^ 2)) + RingThickness;
+		SeparatorTilt   = 90 - atan((SeparatorHeight  + RingThickness) / (LastRingRadius - ThisRingRadius));
 		
 		echo("LastRingRadius=", LastRingRadius);
 		echo("ThisRingRadius=", ThisRingRadius);
@@ -198,7 +236,8 @@ module RenderColumn(BottomRingRadius, TopRingRadius, RingInset, SolidBase, Layer
 		translate([0, 0, (l - 1) * LayerHeight])
 		{
 			translate([0, 0, RingThickness])
-			{				RenderSeparators(SeparatorCount, ThisRingRadius - RingRadiusStep, RingInset, SeparatorHeight, SeparatorLength, SeparatorTilt, MagnetSlots, MagnetAngles, MagnetSlotHeight, MagnetWidthDepth, MagnetHeight, MagnetInset);
+			{
+				RenderSeparatorsInBox(SeparatorCount, ThisRingRadius - RingRadiusStep, RingThickness, RingInset, SeparatorHeight, SeparatorLength, SeparatorTilt, MagnetSlots, MagnetAngles, MagnetSlotHeight, MagnetWidthDepth, MagnetHeight, MagnetInset);
 			}
 			
 			translate([0, 0, RingThickness + SeparatorHeight])
