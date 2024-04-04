@@ -1,17 +1,21 @@
 // Impossible (not really) Ring
 //
 // TODO:
+// * Per-level ring radius with angled separators
+//		_BottomRingRadius
+//		_TopRingRadius
+//	    Computed tilt
+//
 // - Magnet option chooser:
 //   - Small
 //   - Large
 //   - Custom
-// - Per-level ring radius with angled separators
 // - Separator shape
 // - Compute and echo space between separators
 // - Related way to create a "wall"
 // - Related way to create rounded rectangle
 //
-// Ring that fits a soda can: 5, 45, 10, 3, 22, 16
+// Ring that fits a soda can: 5, 45, 45, 10, 3, 22, 16
 //
 //
 // Small diametric magnet: 14.0, 3.5, 2.0, 0.8 -- for _RingInset = 12
@@ -20,8 +24,11 @@
 // Ring count
 _LayerCount = 1;
 
-// Ring radius
-_RingRadius = 77;
+// Bottom ring radius
+_BottomRingRadius = 77;
+
+// Top ring radius
+_TopRingRadius = 47;
 
 // Ring inset
 _RingInset = 14;
@@ -92,12 +99,15 @@ module RenderRing(Radius, Inset, Thickness)
 }
 
 // Render a single separator
-module RenderSeparator(Radius, Height)
+//	Height is the vertical spacing between rings
+//	Length is the commputed length of the separator, taking tilt in to account
+//
+module RenderSeparator(Radius, Height, Length)
 {
-		linear_extrude(Height)
-		{
-			circle(r=Radius, $fn=99);
-		}
+	linear_extrude(Length)
+	{
+		circle(r=Radius, $fn=99);
+	}
 }
 
 // Render a magnet hole centered horizontally within a separator of size SeparatorRadius
@@ -123,7 +133,7 @@ module RenderSeparatorWithMagnetHole(Radius, Height, MagnetSlotHeight, MagnetWid
 }
 
 // Render entire ring of separators with optional magnet holes at the specified angles
-module RenderSeparators(Count, Radius, Inset, Height, MagnetSlots, MagnetAngles, MagnetSlotHeight, MagnetWidthDepth, MagnetHeight, MagnetInset)
+module RenderSeparators(Count, Radius, Inset, Height, Length, Tilt, MagnetSlots, MagnetAngles, MagnetSlotHeight, MagnetWidthDepth, MagnetHeight, MagnetInset)
 {
 
 	for (Theta = [0 : 360 / Count : 359])
@@ -145,38 +155,55 @@ module RenderSeparators(Count, Radius, Inset, Height, MagnetSlots, MagnetAngles,
 				
 				rotate([0, 0, SeparatorRotate])
 				{
-					RenderSeparatorWithMagnetHole(Inset / 2, Height, MagnetSlotHeight, MagnetWidthDepth, MagnetHeight, MagnetInset);
+					//ROTATE AND TILT
+					RenderSeparatorWithMagnetHole(Inset / 2, Length, MagnetSlotHeight, MagnetWidthDepth, MagnetHeight, MagnetInset);
 				}
 			}
 			else
 			{
-				RenderSeparator(Inset / 2, Height);
+				rotate([0, -Tilt, Theta])
+				{
+					RenderSeparator(Inset / 2, Height, Length);
+				}
 			}
 		}
 	}
 }
 
 // Render entire column of rings and separators, with optional magnet holes in separator, for the separators listed in MagnetAngles
-module RenderColumn(RingRadius, RingInset, SolidBase, LayerCount, RingThickness, SeparatorCount, SeparatorHeight, MagnetSlots, MagnetAngles, MagnetSlotHeight, MagnetWidthDepth, MagnetHeight, MagnetInset)
+module RenderColumn(BottomRingRadius, TopRingRadius, RingInset, SolidBase, LayerCount, RingThickness, SeparatorCount, SeparatorHeight, MagnetSlots, MagnetAngles, MagnetSlotHeight, MagnetWidthDepth, MagnetHeight, MagnetInset)
 {
-	// First ring
-	RenderRing(RingRadius, (SolidBase ? 0 : RingInset), RingThickness);
+	// Render first ring
+	RenderRing(BottomRingRadius, (SolidBase ? 0 : RingInset), RingThickness);
 	
+	// Do some math
 	LayerHeight = RingThickness + SeparatorHeight;
+	RingRadiusStep = (TopRingRadius - BottomRingRadius) / (LayerCount - 1);
 	
 	// Separators and subsequent ring
 	for (l = [1 : 1 : LayerCount - 1])
 	{
+		// Do some more math
+		ThisRingRadius = BottomRingRadius + (l * RingRadiusStep);
+		LastRingRadius = ThisRingRadius - RingRadiusStep;
+		
+		SeparatorLength = sqrt(((ThisRingRadius - LastRingRadius) ^ 2) + (SeparatorHeight ^ 2));
+		SeparatorTilt   = 90 - atan(SeparatorHeight / (LastRingRadius - ThisRingRadius));
+		
+		echo("LastRingRadius=", LastRingRadius);
+		echo("ThisRingRadius=", ThisRingRadius);
+		echo("SeparatorLength=", SeparatorLength);
+		echo("SeparatorTilt=", SeparatorTilt);
+		
 		translate([0, 0, (l - 1) * LayerHeight])
 		{
 			translate([0, 0, RingThickness])
-			{
-				RenderSeparators(SeparatorCount, RingRadius, RingInset, SeparatorHeight, MagnetSlots, MagnetAngles, MagnetSlotHeight, MagnetWidthDepth, MagnetHeight, MagnetInset);
+			{				RenderSeparators(SeparatorCount, ThisRingRadius - RingRadiusStep, RingInset, SeparatorHeight, SeparatorLength, SeparatorTilt, MagnetSlots, MagnetAngles, MagnetSlotHeight, MagnetWidthDepth, MagnetHeight, MagnetInset);
 			}
 			
 			translate([0, 0, RingThickness + SeparatorHeight])
 			{
-				RenderRing(RingRadius, RingInset, RingThickness);
+				RenderRing(ThisRingRadius, RingInset, RingThickness);
 			}
 		}
 	}
@@ -184,9 +211,9 @@ module RenderColumn(RingRadius, RingInset, SolidBase, LayerCount, RingThickness,
 
 // Render a cheese wedge that keeps only the selected part of the column
 // This is used as negative space and as such is slightly larger than necessary
-module RenderCheese(Radius, Height, StartRing, EndRing)
+module RenderCheese(BottomRadius, TopRadius, Height, StartRing, EndRing)
 {
-	Radius2 = 1.2 * Radius; // Hack
+	Radius2 = 1.2 * max(BottomRadius, TopRadius); // Hack
 	
 	linear_extrude(Height)
 	{
@@ -212,13 +239,13 @@ module main()
 	{
 		intersection()
 		{
-			RenderColumn(_RingRadius, _RingInset, _SolidBase, _LayerCount, _RingThickness, _SeparatorCount,  _SeparatorHeight, _MagnetSlots, _MagnetAngles, _MagnetSlotHeight, _MagnetWidthDepth, _MagnetHeight, _MagnetInset);
-			RenderCheese(_RingRadius, ColumnHeight, _StartRing, _EndRing);
+			RenderColumn(_BottomRingRadius, _TopRingRadius, _RingInset, _SolidBase, _LayerCount, _RingThickness, _SeparatorCount,  _SeparatorHeight, _MagnetSlots, _MagnetAngles, _MagnetSlotHeight, _MagnetWidthDepth, _MagnetHeight, _MagnetInset);
+			RenderCheese(_BottomRingRadius, _TopRingRadius, ColumnHeight, _StartRing, _EndRing);
 		}
 	}
 	else
 	{
-		RenderColumn(_RingRadius, _RingInset, _SolidBase, _LayerCount, _RingThickness, _SeparatorCount,  _SeparatorHeight, false, [], 0, 0, 0, 0);
+		RenderColumn(_BottomRingRadius, _TopRingRadius, _RingInset, _SolidBase, _LayerCount, _RingThickness, _SeparatorCount,  _SeparatorHeight, false, [], 0, 0, 0, 0);
 	}
 }
 
