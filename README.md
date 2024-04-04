@@ -36,7 +36,7 @@ A tower of rings supported by round separators, fully customizer-enabled:
 ![Impossible Rings](https://github.com/jeffbarr/OpenSCADObjects/blob/main/images/impossible_ring_sample.jpg)
 
 The math for the tilted separators was challenging, here is a diagram:
-![Impossible Ring Math]([https://github.com/jeffbarr/OpenSCADObjects/tree/main/diagrams](https://github.com/jeffbarr/OpenSCADObjects/blob/main/diagrams/impossible_ring_math.jpg))
+![Impossible Ring Math]([https://github.com/jeffbarr/OpenSCADObjects/tree/main/diagrams](https://github.com/jeffbarr/OpenSCADObjects/blob/main/diagrams/impossible_ring_math.jpg)
 
 ## [neo_strip.scad](https://github.com/jeffbarr/OpenSCADObjects/blob/main/neo_strip.scad)
 
