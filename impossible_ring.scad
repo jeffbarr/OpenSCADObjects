@@ -4,8 +4,9 @@
 //
 // - Either top and bottom sizes, or array (to allow for in/out taper)
 //
-// - Magnet option chooser:
+// - Magnet option chooser (add model numbers):
 //   - Small
+//	 - Medium
 //   - Large
 //   - Custom
 // - Separator shape
