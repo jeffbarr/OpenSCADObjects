@@ -198,7 +198,7 @@ module RenderSeparatorsInBox(Count, Radius, RingThickness, Inset, Height, Length
 	intersection()
 	{
 		// Separators
-		RenderSeparators(Count, Radius, RingThickness, Inset, Height, Length, Tilt, MagnetSlots, MagnetAngles, MagnetSlotHeight, MagnetWidthDepth, MagnetHeight, MagnetInset);
+		RenderSeparators(Count, Radius, RingThickness, Inset, Height, Length + RingThickness, Tilt, MagnetSlots, MagnetAngles, MagnetSlotHeight, MagnetWidthDepth, MagnetHeight, MagnetInset);
 		
 		// Box
 		translate([-Radius, -Radius, 0])
