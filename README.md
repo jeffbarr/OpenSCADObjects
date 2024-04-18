@@ -18,7 +18,7 @@ Here's a review of each one:
 
 ## [aws_fabric_tiles.scad](https://github.com/jeffbarr/OpenSCADObjects/blob/main/aws_fabric_tiles.scad)
 
-A tiled grid of [AWS Service Icons](https://github.com/WayneStallwood/AWS-Tile-Generator/samples). The STL files from that repo must be in the same directory as this script. Tiles are scaled by *TileScale* and then placed *SpaceX* and *SpaceY* apart, for a total of *CountX* columns and *CountY* rows.
+A tiled grid of [AWS Service Icons]([https://github.com/WayneStallwood/AWS-Tile-Generator/samples]([https://github.com/WayneStallwood/AWS-Tile-Generator/tree/main/samples](https://github.com/WayneStallwood/AWS-Tile-Generator/tree/main/samples). The STL files from that repo must be in the same directory as this script. Tiles are scaled by *TileScale* and then placed *SpaceX* and *SpaceY* apart, for a total of *CountX* columns and *CountY* rows.
 
 ![AWS Fabric Tiles](https://github.com/jeffbarr/OpenSCADObjects/blob/main/images/aws_fabric_tiles_sample.png)
 
