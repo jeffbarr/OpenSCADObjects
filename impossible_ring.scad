@@ -11,7 +11,6 @@
 //   - Custom
 // - Separator shape
 //
-// - Compute and echo space between separators
 // - Related way to create a "wall"
 // - Related way to create rounded rectangle
 //
@@ -24,7 +23,8 @@
 // BUGS:
 //
 // * Expanding rings (wider at top than bottom), the separators are one Z level too low. Tilt is 
-//   miscalculated when the triangle is pointing out, perhaps subtract 180?
+//   miscalculated when the triangle is pointing out, perhaps subtract 180? This is currently
+//   disabled via an assert.
 //
 // * The inner edge of tilted separators hangs out a bit to the inside of each ring, 
 //   causing printing problems. Perhaps render the entire thing and subtract the space inside of 
@@ -99,6 +99,7 @@ _MagnetInset = 0.8;
 
 // Sanity checks
 assert(_SeparatorHeight > (_MagnetHeight + _MagnetSlotHeight), "Magnet too tall");
+assert(_TopRingRadius <= _BottomRingRadius, "Expanding rings don't work");
 
 // Render a ring
 module RenderRing(Radius, Inset, Thickness)
@@ -272,8 +273,16 @@ module RenderCheese(BottomRadius, TopRadius, Height, StartRing, EndRing)
 module main()
 {
 	ColumnHeight = ((_LayerCount - 1) * _SeparatorHeight) + (_LayerCount * _RingThickness);
-	
 	echo("Column Height = ", ColumnHeight);
+
+	// Compute center-to-center distance between two adjacent separators
+	X1 = _BottomRingRadius * cos(0);
+	Y1 = _BottomRingRadius * sin(0);
+	X2 = _BottomRingRadius * cos(360 / _SeparatorCount);
+	Y2 = _BottomRingRadius * sin(360 / _SeparatorCount);
+
+	SeparatorDistance = sqrt((X2 - X1) ^ 2 + (Y2 - Y1) ^ 2);
+	echo("SeparatorDistance = ", SeparatorDistance);
 	
 	if (_PartialRing)
 	{
