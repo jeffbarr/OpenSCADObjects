@@ -3,6 +3,8 @@
  * 
  * Cylindrical - Cylinder topped by point
  * Pyramidal   - Pyramid
+ *
+ * Holes around the border of the raft are optional, and can be used to connect rafts with rings
  */
 
 // Number of rafts
@@ -40,10 +42,10 @@ _SpikeType = "Cylinder"; // ["Cylinder", "Pyramid"]
 _CylSpikeRadius = 7;
 
 // Spike cylinder height
-_CylSpikeCylHeight = 7;
+_CylSpikeCylHeight = 7.1;
 
 // Spike tip height
-_CylSpikeTipHeight = 35;
+_CylSpikeTipHeight = 5.3;
 
 // Spike wall thickness
 _CylSpikeWall = 2;
@@ -57,6 +59,20 @@ _PyrHeight = 35;
 
 // Spike wall thickness
 _PyrWall = 2;
+
+/* [Border Holes] */
+
+// Holes to connect borders
+_BorderHoles = true;
+
+// Hole diameter
+_BorderHoleDiameter = 1;
+
+// Hole inset from perimeter
+_BorderHoleInset = 2.5;
+
+// Hole inset from corner
+_BorderCornerHoleInset = 5.0;
 
 module __end_customization() {}
 
@@ -223,6 +239,58 @@ module Raft(CountX, CountY, SpikeSpaceX, SpikeSpaceY, BorderX, BorderY, RaftHeig
 	}
 }
 
+// Render edge holes (intended to be used as antimatter)
+module Holes(CountX, CountY, SpikeSpaceX, SpikeSpaceY, RaftHeight, BorderX, BorderY, BorderHoles, BorderHoleDiameter, BorderHoleInset,BorderCornerHoleInset)
+{
+	// Compute size of raft
+	RaftX = RaftSizeX(BorderX, CountX, SpikeSpaceX);
+	RaftY = RaftSizeY(BorderY, CountY, SpikeSpaceY);
+	
+	// Drill holes - bottom left
+	translate([BorderCornerHoleInset, BorderHoleInset, 0]) cylinder(99, d=BorderHoleDiameter, $fn=99);
+	translate([BorderHoleInset, BorderCornerHoleInset, 0]) cylinder(99, d=BorderHoleDiameter, $fn=99);	
+
+	// Drill holes - top left
+	translate([BorderCornerHoleInset, RaftY - BorderHoleInset, 0]) cylinder(99, d=BorderHoleDiameter, $fn=99);	
+	translate([BorderHoleInset, RaftY - BorderCornerHoleInset, 0]) cylinder(99, d=BorderHoleDiameter, $fn=99);		
+	
+	// Drill holes - bottom left
+	translate([RaftX - BorderCornerHoleInset, BorderHoleInset, 0]) cylinder(99, d=BorderHoleDiameter, $fn=99);
+	translate([RaftX - BorderHoleInset, BorderCornerHoleInset, 0]) cylinder(99, d=BorderHoleDiameter, $fn=99);
+	
+	// Drill holes - top right
+	translate([RaftX - BorderCornerHoleInset, RaftY - BorderHoleInset, 0]) cylinder(99, d=BorderHoleDiameter, $fn=99);
+	translate([RaftX - BorderHoleInset, RaftY - BorderCornerHoleInset, 0]) cylinder(99, d=BorderHoleDiameter, $fn=99);
+	
+	// Drill holes - bottom and top edges
+	translate([RaftX / 2, BorderHoleInset, 0]) cylinder(99, d=BorderHoleDiameter, $fn=99);
+	translate([RaftX / 2, RaftY - BorderHoleInset, 0]) cylinder(99, d=BorderHoleDiameter, $fn=99);
+	
+	// Drill holes - left and right edges
+	translate([BorderHoleInset, RaftY / 2, 0]) cylinder(99, d=BorderHoleDiameter, $fn=99);	
+	translate([RaftX - BorderHoleInset, RaftY / 2, 0]) cylinder(99, d=BorderHoleDiameter, $fn=99);
+}
+
+// Render a raft, with optional edge holes
+module FullRaft(CountX, CountY, SpikeSpaceX, SpikeSpaceY, BorderX, BorderY, RaftHeight, RaftHoles, SpikeType, SpikeRadius, SpikeCylHeight, SpikeTipHeight, SpikeWall, PyrBase, PyrHeight, PyrWall, BorderHoles, BorderHoleDiameter, BorderHoleInset, BorderCornerHoleInset)
+{
+	if (BorderHoles)
+	{
+		difference()
+		{
+			// Matter
+			Raft(CountX, CountY, SpikeSpaceX, SpikeSpaceY, BorderX, BorderY, RaftHeight, RaftHoles, SpikeType, SpikeRadius, SpikeCylHeight, SpikeTipHeight, SpikeWall, PyrBase, PyrHeight, PyrWall);
+			
+			// Antimatter
+			Holes(CountX, CountY, SpikeSpaceX, SpikeSpaceY, RaftHeight, BorderX, BorderY, BorderHoles, BorderHoleDiameter, BorderHoleInset,_BorderCornerHoleInset);
+		}
+	}
+	else
+	{
+		Raft(CountX, CountY, SpikeSpaceX, SpikeSpaceY, BorderX, BorderY, RaftHeight, RaftHoles, SpikeType, SpikeRadius, SpikeCylHeight, SpikeTipHeight, SpikeWall, PyrBase, PyrHeight, PyrWall);
+	}
+}
+
 // Render all of the rafts
 for (r = [0 : _RaftCount - 1])
 {
@@ -231,10 +299,10 @@ for (r = [0 : _RaftCount - 1])
 	
 	translate([RaftX, RaftY, 0])
 	{
-		Raft(_SpikeCountX, _SpikeCountY, _SpikeSpaceX, _SpikeSpaceY, 
-             _RaftBorder, _RaftBorder, _RaftHeight, _RaftHoles, 
-             _SpikeType, _CylSpikeRadius, _CylSpikeCylHeight, _CylSpikeTipHeight, _CylSpikeWall,
-             _PyrBase, _PyrHeight, _PyrWall);
+		FullRaft(_SpikeCountX, _SpikeCountY, _SpikeSpaceX, _SpikeSpaceY, 
+                 _RaftBorder, _RaftBorder, _RaftHeight, _RaftHoles, 
+                 _SpikeType, _CylSpikeRadius, _CylSpikeCylHeight, _CylSpikeTipHeight, _CylSpikeWall,
+                 _PyrBase, _PyrHeight, _PyrWall, _BorderHoles, _BorderHoleDiameter, _BorderHoleInset, _BorderCornerHoleInset);
 	}
 }
 
