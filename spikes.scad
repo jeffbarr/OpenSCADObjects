@@ -4,7 +4,7 @@
  * Cylindrical - Cylinder topped by point
  * Pyramidal   - Pyramid
  *
- * Holes around the border of the raft are optional, and can be used to connect rafts with rings
+ * Holes around the border of the raft are optional, and can be used to connect rafts with rings.
  */
 
 // Number of rafts
@@ -294,9 +294,9 @@ module FullRaft(CountX, CountY, SpikeSpaceX, SpikeSpaceY, BorderX, BorderY, Raft
 // Render all of the rafts
 for (r = [0 : _RaftCount - 1])
 {
-	RaftX = r * RaftSizeX(_RaftBorder, _SpikeCountX, _SpikeSpaceX) + (r - 1) * _RaftSpaceX;
+	RaftX = r * RaftSizeX(_RaftBorder, _SpikeCountX, _SpikeSpaceX) + (r * _RaftSpaceX);
 	RaftY = 0;
-	
+
 	translate([RaftX, RaftY, 0])
 	{
 		FullRaft(_SpikeCountX, _SpikeCountY, _SpikeSpaceX, _SpikeSpaceY, 
