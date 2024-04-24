@@ -5,6 +5,7 @@
  * Pyramidal   - Pyramid
  *
  * Holes around the border of the raft are optional, and can be used to connect rafts with rings.
+ * Magnet slots are optional, and are sized for 13mm x 6.5mm diametric magnets.
  */
 
 // Number of rafts
@@ -73,6 +74,26 @@ _BorderHoleInset = 2.5;
 
 // Hole inset from corner
 _BorderCornerHoleInset = 5.0;
+
+/* [Magnets] */
+
+// Edge magnets
+_EdgeMagnets = false;
+
+// Magnet box height
+_MagnetBoxHeight = 8.0;
+
+// Magnet box depth
+_MagnetBoxDepth = 8.0;
+
+// Magnet slot inset from sides
+_MagnetSlotInset = 2.0;
+
+// Magnet slot length
+_MagnetSlotLength = 13.0;
+
+// Magnet slot height
+_MagnetSlotHeight = 6.5;
 
 module __end_customization() {}
 
@@ -291,6 +312,26 @@ module FullRaft(CountX, CountY, SpikeSpaceX, SpikeSpaceY, BorderX, BorderY, Raft
 	}
 }
 
+// Render magnet holes
+module MagnetHoles(RaftHeight, BoxX, BoxY, BoxZ, SlotInset, SlotLength, SlotHeight)
+{
+	translate([SlotInset, (BoxY - SlotHeight) / 2, RaftHeight]) cube([SlotLength, SlotHeight, SlotHeight]);
+	translate([BoxX - SlotInset - SlotLength, (BoxY - SlotHeight) / 2, RaftHeight]) cube([SlotLength, SlotHeight, SlotHeight]);
+}
+			
+// Render a box that holds magnets
+module EdgeMagnetBox(RaftHeight, BoxX, BoxY, BoxZ, SlotInset, SlotLength, SlotHeight)
+{
+	difference()
+	{
+		// Matter
+		cube([BoxX, BoxY, BoxZ]);
+		
+		// Anti-matter
+		MagnetHoles(RaftHeight, BoxX, BoxY, BoxZ, SlotInset, SlotLength, SlotHeight);
+	}
+}
+
 // Render all of the rafts
 for (r = [0 : _RaftCount - 1])
 {
@@ -303,6 +344,17 @@ for (r = [0 : _RaftCount - 1])
                  _RaftBorder, _RaftBorder, _RaftHeight, _RaftHoles, 
                  _SpikeType, _CylSpikeRadius, _CylSpikeCylHeight, _CylSpikeTipHeight, _CylSpikeWall,
                  _PyrBase, _PyrHeight, _PyrWall, _BorderHoles, _BorderHoleDiameter, _BorderHoleInset, _BorderCornerHoleInset);
+				 
+		if (_EdgeMagnets)
+		{
+			SizeX = RaftSizeX(_RaftBorder, _SpikeCountX, _SpikeSpaceX);
+			SizeY = RaftSizeY(_RaftBorder, _SpikeCountY, _SpikeSpaceY);
+			
+			translate([0, SizeY, 0])
+			{
+				EdgeMagnetBox(_RaftHeight, SizeX, _RaftHeight + _MagnetBoxHeight, _MagnetBoxDepth, _MagnetSlotInset, _MagnetSlotLength, _MagnetSlotHeight);
+			}
+		}
 	}
 }
 
