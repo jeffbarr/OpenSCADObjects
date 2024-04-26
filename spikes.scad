@@ -6,6 +6,14 @@
  *
  * Holes around the border of the raft are optional, and can be used to connect rafts with rings.
  * Magnet slots are optional, and are sized for 13mm x 6.5mm diametric magnets.
+ *
+ * To create spikes that are the same size and spacing as Christian Louboutin items:
+ *
+ *	<*> SpikeSpaceX and SpikeSpaceY: 9.2 mm
+ *  <*> SpikeType: Cylinder
+ *  <*> CylSpikeRadius: 3 mm
+ *  <*> CylSpikeCylHeight: 1.5 mm
+ *  <*> CylSpikeTipHeight: 5.0 mm
  */
 
 // Number of rafts
