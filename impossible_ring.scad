@@ -1,4 +1,4 @@
-// Impossible (not really) Ring
+//// Impossible (not really) Ring with lots of features and options.
 //
 // TODO:
 //
@@ -19,6 +19,20 @@
 //
 // * Small diametric magnet: 14.0, 3.5, 2.0, 0.8 -- for _RingInset = 12
 // * Large diametric magnet: 14.0, 7.0, 2.0, 0.8 -- for _RingInset = 19
+//
+// The [Extruders] parameters work as follows:
+//
+//	* WhichExtruder controls on-screen and STL rendering. Set it to All while
+//	  designing. To render STL, set it successively to 1, 2, 3, 4, and 5 then
+//	  render (F6) and save (F7) to numbered files (perhaps append "_1", "_2",
+//	  and so forth to the base names. 
+//
+//	* BaseExtruder sets the extruder for the round or semicircular base.
+//
+//	* RingExtruder sets the extruder for the rings.
+//
+//	* SeparatorExtruder sets the extruder for the vertical separators 
+//    between the rings.
 //
 // BUGS:
 //
@@ -97,9 +111,46 @@ _MagnetHeight = 2.0;
 // Inset from mid-point of separator
 _MagnetInset = 0.8;
 
+/* [Extruders] */
+
+// Extruder to render
+_WhichExtruder = "All"; // ["All", 1, 2, 3, 4, 5]
+
+// Base extruder
+_BaseExtruder = 1; 			// [1, 2, 3, 4, 5]
+
+// Ring extruder
+_RingExtruder = 1;			// [1, 2, 3, 4, 5]
+
+// Separator extruder
+_SeparatorExtruder = 1;		// [1, 2, 3, 4, 5]
+
 // Sanity checks
 assert(_SeparatorHeight > (_MagnetHeight + _MagnetSlotHeight), "Magnet too tall");
 assert(_TopRingRadius <= _BottomRingRadius, "Expanding rings don't work");
+
+// Map a value of _WhichExtruder to an OpenSCAD color
+function ExtruderColor(Extruder) = 
+  (Extruder == 1  ) ? "red"    : 
+  (Extruder == 2  ) ? "green"  : 
+  (Extruder == 3  ) ? "blue"   : 
+  (Extruder == 4  ) ? "pink"   :
+  (Extruder == 5  ) ? "yellow" :
+                      "purple" ;
+
+// If _WhichExtruder is "All" or is not "All" and matches the requested extruder, render 
+// the child nodes.
+
+module Extruder(DoExtruder)
+{
+	color(ExtruderColor(DoExtruder))
+	{
+		if (_WhichExtruder == "All" || DoExtruder == _WhichExtruder)
+		{
+			children();
+		}
+	}
+}
 
 // Render a ring
 module RenderRing(Radius, Inset, Thickness)
@@ -115,7 +166,7 @@ module RenderRing(Radius, Inset, Thickness)
 				circle(r=Radius - Inset, $fn=99);
 			}
 		}
-	}	
+	}
 }
 
 // Render a single separator
@@ -124,9 +175,12 @@ module RenderRing(Radius, Inset, Thickness)
 //
 module RenderSeparator(Radius, Height, Length)
 {
-	linear_extrude(Length)
+	Extruder(_SeparatorExtruder)
 	{
-		circle(r=Radius, $fn=99);
+		linear_extrude(Length)
+		{
+			circle(r=Radius, $fn=99);
+		}
 	}
 }
 
@@ -214,7 +268,10 @@ module RenderSeparatorsInBox(Count, Radius, RingThickness, Inset, Height, Length
 module RenderColumn(BottomRingRadius, TopRingRadius, RingInset, SolidBase, LayerCount, RingThickness, SeparatorCount, SeparatorHeight, MagnetSlots, MagnetAngles, MagnetSlotHeight, MagnetWidthDepth, MagnetHeight, MagnetInset)
 {
 	// Render first ring
-	RenderRing(BottomRingRadius, (SolidBase ? 0 : RingInset), RingThickness);
+	Extruder(_BaseExtruder)
+	{
+		RenderRing(BottomRingRadius, (SolidBase ? 0 : RingInset), RingThickness);
+	}
 	
 	// Do some math
 	LayerHeight = RingThickness + SeparatorHeight;
@@ -244,7 +301,10 @@ module RenderColumn(BottomRingRadius, TopRingRadius, RingInset, SolidBase, Layer
 			
 			translate([0, 0, RingThickness + SeparatorHeight])
 			{
-				RenderRing(ThisRingRadius, RingInset, RingThickness);
+				Extruder(_RingExtruder)
+				{
+					RenderRing(ThisRingRadius, RingInset, RingThickness);
+				}
 			}
 		}
 	}
