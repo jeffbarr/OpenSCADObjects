@@ -31,8 +31,16 @@
 //
 //	* RingExtruder sets the extruder for the rings.
 //
-//	* SeparatorExtruder sets the extruder for the vertical separators 
+//	* SeparatorExtruders sets the extruder(s) for the vertical separators 
 //    between the rings.
+//
+//  * SeparatorExtruderMode sets the extruder selection mode:
+//
+//		Horizontal - Each row of the ring has a single extruder setting, cycling through
+//	    the list of SeparatorExtruder values.
+//
+//		Vertical - Each column of separators has a single extruder setting, cycling
+//	    through the list fo SeparatorExtruder values.
 //
 // BUGS:
 //
@@ -122,12 +130,37 @@ _BaseExtruder = 1; 			// [1, 2, 3, 4, 5]
 // Ring extruder
 _RingExtruder = 1;			// [1, 2, 3, 4, 5]
 
-// Separator extruder
-_SeparatorExtruder = 1;		// [1, 2, 3, 4, 5]
+// Separator extruder mode
+_SeparatorExtruderMode = "Horizontal";	// [Horizontal, Vertical]
+
+// Separator extruder 1
+_SeparatorExtruder1 = true;
+
+// Separator extruder 2
+_SeparatorExtruder2 = true;
+
+// Separator extruder 3
+_SeparatorExtruder3 = true;
+
+// Separator extruder 4
+_SeparatorExtruder4 = true;
+
+// Separator extruder 5
+_SeparatorExtruder5 = true;
 
 // Sanity checks
 assert(_SeparatorHeight > (_MagnetHeight + _MagnetSlotHeight), "Magnet too tall");
 assert(_TopRingRadius <= _BottomRingRadius, "Expanding rings don't work");
+
+// Create _SeparatorExtruders vector from individual values, then use it to create _SeparatorExtruders
+_SeparatorExtrudersVec = [false, _SeparatorExtruder1, _SeparatorExtruder2, _SeparatorExtruder3, _SeparatorExtruder4, _SeparatorExtruder5];
+_SeparatorExtruders    = [for (i = [0 : 5]) if (_SeparatorExtrudersVec[i]) i];
+
+// Map row and column of separator into an extruder, based on _SeparatorExtruderMode
+function PickSeparatorExtruder(Row, Col) =
+ (_SeparatorExtruderMode == "Horizontal") ? _SeparatorExtruders[floor(Row % len(_SeparatorExtruders))] :
+ (_SeparatorExtruderMode == "Vertical")   ? _SeparatorExtruders[floor(Col % len(_SeparatorExtruders))] : 
+ -1;	// Illegal value for _SeparatorExtruderMode
 
 // Map a value of _WhichExtruder to an OpenSCAD color
 function ExtruderColor(Extruder) = 
@@ -137,7 +170,7 @@ function ExtruderColor(Extruder) =
   (Extruder == 4  ) ? "pink"   :
   (Extruder == 5  ) ? "yellow" :
                       "purple" ;
-
+					  
 // If _WhichExtruder is "All" or is not "All" and matches the requested extruder, render 
 // the child nodes.
 
@@ -173,9 +206,9 @@ module RenderRing(Radius, Inset, Thickness)
 //	Height is the vertical spacing between rings
 //	Length is the commputed length of the separator, taking tilt in to account
 //
-module RenderSeparator(Radius, Height, Length)
+module RenderSeparator(Extruder, Radius, Height, Length)
 {
-	Extruder(_SeparatorExtruder)
+	Extruder(Extruder)
 	{
 		linear_extrude(Length)
 		{
@@ -194,12 +227,12 @@ module RenderMagnetHole(SeparatorRadius, SlotHeight, WidthDepth, Height, Inset)
 }
 
 // Render a single separator with a magnet hole
-module RenderSeparatorWithMagnetHole(Radius, Height, MagnetSlotHeight, MagnetWidthDepth, MagnetHeight, MagnetInset)
+module RenderSeparatorWithMagnetHole(Extruder, Radius, Height, MagnetSlotHeight, MagnetWidthDepth, MagnetHeight, MagnetInset)
 {
 	difference()
 	{
 		// Matter
-		RenderSeparator(Radius, Height);
+		RenderSeparator(Extruder, Radius, Height);
 		
 		// Anti-matter
 		RenderMagnetHole(Radius, MagnetSlotHeight, MagnetWidthDepth, MagnetHeight, MagnetInset);
@@ -207,12 +240,15 @@ module RenderSeparatorWithMagnetHole(Radius, Height, MagnetSlotHeight, MagnetWid
 }
 
 // Render entire ring of separators with optional magnet holes at the specified angles
-module RenderSeparators(Count, Radius, RingThickness, Inset, Height, Length, Tilt, MagnetSlots, MagnetAngles, MagnetSlotHeight, MagnetWidthDepth, MagnetHeight, MagnetInset)
+module RenderSeparators(Row, Count, Radius, RingThickness, Inset, Height, Length, Tilt, MagnetSlots, MagnetAngles, MagnetSlotHeight, MagnetWidthDepth, MagnetHeight, MagnetInset)
 {
-	for (Theta = [0 : 360 / Count : 359])
+	for (Col = [0 : Count - 1])
 	{
+		Theta  = Col * 360 / Count;
 		PointX = cos(Theta) * (Radius - (Inset / 2));
 		PointY = sin(Theta) * (Radius - (Inset / 2));
+		
+		Extruder = PickSeparatorExtruder(Row, Col);
 		
 		translate([PointX, PointY, -RingThickness])
 		{
@@ -230,14 +266,16 @@ module RenderSeparators(Count, Radius, RingThickness, Inset, Height, Length, Til
 				rotate([0, -Tilt, Theta])
 				{
 					rotate([0, 0, SeparatorRotate])
-					RenderSeparatorWithMagnetHole(Inset / 2, Length, MagnetSlotHeight, MagnetWidthDepth, MagnetHeight, MagnetInset);
+					{
+						RenderSeparatorWithMagnetHole(Extruder, Inset / 2, Length, MagnetSlotHeight, MagnetWidthDepth, MagnetHeight, MagnetInset);
+					}
 				}
 			}
 			else
 			{
 				rotate([0, -Tilt, Theta])
 				{
-					RenderSeparator(Inset / 2, Height, Length);
+					RenderSeparator(Extruder, Inset / 2, Height, Length);
 				}
 			}
 		}
@@ -248,12 +286,12 @@ module RenderSeparators(Count, Radius, RingThickness, Inset, Height, Length, Til
 // Render entire ring of separators inside of a clipping box. 
 // The box removes the parts of the separator that extend above or below the rings.
 //
-module RenderSeparatorsInBox(Count, Radius, RingThickness, Inset, Height, Length, Tilt, MagnetSlots, MagnetAngles, MagnetSlotHeight, MagnetWidthDepth, MagnetHeight, MagnetInset)
+module RenderSeparatorsInBox(Row, Count, Radius, RingThickness, Inset, Height, Length, Tilt, MagnetSlots, MagnetAngles, MagnetSlotHeight, MagnetWidthDepth, MagnetHeight, MagnetInset)
 {
 	intersection()
 	{
 		// Separators
-		RenderSeparators(Count, Radius, RingThickness, Inset, Height, Length + RingThickness, Tilt, MagnetSlots, MagnetAngles, MagnetSlotHeight, MagnetWidthDepth, MagnetHeight, MagnetInset);
+		RenderSeparators(Row, Count, Radius, RingThickness, Inset, Height, Length + RingThickness, Tilt, MagnetSlots, MagnetAngles, MagnetSlotHeight, MagnetWidthDepth, MagnetHeight, MagnetInset);
 		
 		// Box
 		translate([-Radius, -Radius, 0])
@@ -278,10 +316,10 @@ module RenderColumn(BottomRingRadius, TopRingRadius, RingInset, SolidBase, Layer
 	RingRadiusStep = (TopRingRadius - BottomRingRadius) / (LayerCount - 1);
 	
 	// Separators and subsequent ring
-	for (l = [1 : 1 : LayerCount - 1])
+	for (Row = [1 : 1 : LayerCount - 1])
 	{
 		// Do some more math
-		ThisRingRadius = BottomRingRadius + (l * RingRadiusStep);
+		ThisRingRadius = BottomRingRadius + (Row * RingRadiusStep);
 		LastRingRadius = ThisRingRadius - RingRadiusStep;
 		
 		SeparatorLength = sqrt(((ThisRingRadius - LastRingRadius) ^ 2) + (SeparatorHeight  ^ 2)) + RingThickness;
@@ -292,11 +330,11 @@ module RenderColumn(BottomRingRadius, TopRingRadius, RingInset, SolidBase, Layer
 		echo("SeparatorLength=", SeparatorLength);
 		echo("SeparatorTilt=", SeparatorTilt);
 		
-		translate([0, 0, (l - 1) * LayerHeight])
+		translate([0, 0, (Row - 1) * LayerHeight])
 		{
 			translate([0, 0, RingThickness])
 			{
-				RenderSeparatorsInBox(SeparatorCount, ThisRingRadius - RingRadiusStep, RingThickness, RingInset, SeparatorHeight, SeparatorLength, SeparatorTilt, MagnetSlots, MagnetAngles, MagnetSlotHeight, MagnetWidthDepth, MagnetHeight, MagnetInset);
+				RenderSeparatorsInBox(Row, SeparatorCount, ThisRingRadius - RingRadiusStep, RingThickness, RingInset, SeparatorHeight, SeparatorLength, SeparatorTilt, MagnetSlots, MagnetAngles, MagnetSlotHeight, MagnetWidthDepth, MagnetHeight, MagnetInset);
 			}
 			
 			translate([0, 0, RingThickness + SeparatorHeight])
