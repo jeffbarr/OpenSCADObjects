@@ -9,6 +9,7 @@ Here's a review of each one:
 * [neo_strip.scad](https://github.com/jeffbarr/OpenSCADObjects#neo_stripscad)
 * [nodes_edges.scad](https://github.com/jeffbarr/OpenSCADObjects#nodes_edgesscad)
 * [nodes_graph.scad](https://github.com/jeffbarr/OpenSCADObjects#nodes_graphscad)
+* [pride_hearts.scad](https://github.com/jeffbarr/OpenSCADObjects/blob/main/pride_hearts.scad)
 * [quads.scad](https://github.com/jeffbarr/OpenSCADObjects#quadsscad)
 * [rhombitrihexagon.scad](https://github.com/jeffbarr/OpenSCADObjects#rhombitrihexagonscad)
 * [scales.scad](https://github.com/jeffbarr/OpenSCADObjects#scalesscad)
@@ -54,6 +55,12 @@ The channels are sized so that they can be butted end-to-end. You can set SB to 
 Here is the original sketch that led to the design:
 
 ![Neo Strip Sketch](https://github.com/jeffbarr/OpenSCADObjects/blob/main/images/neo_strip_design.png)
+
+## [pride_hearts.scad](https://github.com/jeffbarr/OpenSCADObjects/blob/main/pride_hearts.scad)
+
+A very flexible way to generate Pride-style hearts for multi-extruder printing. Hearts can be printed on an optional base, and in a grid of any size. The hearts can be overlaid with rainbow stripes or concentric circles, with options to control each one. Fully enabled for the OpenSCAD Customizer.
+
+![Pride Hearts Sample](https://github.com/jeffbarr/OpenSCADObjects/blob/main/images/pride_hearts_sample.jpg)
 
 ## [quads.scad](https://github.com/jeffbarr/OpenSCADObjects/blob/main/quads.scad)
 
