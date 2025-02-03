@@ -6,6 +6,7 @@ Here's a review of each one:
 * [aws_fabric_tiles.scad](https://github.com/jeffbarr/OpenSCADObjects#aws_fabric_tilesscad)
 * [dentist_square.scad](https://github.com/jeffbarr/OpenSCADObjects#dentist_squarescad)
 * [impossible_ring.scad](https://github.com/jeffbarr/OpenSCADObjects#impossible_ringscad)
+* [mirror_shapes.scad](https://github.com/jeffbarr/OpenSCADObjects#impossible_ringscad)
 * [neo_strip.scad](https://github.com/jeffbarr/OpenSCADObjects#neo_stripscad)
 * [nodes_edges.scad](https://github.com/jeffbarr/OpenSCADObjects#nodes_edgesscad)
 * [nodes_graph.scad](https://github.com/jeffbarr/OpenSCADObjects#nodes_graphscad)
@@ -38,6 +39,10 @@ A tower of rings supported by round separators, fully customizer-enabled:
 
 The math for the tilted separators was challenging, here is a diagram:
 ![Impossible Ring Math](https://github.com/jeffbarr/OpenSCADObjects/blob/main/diagrams/impossible_ring_math.jpg)
+
+## [mirror_shapes.scad](https://github.com/jeffbarr/OpenSCADObjects/blob/main/mirror_shapes.scad)
+
+Shapes suitable for embedding mirrors. Work in progress.
 
 ## [neo_strip.scad](https://github.com/jeffbarr/OpenSCADObjects/blob/main/neo_strip.scad)
 
