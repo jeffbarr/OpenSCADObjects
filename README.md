@@ -13,6 +13,7 @@ Here's a review of each one:
 * [pride_hearts.scad](https://github.com/jeffbarr/OpenSCADObjects/blob/main/pride_hearts.scad)
 * [quads.scad](https://github.com/jeffbarr/OpenSCADObjects#quadsscad)
 * [rhombitrihexagon.scad](https://github.com/jeffbarr/OpenSCADObjects#rhombitrihexagonscad)
+* routing_tiles.scad
 * [scales.scad](https://github.com/jeffbarr/OpenSCADObjects#scalesscad)
 * [spikes.scad](https://github.com/jeffbarr/OpenSCADObjects#spikesscad)
 * [super_hexagons.scad](https://github.com/jeffbarr/OpenSCADObjects#super_hexagonsscad)
