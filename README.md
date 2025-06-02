@@ -10,6 +10,7 @@ Here's a review of each one:
 * [neo_strip.scad](https://github.com/jeffbarr/OpenSCADObjects#neo_stripscad)
 * [nodes_edges.scad](https://github.com/jeffbarr/OpenSCADObjects#nodes_edgesscad)
 * [nodes_graph.scad](https://github.com/jeffbarr/OpenSCADObjects#nodes_graphscad)
+* polygon.scad
 * [pride_hearts.scad](https://github.com/jeffbarr/OpenSCADObjects/blob/main/pride_hearts.scad)
 * [quads.scad](https://github.com/jeffbarr/OpenSCADObjects#quadsscad)
 * [rhombitrihexagon.scad](https://github.com/jeffbarr/OpenSCADObjects#rhombitrihexagonscad)
