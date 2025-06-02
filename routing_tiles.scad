@@ -14,9 +14,12 @@
 //  LRU     - Route from left to right, and up from the midpoint
 //  TBL     - Route from top to bottom, and left from the midpoint
 //  TBR     - Route from top to bottom, and right from the midpoint
+//  L       - Route from left to midpoint
+//  R       - Route from right to midpoint
+//  T       - Route from top to midpoint
+//  B       - Route from bottom to midpoint
 
 // TODO:
-//  Add half-routes (4x)
 //  Add extruder color support
 //  Add decorations atop routes
 //  Make routes more interesting
@@ -57,7 +60,7 @@ _Grid =
 
 _Grid =
 [
-	["LR",  "LR", "LR",  "LR", "LR",  "LR", "LR",  "LR", "LR",  "BL", ],
+	["R",   "LR", "LR",  "LR", "LR",  "LR", "LR",  "LR", "LR",  "BL", ],
 	["BR",  "LR", "LR",  "LR", "LR",  "LR", "LR",  "LR", "LR",  "TL", ],	
 	["TR",  "LR", "LR",  "LR", "LR",  "LR", "LR",  "LR", "LR",  "BL", ],
 	["BR",  "LR", "LR",  "LR", "LR",  "LR", "LR",  "LR", "LR",  "TL", ],	
@@ -66,9 +69,17 @@ _Grid =
 	["TR",  "LR", "LR",  "LR", "LR",  "LR", "LR",  "LR", "LR",  "BL", ],
 	["BR",  "LR", "LR",  "LR", "LR",  "LR", "LR",  "LR", "LR",  "TL", ],	
 	["TR",  "LR", "LR",  "LR", "LR",  "LR", "LR",  "LR", "LR",  "BL", ],
-	["LR",  "LR", "LR",  "LR", "LR",  "LR", "LR",  "LR", "LR",  "TL", ],	
+	["R",   "LR", "LR",  "LR", "LR",  "LR", "LR",  "LR", "LR",  "TL", ],	
 ];
 
+/* Test */
+
+/*
+_Grid =
+[
+    ["L", "R", "T", "B"]
+];
+*/
 
 module RenderTileBase(TileSize, TileThickness)
 {
@@ -233,6 +244,38 @@ module RenderTileRouteTR(TileSize, RouteWidth)
     }
 }
 
+module RenderTileRouteL(TileSize, RouteWidth)
+{
+    translate([0, TileSize / 2 - RouteWidth / 2, 0])
+    {
+        square([TileSize / 2, RouteWidth], center=false);
+    }
+}
+
+module RenderTileRouteR(TileSize, RouteWidth)
+{
+    translate([TileSize / 2, TileSize / 2 - RouteWidth / 2, 0])
+    {
+        square([TileSize / 2, RouteWidth], center=false);
+    }
+}
+
+module RenderTileRouteT(TileSize, RouteWidth)
+{
+    translate([TileSize / 2 - (RouteWidth / 2), TileSize / 2, 0])
+    {
+        square([RouteWidth, TileSize / 2], center=false);
+    }
+}
+
+module RenderTileRouteB(TileSize, RouteWidth)
+{
+    translate([TileSize / 2 - (RouteWidth / 2), 0, 0])
+    {
+        square([RouteWidth, TileSize / 2], center=false);
+    }
+}
+
 module RenderTileRoute(Route, TileSize, RouteWidth, RouteThickness)
 {
     color("red")
@@ -299,7 +342,27 @@ module RenderTileRoute(Route, TileSize, RouteWidth, RouteThickness)
         if (Route == "TBR")
         {
             RenderTileRouteTBR(TileSize, RouteWidth);
-        }    
+        }  
+      
+        if (Route == "L")
+        {
+            RenderTileRouteL(TileSize, RouteWidth);
+        }
+
+        if (Route == "R")
+        {
+            RenderTileRouteR(TileSize, RouteWidth);
+        }
+        
+        if (Route == "T")
+        {
+            RenderTileRouteT(TileSize, RouteWidth);
+        }
+
+        if (Route == "B")
+        {
+            RenderTileRouteB(TileSize, RouteWidth);
+        }
     }
 }
 
