@@ -458,6 +458,26 @@ module RenderGrid(Grid, GridTileSpacing, TileSize, TileThickness, RouteWidth, Ro
         {
             RenderRoutes(Grid, GridTileSpacing, TileSize, RouteWidth, RouteThickness, RouteExtruder);
         }
+        
+        // Hack to use extruders 3, 4, and 5:
+        {
+            translate([0, 0, TileThickness + RouteThickness])
+            {
+                RenderRoutes(Grid, GridTileSpacing, TileSize, RouteWidth / 1.5, RouteThickness, 3);
+            }        
+            
+            // Hack 2
+            translate([0, 0, TileThickness + (2 * RouteThickness)])
+            {
+                RenderRoutes(Grid, GridTileSpacing, TileSize, RouteWidth / 2, RouteThickness, 4);
+            } 
+            
+            // Hack 3
+            translate([0, 0, TileThickness + (3 * RouteThickness)])
+            {
+                RenderRoutes(Grid, GridTileSpacing, TileSize, RouteWidth / 3, RouteThickness, 5);
+            }
+        }
     }
 }
 
