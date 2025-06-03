@@ -54,6 +54,9 @@ _WhichExtruder = "All"; // ["All", 1, 2, 3, 4, 5]
 
 module _end_() {}
 
+function GridX(Col, TileSize, GridTileSpacing) = Col * (TileSize + GridTileSpacing);
+function GridY(Row, TileSize, GridTileSpacing) = Row * (TileSize + GridTileSpacing);
+
 // Map a value of Extruder to an OpenSCAD color
 function ExtruderColor(Extruder) = 
   (Extruder == 1  ) ? "red"    : 
@@ -114,7 +117,7 @@ _Grid =
 ];
 */
 
-module RenderTileBase(TileSize, TileThickness, TileExtruder)
+module RenderTile(TileSize, TileThickness, TileExtruder)
 {
     Extruder(TileExtruder)
     {
@@ -312,7 +315,7 @@ module RenderTileRouteB(TileSize, RouteWidth)
     }
 }
 
-module RenderTileRoute(Route, TileSize, RouteWidth, RouteThickness, RouteExtruder)
+module RenderRoute(Route, TileSize, RouteWidth, RouteThickness, RouteExtruder)
 {
     Extruder(RouteExtruder)
     {
@@ -404,38 +407,56 @@ module RenderTileRoute(Route, TileSize, RouteWidth, RouteThickness, RouteExtrude
     }
 }
 
-module RenderTile(Route, TileSize, TileThickness, RouteWidth, RouteThickness, TileExtruder, RouteExtruder)
-{
-    echo("RenderTile(", Route, TileSize, TileThickness, RouteWidth, RouteThickness, TileExtruder, ")");
-
-    union()
-    {
-        RenderTileBase(TileSize, TileThickness, TileExtruder);
-        translate([0, 0, TileThickness])
-        {
-            RenderTileRoute(Route, TileSize, RouteWidth, RouteThickness, RouteExtruder);
-        }
-    }
-}
-module RenderGrid(Grid, GridTileSpacing, TileSize, TileThickness, RouteWidth,RouteThickness, TileExtruder, RouteExtruder)
+module RenderTiles(Grid, GridTileSpacing, TileSize, TileThickness, TileExtruder)
 {
     GridRows = len(_Grid);
     GridCols = len(_Grid[0]);
     
-    echo("Rows=", GridRows, ", Cols=", GridCols);
+    for (Row = [0 : GridRows - 1])
+    {
+        for (Col = [0 : GridCols - 1])
+        {
+            X = GridX(Col, TileSize, GridTileSpacing);
+            Y = GridY(Row, TileSize, GridTileSpacing);
+ 
+            translate([X, Y, 0])
+            {
+                RenderTile(TileSize, TileThickness, TileExtruder);
+            }
+        }
+    }
+}
+
+module RenderRoutes(Grid, GridTileSpacing, TileSize, RouteWidth, RouteThickness, RouteExtruder)
+{
+    GridRows = len(_Grid);
+    GridCols = len(_Grid[0]);
     
     for (Row = [0 : GridRows - 1])
     {
         for (Col = [0 : GridCols - 1])
         {
             Route = Grid[GridRows - Row - 1][Col];
-            X = Col * (TileSize + GridTileSpacing);
-            Y = Row * (TileSize + GridTileSpacing);
+            X = GridX(Col, TileSize, GridTileSpacing);
+            Y = GridY(Row, TileSize, GridTileSpacing);
  
             translate([X, Y, 0])
             {
-                RenderTile(Route, TileSize, TileThickness, RouteWidth,RouteThickness, TileExtruder, RouteExtruder);
+                RenderRoute(Route, TileSize, RouteWidth, RouteThickness, RouteExtruder);
             }
+        }
+    }
+}
+
+module RenderGrid(Grid, GridTileSpacing, TileSize, TileThickness, RouteWidth, RouteThickness, TileExtruder, RouteExtruder)
+{
+    union()
+    {
+        RenderTiles(Grid, GridTileSpacing, TileSize, TileThickness, TileExtruder);
+        
+        translate([0, 0, TileThickness])
+        {
+            RenderRoutes(Grid, GridTileSpacing, TileSize, RouteWidth, RouteThickness, RouteExtruder);
         }
     }
 }
