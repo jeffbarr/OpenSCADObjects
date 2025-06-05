@@ -20,7 +20,6 @@
 //  B       - Route from bottom to midpoint
 
 // TODO:
-//  Accept LR or RL, etc
 //  Add control over which Grid is used
 //  Add decorations atop routes
 //  Make routes more interesting
@@ -360,37 +359,37 @@ module RenderRoute(Route, TileSize, RouteWidth, RouteThickness, RouteExtruder)
             {
             }
             
-            if (Route == "LR")
+            if (Route == "LR" || Route == "RL")
             {
                 RenderTileRouteLR(TileSize, RouteWidth);
             }
             
-            if (Route == "TB")
+            if (Route == "TB" || Route == "BT")
             {
                 RenderTileRouteTB(TileSize, RouteWidth);
             }
             
-            if (Route == "BR")
+            if (Route == "BR" || Route == "RB")
             {
                 RenderTileRouteBR(TileSize, RouteWidth);
             }
         
-            if (Route == "BL")
+            if (Route == "BL" || Route == "LB")
             {
                 RenderTileRouteBL(TileSize, RouteWidth);
             }
 
-            if (Route == "TL")
+            if (Route == "TL" || Route == "LT")
             {
                 RenderTileRouteTL(TileSize, RouteWidth);
             }
             
-            if (Route == "TR")
+            if (Route == "TR" || Route == "RT")
             {
                 RenderTileRouteTR(TileSize, RouteWidth);
             }
         
-            if (Route == "CR")
+            if (Route == "CR" || Route == "RC")
             {
                 union()
                 {
