@@ -20,13 +20,17 @@
 //  B       - Route from bottom to midpoint
 
 // TODO:
-//  Add control over which Grid is used
 //  Add decorations atop routes
 //  Make routes more interesting
 //  Multiple routes on a tile (lanes)
 
 /* [Grid] */
+
+// [Tile Spacing]
 _GridTileSpacing = 0.5;
+
+// [Grid Model]
+_GridModel = "5x5_Full";	// [4x1_Test, 5x5_Full, 8x8_Spiral, 8x8_ClosedSnake, 10x10_Snake]
 
 /* [Tiles] */
 
@@ -58,6 +62,8 @@ _WhichExtruder = "All"; // ["All", 1, 2, 3, 4, 5]
 
 module _end_() {}
 
+echo("GridModel ", _GridModel);
+
 function GridX(Col, TileSize, GridTileSpacing) = Col * (TileSize + GridTileSpacing);
 function GridY(Row, TileSize, GridTileSpacing) = Row * (TileSize + GridTileSpacing);
 
@@ -84,9 +90,14 @@ module Extruder(DoExtruder)
 	}
 }
 
+/* Test 4x1 grid */
+_TestGrid =
+[
+    ["L", "R", "T", "B"]
+];
+
 /* Fully connected 5x5 grid */
-/*
-_Grid = 
+_FullGrid = 
 [
     ["BR",  "LRD", "LRD", "LRD", "BL" ],
     ["TBR", "CR",  "CR",  "CR",  "TBL"],
@@ -94,11 +105,9 @@ _Grid =
     ["TBR", "CR",  "CR",  "CR",  "TBL"],
     ["TR",  "LRU", "LRU", "LRU", "TL" ],
 ];
-*/
 
-/* Snake across 10x10 */
-/*
-_Grid =
+/* Snake across 10x10 grid */
+_SnakeGrid =
 [
 	["R",   "LR", "LR",  "LR", "LR",  "LR", "LR",  "LR", "LR",  "BL", ],
 	["BR",  "LR", "LR",  "LR", "LR",  "LR", "LR",  "LR", "LR",  "TL", ],	
@@ -111,11 +120,9 @@ _Grid =
 	["TR",  "LR", "LR",  "LR", "LR",  "LR", "LR",  "LR", "LR",  "BL", ],
 	["R",   "LR", "LR",  "LR", "LR",  "LR", "LR",  "LR", "LR",  "TL", ],	
 ];
-*/
 
-/* Closed snake across 8x8 */
-/*
-_Grid =
+/* Closed snake across 8x8 grid */
+_ClosedSnakeGrid =
 [
 	["BR",  "LR", "LR",  "LR", "LR",  "LR", "LR",  "BL", ],
 	["TB",  "BR", "LR",  "LR", "LR",  "LR", "LR",  "TL", ],	
@@ -126,11 +133,9 @@ _Grid =
 	["TB",  "TR", "LR",  "LR", "LR",  "LR", "LR",  "BL", ],
 	["TR",  "LR", "LR",  "LR", "LR",  "LR", "LR",  "TL", ],	
 ];
-*/
 
-/* Spiral 8x8 */
-
-_Grid =
+/* Spiral 8x8 on 8x8 grid */
+_SpiralGrid =
 [
 	["BR",  "LR", "LR",  "LR", "LR",  "LR", "LR",  "LR", ],
 	["TB",  "BR", "LR",  "LR", "LR",  "LR", "LR",  "BL", ],	
@@ -142,14 +147,14 @@ _Grid =
 	["TR",  "LR", "LR",  "LR", "LR",  "LR", "LR",  "TL", ],	
 ];
 
-/* Test */
-
-/*
-_Grid =
-[
-    ["L", "R", "T", "B"]
-];
-*/
+// Map grid model to global grid value */
+function Grid(GridModel) =
+  (GridModel == "4x1_Test")        ? _TestGrid        :
+  (GridModel == "5x5_Full")        ? _FullGrid        :
+  (GridModel == "8x8_Spiral")      ? _SpiralGrid      :
+  (GridModel == "8x8_ClosedSnake") ? _ClosedSnakeGrid :
+  (GridModel == "10x10_Snake")     ? _SnakeGrid       :
+                                   0                  ;
 
 module RenderTile(TileSize, TileThickness, TileExtruder)
 {
@@ -443,8 +448,8 @@ module RenderRoute(Route, TileSize, RouteWidth, RouteThickness, RouteExtruder)
 
 module RenderTiles(Grid, GridTileSpacing, TileSize, TileThickness, TileExtruder)
 {
-    GridRows = len(_Grid);
-    GridCols = len(_Grid[0]);
+    GridRows = len(Grid);
+    GridCols = len(Grid[0]);
     
     for (Row = [0 : GridRows - 1])
     {
@@ -463,8 +468,8 @@ module RenderTiles(Grid, GridTileSpacing, TileSize, TileThickness, TileExtruder)
 
 module RenderRoutes(Grid, GridTileSpacing, TileSize, RouteWidth, RouteThickness, RouteExtruder)
 {
-    GridRows = len(_Grid);
-    GridCols = len(_Grid[0]);
+    GridRows = len(Grid);
+    GridCols = len(Grid[0]);
     
     for (Row = [0 : GridRows - 1])
     {
@@ -517,7 +522,10 @@ module RenderGrid(Grid, GridTileSpacing, TileSize, TileThickness, RouteWidth, Ro
 
 module main(Grid, GridTileSpacing, TileSize, TileThickness, RouteWidth,RouteThickness, TileExtruder, RouteExtruder, RouteExtruderStepIn)
 {
-    RenderGrid(Grid, GridTileSpacing, TileSize, TileThickness, RouteWidth,RouteThickness, TileExtruder, RouteExtruder, RouteExtruderStepIn);
+	if (Grid != 0)
+	{
+		RenderGrid(Grid, GridTileSpacing, TileSize, TileThickness, RouteWidth,RouteThickness, TileExtruder, RouteExtruder, RouteExtruderStepIn);
+	}
 }
 
-main(_Grid, _GridTileSpacing, _TileSize, _TileThickness, _RouteWidth, _RouteThickness, _TileExtruder, _RouteExtruder, _RouteExtruderStepIn);
+main(Grid(_GridModel), _GridTileSpacing, _TileSize, _TileThickness, _RouteWidth, _RouteThickness, _TileExtruder, _RouteExtruder, _RouteExtruderStepIn);
