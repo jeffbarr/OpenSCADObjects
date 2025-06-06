@@ -52,8 +52,22 @@ _FanExtruderCount = 5;
 // [Inner Circle Extruder]
 _FanInnerCircleExtruder = 1;
 
-// [Outer Ring Extruder]
-_FanOuterRingExtruder = 1;
+// [Outer Ring Extruders]
+
+// [Extruder 1]
+_FanOuterRingExtruder1 = true;
+
+// [Extruder 2]
+_FanOuterRingExtruder2 = true;
+
+// [Extruder 3]
+_FanOuterRingExtruder3 = true;
+
+// [Extruder 4]
+_FanOuterRingExtruder4 = true;
+
+// [Extruder 5]
+_FanOuterRingExtruder5 = true;
 
 // [Extruder to render]
 _WhichExtruder = "All"; // ["All", 1, 2, 3, 4, 5]
@@ -108,7 +122,7 @@ module RenderBlade(Theta, InnerRadius, OuterRadius, BladeThickness, InnerAngle, 
 	}
 }
 
-module RenderFan(FanInnerRadius, FanOuterRadius, FanBladeCount, FanBladeThickness, FanInnerAngle, FanOuterAngle, FanExtruderCount, FanInnerCircle, FanInnerCircleRadius, FanInnerCircleExtruder, FanOuterRing, FanOuterRingInnerRadius, FanOuterRingOuterRadius, FanOuterRingExtruder)
+module RenderFan(FanInnerRadius, FanOuterRadius, FanBladeCount, FanBladeThickness, FanInnerAngle, FanOuterAngle, FanExtruderCount, FanInnerCircle, FanInnerCircleRadius, FanInnerCircleExtruder, FanOuterRing, FanOuterRingInnerRadius, FanOuterRingOuterRadius, FanOuterRingExtruders)
 {
 	// Render each blade
 	for (Blade = [0 : FanBladeCount - 1])
@@ -129,26 +143,44 @@ module RenderFan(FanInnerRadius, FanOuterRadius, FanBladeCount, FanBladeThicknes
 		}
 	}
 	
-	// Render outer ring
+	// Render outer ring using 1 or more extruders
 	if (FanOuterRing)
 	{
-		Extruder(FanOuterRingExtruder)
-		{
-			linear_extrude(FanBladeThickness)
-			{
-				difference()
-				{
-					circle(FanOuterRingOuterRadius, $fn=99);
-					circle(FanOuterRingInnerRadius, $fn=99);
-				}
-			}
-		}
+        RadiusStep = (FanOuterRingOuterRadius - FanOuterRingInnerRadius) / len(FanOuterRingExtruders);
+        echo(RadiusStep);
+        
+        for (Ex = [0 : len(FanOuterRingExtruders) - 1])
+        {
+            echo("Extruder: ", FanOuterRingExtruders[Ex]);
+            Extruder(FanOuterRingExtruders[Ex])
+            {
+                linear_extrude(FanBladeThickness)
+                {
+                    difference()
+                    {
+                        circle(FanOuterRingInnerRadius + ((Ex + 1) * RadiusStep), $fn=99);
+                        circle(FanOuterRingInnerRadius + (Ex * RadiusStep), $fn=99);
+                    }
+                }
+            }
+        }
 	}
 }
 
-module main(FanInnerRadius, FanOuterRadius, FanBladeCount, FanBladeThickness, FanInnerAngle, FanOuterAngle, FanExtruderCount, FanInnerCircle, FanInnerCircleRadius, FanInnerCircleExtruder, FanOuterRing, FanOuterRingInnerRadius, FanOuterRingOuterRadius, FanOuterRingExtruder)
+module main(FanInnerRadius, FanOuterRadius, FanBladeCount, FanBladeThickness, FanInnerAngle, FanOuterAngle, FanExtruderCount, FanInnerCircle, FanInnerCircleRadius, FanInnerCircleExtruder, FanOuterRing, FanOuterRingInnerRadius, FanOuterRingOuterRadius, FanOuterRingExtruder1, FanOuterRingExtruder2, FanOuterRingExtruder3, FanOuterRingExtruder4, FanOuterRingExtruder5)
 {
-	RenderFan(FanInnerRadius, FanOuterRadius, FanBladeCount, FanBladeThickness, FanInnerAngle, FanOuterAngle, FanExtruderCount, FanInnerCircle, FanInnerCircleRadius, FanInnerCircleExtruder, FanOuterRing, FanOuterRingInnerRadius, FanOuterRingOuterRadius, FanOuterRingExtruder);
+    AllFanOuterRingExtruders = 
+    [
+        _FanOuterRingExtruder1 ? 1 : 0, 
+        _FanOuterRingExtruder2 ? 2 : 0,
+        _FanOuterRingExtruder3 ? 3 : 0,
+        _FanOuterRingExtruder4 ? 4 : 0, 
+        _FanOuterRingExtruder5 ? 5 : 0
+    ];
+    
+    FanOuterRingExtruders = [for (E = AllFanOuterRingExtruders) if (E != 0) E];
+    
+	RenderFan(FanInnerRadius, FanOuterRadius, FanBladeCount, FanBladeThickness, FanInnerAngle, FanOuterAngle, FanExtruderCount, FanInnerCircle, FanInnerCircleRadius, FanInnerCircleExtruder, FanOuterRing, FanOuterRingInnerRadius, FanOuterRingOuterRadius, FanOuterRingExtruders);
 }
 
-main(_FanInnerRadius, _FanOuterRadius, _FanBladeCount, _FanBladeThickness, _FanInnerAngle, _FanOuterAngle, _FanExtruderCount, _FanInnerCircle, _FanInnerCircleRadius, _FanInnerCircleExtruder, _FanOuterRing, _FanOuterRingInnerRadius, _FanOuterRingOuterRadius, _FanOuterRingExtruder);
+main(_FanInnerRadius, _FanOuterRadius, _FanBladeCount, _FanBladeThickness, _FanInnerAngle, _FanOuterAngle, _FanExtruderCount, _FanInnerCircle, _FanInnerCircleRadius, _FanInnerCircleExtruder, _FanOuterRing, _FanOuterRingInnerRadius, _FanOuterRingOuterRadius, _FanOuterRingExtruder1, _FanOuterRingExtruder2, _FanOuterRingExtruder3, _FanOuterRingExtruder4, _FanOuterRingExtruder5);
