@@ -22,6 +22,7 @@ Here's a review of each one:
 * [spikes.scad](https://github.com/jeffbarr/OpenSCADObjects#spikesscad)
 * [super_hexagons.scad](https://github.com/jeffbarr/OpenSCADObjects#super_hexagonsscad)
 * [talons.scad](https://github.com/jeffbarr/OpenSCADObjects#talonsscad)
+* [truchet_fig19.scad]
 
 ## [aws_fabric_tiles.scad](https://github.com/jeffbarr/OpenSCADObjects/blob/main/aws_fabric_tiles.scad)
 
