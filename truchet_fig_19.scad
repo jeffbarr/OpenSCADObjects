@@ -1,7 +1,7 @@
 /* Tiling Patterns of Truchet, Fig 19 */
 
-// Multi-extruder
-// Filled circle or ring
+// todo:
+// * Multi-extruder
 
 /* [Seed] */
 _Seed = 13;
@@ -12,6 +12,12 @@ _SquareSize = 10;
 /* [Square Height] */
 _SquareHeight = 2.0;
 
+/* [CircleMode] */
+_CircleMode = "Circle";     // [Circle, Ring]
+
+/* Circle Height] */
+_CircleHeight = 0.4;
+
 /* [Count X] */
 _SquareCountX = 10;
 
@@ -21,8 +27,30 @@ _SquareCountY = 10;
 /* [Gap] */
 _SquareGap = 0.5;
 
+/* [Ring Width] */
+_RingWidth = 1.2;
 
-module RenderSquare(SquareSize, SquareHeight) 
+module RenderCircleOrRing(CircleMode, SquareSize, CircleHeight, RingWidth)
+{
+    if (CircleMode == "Circle")
+    {
+        circle(SquareSize / 2);
+    }
+    
+    if (CircleMode == "Ring")
+    {
+        difference()
+        {
+            // Outer ring
+            circle(SquareSize / 2 + RingWidth / 2);
+            
+            // Inner ring
+            circle(SquareSize / 2 - RingWidth / 2);
+        }
+    }
+}
+
+module RenderSquare(SquareSize, SquareHeight, CircleMode, CircleHeight, RingWidth) 
 {
     union()
     {
@@ -32,24 +60,30 @@ module RenderSquare(SquareSize, SquareHeight)
         {
             intersection()
             {
+                // Clip circle or rings at edges of square
                 cube([SquareSize, SquareSize, 99], center=false);
                 
                 color("red")
-                union()
                 {
-                    circle(SquareSize / 2);
-                
-                    translate([SquareSize, SquareSize, 0])
-                    {   
-                        circle(SquareSize / 2);
-                    }
-                }
+                    linear_extrude(CircleHeight)
+                    {
+                        union()
+                        {
+                            RenderCircleOrRing(CircleMode, SquareSize, CircleHeight, RingWidth);
+
+                            translate([SquareSize, SquareSize, 0])
+                            {   
+                                RenderCircleOrRing(CircleMode, SquareSize, CircleHeight, RingWidth);
+                            }
+                        }
+                     }
+                 }
             }  
         }
      }
 }
 
-module RenderRotatedSquare(SquareSize, SquareHeight, Rotated)
+module RenderRotatedSquare(SquareSize, SquareHeight, CircleMode, CircleHeight, RingWidth, Rotated)
 {
     if (Rotated)
     {
@@ -59,18 +93,18 @@ module RenderRotatedSquare(SquareSize, SquareHeight, Rotated)
             {
                 translate([-SquareSize / 2, -SquareSize / 2, 0])
                 {
-                    RenderSquare(SquareSize, SquareHeight);
+                    RenderSquare(SquareSize, SquareHeight, CircleMode, CircleHeight, RingWidth);
                 }
             }
         }
     }
     else
     {
-        RenderSquare(SquareSize, SquareHeight);
+        RenderSquare(SquareSize, SquareHeight, CircleMode, CircleHeight, RingWidth);
     }
 }
 
-module main(Seed, SquareCountX, SquareCountY, SquareSize, SquareHeight, SquareGap)
+module main(Seed, SquareCountX, SquareCountY, SquareSize, CircleMode, SquareHeight, CircleHeight, RingWidth, SquareGap)
 {
     // Generate list of random numbers to set which squares are rendered vertically 
     // and which ones are renderer horizontally:
@@ -87,11 +121,11 @@ module main(Seed, SquareCountX, SquareCountY, SquareSize, SquareHeight, SquareGa
             translate([PointX, PointY, 0])
             {
                 Vertical = (Verticals[SquareCountY * X + Y] < 0.5) ? true : false;
-                RenderRotatedSquare(SquareSize, SquareHeight, Vertical);
+                RenderRotatedSquare(SquareSize,SquareHeight, CircleMode, CircleHeight, RingWidth, Vertical);
             }
         }
     }
     
 }
 
-main(_Seed, _SquareCountX, _SquareCountY, _SquareSize, _SquareHeight, _SquareGap);
+main(_Seed, _SquareCountX, _SquareCountY, _SquareSize, _CircleMode, _SquareHeight, _CircleHeight, _RingWidth, _SquareGap);
