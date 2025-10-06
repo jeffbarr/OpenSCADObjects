@@ -34,7 +34,7 @@ module RenderCircleOrRing(CircleMode, SquareSize, CircleHeight, RingWidth)
 {
     if (CircleMode == "Circle")
     {
-        circle(SquareSize / 2);
+        circle(SquareSize / 2, $fn=99);
     }
     
     if (CircleMode == "Ring")
@@ -42,10 +42,10 @@ module RenderCircleOrRing(CircleMode, SquareSize, CircleHeight, RingWidth)
         difference()
         {
             // Outer ring
-            circle(SquareSize / 2 + RingWidth / 2);
+            circle(SquareSize / 2 + RingWidth / 2, $fn=99);
             
             // Inner ring
-            circle(SquareSize / 2 - RingWidth / 2);
+            circle(SquareSize / 2 - RingWidth / 2, $fn=99);
         }
     }
 }
