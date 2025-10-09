@@ -1,8 +1,5 @@
 /* Tiling Patterns of Truchet, Fig 19 */
 
-// todo:
-// * Multi-extruder
-
 /* [Seed] */
 _Seed = 13;
 
@@ -30,6 +27,40 @@ _SquareGap = 0.5;
 /* [Ring Width] */
 _RingWidth = 1.2;
 
+/* [Extruders] */
+
+// [Square Extruder]
+_SquareExtruder = 1;
+
+// [Circle Extruder]
+_CircleExtruder = 2;
+
+// [Extruder to render]
+_WhichExtruder = "All"; // ["All", 1, 2, 3, 4, 5]
+
+// Map a value of Extruder to an OpenSCAD color
+function ExtruderColor(Extruder) = 
+  (Extruder == 1  ) ? "red"    : 
+  (Extruder == 2  ) ? "green"  : 
+  (Extruder == 3  ) ? "blue"   : 
+  (Extruder == 4  ) ? "pink"   :
+  (Extruder == 5  ) ? "yellow" :
+                      "purple" ;
+					  
+// If _WhichExtruder is "All" or is not "All" and matches the requested extruder, render 
+// the child nodes.
+
+module Extruder(DoExtruder)
+{
+	color(ExtruderColor(DoExtruder))
+	{
+		if (_WhichExtruder == "All" || DoExtruder == _WhichExtruder)
+		{
+			children();
+		}
+	}
+}
+
 module RenderCircleOrRing(CircleMode, SquareSize, CircleHeight, RingWidth)
 {
     if (CircleMode == "Circle")
@@ -50,12 +81,15 @@ module RenderCircleOrRing(CircleMode, SquareSize, CircleHeight, RingWidth)
     }
 }
 
-module RenderSquare(SquareSize, SquareHeight, CircleMode, CircleHeight, RingWidth) 
+module RenderSquare(SquareExtruder, CircleExtruder, SquareSize, SquareHeight, CircleMode, CircleHeight, RingWidth) 
 {
     union()
     {
-        cube([SquareSize, SquareSize, SquareHeight], center=false);
-        
+		Extruder(SquareExtruder)
+		{
+			cube([SquareSize, SquareSize, SquareHeight], center=false);
+        }
+		
         translate([0, 0, SquareHeight])
         {
             intersection()
@@ -63,7 +97,7 @@ module RenderSquare(SquareSize, SquareHeight, CircleMode, CircleHeight, RingWidt
                 // Clip circle or rings at edges of square
                 cube([SquareSize, SquareSize, 99], center=false);
                 
-                color("red")
+				Extruder(CircleExtruder)
                 {
                     linear_extrude(CircleHeight)
                     {
@@ -83,7 +117,7 @@ module RenderSquare(SquareSize, SquareHeight, CircleMode, CircleHeight, RingWidt
      }
 }
 
-module RenderRotatedSquare(SquareSize, SquareHeight, CircleMode, CircleHeight, RingWidth, Rotated)
+module RenderRotatedSquare(SquareExtruder, CircleExtruder, SquareSize, SquareHeight, CircleMode, CircleHeight, RingWidth, Rotated)
 {
     if (Rotated)
     {
@@ -93,18 +127,18 @@ module RenderRotatedSquare(SquareSize, SquareHeight, CircleMode, CircleHeight, R
             {
                 translate([-SquareSize / 2, -SquareSize / 2, 0])
                 {
-                    RenderSquare(SquareSize, SquareHeight, CircleMode, CircleHeight, RingWidth);
+                    RenderSquare(SquareExtruder, CircleExtruder, SquareSize, SquareHeight, CircleMode, CircleHeight, RingWidth);
                 }
             }
         }
     }
     else
     {
-        RenderSquare(SquareSize, SquareHeight, CircleMode, CircleHeight, RingWidth);
+        RenderSquare(SquareExtruder, CircleExtruder, SquareSize, SquareHeight, CircleMode, CircleHeight, RingWidth);
     }
 }
 
-module main(Seed, SquareCountX, SquareCountY, SquareSize, CircleMode, SquareHeight, CircleHeight, RingWidth, SquareGap)
+module main(Seed, SquareCountX, SquareCountY, SquareExtruder, CircleExtruder, SquareSize, CircleMode, SquareHeight, CircleHeight, RingWidth, SquareGap)
 {
     // Generate list of random numbers to set which squares are rendered vertically 
     // and which ones are renderer horizontally:
@@ -121,11 +155,11 @@ module main(Seed, SquareCountX, SquareCountY, SquareSize, CircleMode, SquareHeig
             translate([PointX, PointY, 0])
             {
                 Vertical = (Verticals[SquareCountY * X + Y] < 0.5) ? true : false;
-                RenderRotatedSquare(SquareSize,SquareHeight, CircleMode, CircleHeight, RingWidth, Vertical);
+                RenderRotatedSquare(SquareExtruder, CircleExtruder, SquareSize, SquareHeight, CircleMode, CircleHeight, RingWidth, Vertical);
             }
         }
     }
     
 }
 
-main(_Seed, _SquareCountX, _SquareCountY, _SquareSize, _CircleMode, _SquareHeight, _CircleHeight, _RingWidth, _SquareGap);
+main(_Seed, _SquareCountX, _SquareCountY, _SquareExtruder, _CircleExtruder, _SquareSize, _CircleMode, _SquareHeight, _CircleHeight, _RingWidth, _SquareGap);
