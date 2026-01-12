@@ -226,7 +226,7 @@ This file is fully customizer-enabled. Perfect for 3D printing with multi-color 
 
 A collapsible honeycomb beehive skep designed for fabric printing using Jeff Barr's [fabric printing technique](https://nextjeff.com/3d-printing-on-fabric-tips-and-tricks-f306f4d56833). The design combines rigid honeycomb sections with flexible fabric joints, creating a structure that can collapse and expand.
 
-![Fabric Honeycomb Skep](images/collapsible_honeycomb_skep_multicolor.png)
+![Fabric Honeycomb Skep](https://github.com/Seblat5ch/OpenSCADObjects/blob/fix/relative-image-paths/images/fabric_honeycomb_skep.png)
 
 **Key Features:**
 - Collapsible design with fabric joints between rigid honeycomb sections
@@ -262,3 +262,4 @@ The community contributions above were developed using:
 **Claude 4.5 Sonnet (Anthropic)** - AI assistant used for code generation, mathematical calculations, and design iteration.
 
 This workflow demonstrates how AI-assisted development tools can help create complex parametric designs by analyzing existing code patterns, implementing mathematical concepts, and iterating on design requirements.
+
