@@ -7,7 +7,6 @@
  * Connect nodes in odd rows in Y direction
  * Ability to print a subset as a fancy hexagon
  * Add optional base
- * Get rid of local references to globals
  * add main()
  * modernize formatting
  */
@@ -249,7 +248,10 @@ module NodesAndEdges(CountX, CountY, SpaceX, SpaceY, OddShiftX, OffsetOdd, NodeS
 					
 					translate([StartPtX + FwdMidPtX, StartPtY + FwdMidPtY, 0])
 					{
-						rotate([0, 0, AngA]) Edge(EdgeLengthXY, EdgeWidth, EdgeHeight, EdgeRimHeight, RimThickness, EdgeExtruder, RimExtruder);
+						rotate([0, 0, AngA])
+							{
+								Edge(EdgeLengthXY, EdgeWidth, EdgeHeight, EdgeRimHeight, RimThickness, EdgeExtruder, RimExtruder);
+							}
 					}
 				}
 			}
@@ -268,7 +270,10 @@ module NodesAndEdges(CountX, CountY, SpaceX, SpaceY, OddShiftX, OffsetOdd, NodeS
 					
 					translate([StartPtX + BwdMidPtX, StartPtY + BwdMidPtY, 0])
 					{
-						rotate([0, 0, 180-AngA]) Edge(EdgeLengthXY, EdgeWidth, EdgeHeight, EdgeRimHeight, RimThickness, EdgeExtruder, RimExtruder);
+						rotate([0, 0, 180-AngA])
+						{
+							Edge(EdgeLengthXY, EdgeWidth, EdgeHeight, EdgeRimHeight, RimThickness, EdgeExtruder, RimExtruder);
+						}
 					}
 				}
 			}				
