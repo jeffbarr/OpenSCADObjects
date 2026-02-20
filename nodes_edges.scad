@@ -6,6 +6,10 @@
  * Round the short edges of the nodes
  * Connect nodes in odd rows in Y direction
  * Ability to print a subset as a fancy hexagon
+ * Add optional base
+ * Get rid of local references to globals
+ * add main()
+ * modernize formatting
  */
 
 // Node radius
@@ -53,6 +57,32 @@ EdgeLengthXYFactor = 0.9;
 // Rim thickness
 RimThickness = 0.5;
 
+/* [Extruders] */
+
+// NOde extruder
+_NodeExtruder = 1;
+
+// Edge extruder
+_EdgeExtruder = 2;
+
+// Rim extruder
+_RimExtruder = 3;
+
+// Base extruder
+_BaseExtruder = 0;
+
+// [Extruder to render]
+_WhichExtruder = "All"; // ["All", 1, 2, 3, 4, 5]
+
+// Map a value of _WhichExtruder to an OpenSCAD color
+function ExtruderColor(Extruder) = 
+  (Extruder == 1  ) ? "red"    : 
+  (Extruder == 2  ) ? "green"  : 
+  (Extruder == 3  ) ? "blue"   : 
+  (Extruder == 4  ) ? "pink"   :
+  (Extruder == 5  ) ? "yellow" :
+                      "purple" ;
+
 /* End of customization */
 module __Customizer_Limit__ () {}
 
@@ -65,30 +95,50 @@ NodeRotation = (NodeShape == 0) ? 0  :	/* Circle  */
                (NodeShape == 6) ? 30 :	/* Hexagon */
                                   0;
 
+// If _WhichExtruder is "All" or is not "All" and matches the 
+// requested extruder, render the child nodes.
+
+module Extruder(DoExtruder)
+{
+   color(ExtruderColor(DoExtruder))
+   {
+     if (_WhichExtruder == "All" || DoExtruder == _WhichExtruder)
+     {
+       children();
+     }
+   }
+}
+
 // Render a node, with a rim
-module Node(Radius, Height, RimHeight)
+module Node(Radius, Height, RimHeight, NodeExtruder, RimExtruder)
 {	
 	rotate([0, 0, NodeRotation])
 	{
 	union()
 	{
 			/* Node */
-			linear_extrude(Height)
+			Extruder(NodeExtruder)
 			{
-				circle(Radius, $fn=NodeShape);
+				linear_extrude(Height)
+				{
+					circle(Radius, $fn=NodeShape);
+				}
 			}
 			
-			/* Rim */	
-			for (dd = [0 : 1.5 : 3])
+			/* Rim */
+			Extruder(RimExtruder)
 			{
-				linear_extrude(RimHeight)
+				for (dd = [0 : 1.5 : 3])
 				{
-					difference()
+					linear_extrude(RimHeight)
 					{
-						circle(Radius - dd, $fn=NodeShape);
-						offset(delta=-RimThickness)
+						difference()
 						{
 							circle(Radius - dd, $fn=NodeShape);
+							offset(delta=-RimThickness)
+							{
+								circle(Radius - dd, $fn=NodeShape);
+							}
 						}
 					}
 				}
@@ -104,29 +154,35 @@ module EdgeElement(Length, Width)
 }
 
 // Render an edge, with a rim
-module Edge(Length, Width, Height, RimHeight)
+module Edge(Length, Width, Height, RimHeight, EdgeExtruder, RimExtruder)
 {
 	union()
 	{
 		/* Edge */
 		{
-			linear_extrude(Height)
+			Extruder(EdgeExtruder)
 			{
-				EdgeElement(Length, Width);
+				linear_extrude(Height)
+				{
+					EdgeElement(Length, Width);
+				}
 			}
 		}
 		
 		/* Rim */
-		for (dd = [0 : 1.6 : 3.2])
+		Extruder(RimExtruder)
 		{
-			linear_extrude(RimHeight)
+			for (dd = [0 : 1.6 : 3.2])
 			{
-				difference()
+				linear_extrude(RimHeight)
 				{
-					EdgeElement(Length - dd, Width - dd);
-					offset(delta=-RimThickness)
+					difference()
 					{
 						EdgeElement(Length - dd, Width - dd);
+						offset(delta=-RimThickness)
+						{
+							EdgeElement(Length - dd, Width - dd);
+						}
 					}
 				}
 			}
@@ -139,7 +195,7 @@ function NodeX(x, y, OddShiftX, SpaceX) = ((y % 2) == 1) ? OddShiftX + (x * Spac
 function NodeY(x, y, SpaceY) = y * SpaceY;
 
 // Render nodes and edges
-module NodesAndEdges(CountX, CountY, SpaceX, SpaceY, OddShiftX, OffsetOdd, NodeSize, NodeHeight, NodeRimHeight, EdgeLengthX, EdgeLengthXY, EdgeWidth, EdgeHeight, EdgeRimHeight)
+module NodesAndEdges(CountX, CountY, SpaceX, SpaceY, OddShiftX, OffsetOdd, NodeSize, NodeHeight, NodeRimHeight, EdgeLengthX, EdgeLengthXY, EdgeWidth, EdgeHeight, EdgeRimHeight, NodeExtruder, EdgeExtruder, RimExtruder)
 {
 	/* Nodes */
 	for (x = [0 : CountX - 1])
@@ -151,7 +207,7 @@ module NodesAndEdges(CountX, CountY, SpaceX, SpaceY, OddShiftX, OffsetOdd, NodeS
 			
 			translate([PtX, PtY, 0])
 			{
-				Node(NodeSize, NodeHeight, NodeRimHeight);
+				Node(NodeSize, NodeHeight, NodeRimHeight, NodeExtruder, RimExtruder);
 			}
 		}
 	}
@@ -174,8 +230,7 @@ module NodesAndEdges(CountX, CountY, SpaceX, SpaceY, OddShiftX, OffsetOdd, NodeS
 				
 				translate([StartPtX + MidPtX, StartPtY + MidPtY, 0])
 				{
-					color("red") 
-						Edge(EdgeLengthX, EdgeWidth, EdgeHeight, EdgeRimHeight);
+					Edge(EdgeLengthX, EdgeWidth, EdgeHeight, EdgeRimHeight, EdgeExtruder, RimExtruder);
 				}
 			}		
 	
@@ -194,8 +249,7 @@ module NodesAndEdges(CountX, CountY, SpaceX, SpaceY, OddShiftX, OffsetOdd, NodeS
 					
 					translate([StartPtX + FwdMidPtX, StartPtY + FwdMidPtY, 0])
 					{
-						color("pink") 
-							rotate([0, 0, AngA]) Edge(EdgeLengthXY, EdgeWidth, EdgeHeight, EdgeRimHeight);
+						rotate([0, 0, AngA]) Edge(EdgeLengthXY, EdgeWidth, EdgeHeight, EdgeRimHeight, EdgeExtruder, RimExtruder);
 					}
 				}
 			}
@@ -214,15 +268,13 @@ module NodesAndEdges(CountX, CountY, SpaceX, SpaceY, OddShiftX, OffsetOdd, NodeS
 					
 					translate([StartPtX + BwdMidPtX, StartPtY + BwdMidPtY, 0])
 					{
-						color("green") 
-							rotate([0, 0, 180-AngA]) Edge(EdgeLengthXY, EdgeWidth, EdgeHeight, EdgeRimHeight);
+						rotate([0, 0, 180-AngA]) Edge(EdgeLengthXY, EdgeWidth, EdgeHeight, EdgeRimHeight, EdgeExtruder, RimExtruder);
 					}
 				}
 			}				
 		}
 	}
 }
-
 
 /* Rotate around Z */
 cur_vpr = $vpr;
@@ -247,6 +299,6 @@ echo("EdgeLengthXY", EdgeLengthXY);
 
 translate([-TotalX / 2, -TotalY / 2, 0])
 {
-	NodesAndEdges(CountX, CountY, SpaceX, SpaceY, OddShiftX, OffsetOdd, NodeSize, NodeHeight, NodeRimHeight, EdgeLengthX, EdgeLengthXY, EdgeWidth, EdgeHeight, EdgeRimHeight);
+	NodesAndEdges(CountX, CountY, SpaceX, SpaceY, OddShiftX, OffsetOdd, NodeSize, NodeHeight, NodeRimHeight, EdgeLengthX, EdgeLengthXY, EdgeWidth, EdgeHeight, EdgeRimHeight, _NodeExtruder, _EdgeExtruder, _RimExtruder);
 }
 
