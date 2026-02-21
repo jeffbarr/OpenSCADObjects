@@ -6,9 +6,7 @@
  * Round the short edges of the nodes
  * Connect nodes in odd rows in Y direction
  * Ability to print a subset as a fancy hexagon
- * Add optional base
  * add main()
- * modernize formatting
  */
 
 // Node radius
@@ -55,6 +53,9 @@ _EdgeLengthXYFactor = 0.9;
 
 // Rim thickness
 _RimThickness = 0.5;
+
+// Base thickness
+_BaseThickness = 0.2;
 
 /* [Extruders] */
 
@@ -281,14 +282,9 @@ module NodesAndEdges(CountX, CountY, SpaceX, SpaceY, OddShiftX, OffsetOdd, NodeS
 	}
 }
 
-/* Rotate around Z */
-cur_vpr = $vpr;
-$vpr = [cur_vpr[0], cur_vpr[1], 360 * $t];
-
-/* Compute overall size */
-TotalX = (_CountX - 1) * _SpaceX;
-TotalY = (_CountY - 1) * _SpaceY;
-echo(TotalX, TotalY);
+/* Compute size of base */
+TotalX = (_CountX - 1) * _SpaceX + (_SpaceX / 2) + _NodeSize + _NodeSize;
+TotalY = (_CountY - 1) * _SpaceY + (_SpaceY / 2);
 
 /* Compute angle for edges, special case if not offsetting odd rows */
 C = _SpaceX / 2;
@@ -302,8 +298,17 @@ EdgeLengthXY = (B - 2 * _NodeSize) * _EdgeLengthXYFactor;
 echo("EdgeLengthX", EdgeLengthX);
 echo("EdgeLengthXY", EdgeLengthXY);
 
-translate([-TotalX / 2, -TotalY / 2, 0])
+NodesAndEdges(_CountX, _CountY, _SpaceX, _SpaceY, _OddShiftX, _OffsetOdd, _NodeShape, _NodeSize, _NodeHeight, _NodeRimHeight, EdgeLengthX, EdgeLengthXY, _EdgeWidth, _EdgeHeight, _EdgeRimHeight, _RimThickness, _NodeExtruder, _EdgeExtruder, _RimExtruder);
+
+if (_BaseThickness > 0)
 {
-	NodesAndEdges(_CountX, _CountY, _SpaceX, _SpaceY, _OddShiftX, _OffsetOdd, _NodeShape, _NodeSize, _NodeHeight, _NodeRimHeight, EdgeLengthX, EdgeLengthXY, _EdgeWidth, _EdgeHeight, _EdgeRimHeight, _RimThickness, _NodeExtruder, _EdgeExtruder, _RimExtruder);
+	translate([-_NodeSize, -_NodeSize, - _BaseThickness])
+	{
+		Extruder(_BaseExtruder)
+		{
+			cube([TotalX, TotalY, _BaseThickness]);
+		}
+	}
 }
+
 
