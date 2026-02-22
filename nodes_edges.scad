@@ -204,7 +204,7 @@ function NodeX(x, y, OddShiftX, SpaceX) = ((y % 2) == 1) ? OddShiftX + (x * Spac
 function NodeY(x, y, SpaceY) = y * SpaceY;
 
 // Render nodes and edges
-module NodesAndEdges(CountX, CountY, SpaceX, SpaceY, OddShiftX, OffsetOdd, NodeShape, NodeSize, NodeHeight, NodeRimHeight, EdgeLengthX, EdgeLengthXY, EdgeWidth, EdgeHeight, EdgeRimHeight, RimThickness, NodeExtruder, EdgeExtruder, RimExtruder)
+module NodesAndEdges(CountX, CountY, SpaceX, SpaceY, AngA, OddShiftX, OffsetOdd, NodeShape, NodeSize, NodeHeight, NodeRimHeight, EdgeLengthX, EdgeLengthXY, EdgeWidth, EdgeHeight, EdgeRimHeight, RimThickness, NodeExtruder, EdgeExtruder, RimExtruder)
 {
 	/* Nodes */
 	for (x = [0 : CountX - 1])
@@ -291,26 +291,28 @@ module NodesAndEdges(CountX, CountY, SpaceX, SpaceY, OddShiftX, OffsetOdd, NodeS
 	}
 }
 
-/* Compute size of base */
-TotalX = (_CountX - 1) * _SpaceX + (_SpaceX / 2) + _NodeSize + _NodeSize;
-TotalY = (_CountY - 1) * _SpaceY + (_SpaceY / 2);
-
 /* Compute angle for edges, special case if not offsetting odd rows */
 C = _SpaceX / 2;
 A = _SpaceY;
 B = sqrt(A^2 + C^2 - (2 * A * C) * cos(90));
-AngA = _OffsetOdd ? acos((B^2 + C^2 - A^2) / (2 * B * C)) : 90;
+_AngA = _OffsetOdd ? acos((B^2 + C^2 - A^2) / (2 * B * C)) : 90;
 
 /* Compute edge lengths */
-EdgeLengthX  = (_SpaceX - 2 * _NodeSize) * _EdgeLengthXFactor;
-EdgeLengthXY = (B - 2 * _NodeSize) * _EdgeLengthXYFactor;
-echo("EdgeLengthX", EdgeLengthX);
-echo("EdgeLengthXY", EdgeLengthXY);
+_EdgeLengthX  = (_SpaceX - 2 * _NodeSize) * _EdgeLengthXFactor;
+_EdgeLengthXY = (B - 2 * _NodeSize) * _EdgeLengthXYFactor;
+echo("EdgeLengthX", _EdgeLengthX);
+echo("EdgeLengthXY", _EdgeLengthXY);
 
-NodesAndEdges(_CountX, _CountY, _SpaceX, _SpaceY, _OddShiftX, _OffsetOdd, _NodeShape, _NodeSize, _NodeHeight, _NodeRimHeight, EdgeLengthX, EdgeLengthXY, _EdgeWidth, _EdgeHeight, _EdgeRimHeight, _RimThickness, _NodeExtruder, _EdgeExtruder, _RimExtruder);
+/* Render nodes and edges to connect them */
+NodesAndEdges(_CountX, _CountY, _SpaceX, _SpaceY, _AngA, _OddShiftX, _OffsetOdd, _NodeShape, _NodeSize, _NodeHeight, _NodeRimHeight, _EdgeLengthX, _EdgeLengthXY, _EdgeWidth, _EdgeHeight, _EdgeRimHeight, _RimThickness, _NodeExtruder, _EdgeExtruder, _RimExtruder);
 
+/* Render optional base */
 if (_BaseThickness > 0)
 {
+	/* Compute size of base */
+	TotalX = (_CountX - 1) * _SpaceX + (_SpaceX / 2) + _NodeSize + _NodeSize;
+	TotalY = (_CountY - 1) * _SpaceY + (_SpaceY / 2);
+
 	translate([-(_NodeSize + _BaseExtra / 2), -(_NodeSize + _BaseExtra / 2), - _BaseThickness])
 	{
 		Extruder(_BaseExtruder)
@@ -319,5 +321,4 @@ if (_BaseThickness > 0)
 		}
 	}
 }
-
 
