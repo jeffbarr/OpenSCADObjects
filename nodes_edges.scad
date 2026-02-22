@@ -57,6 +57,9 @@ _RimThickness = 0.5;
 // Base thickness
 _BaseThickness = 0.2;
 
+// Base extra (X and Y)
+_BaseExtra = 10.0;
+
 /* [Extruders] */
 
 // Node extruder
@@ -308,11 +311,11 @@ NodesAndEdges(_CountX, _CountY, _SpaceX, _SpaceY, _OddShiftX, _OffsetOdd, _NodeS
 
 if (_BaseThickness > 0)
 {
-	translate([-_NodeSize, -_NodeSize, - _BaseThickness])
+	translate([-(_NodeSize + _BaseExtra / 2), -(_NodeSize + _BaseExtra / 2), - _BaseThickness])
 	{
 		Extruder(_BaseExtruder)
 		{
-			cube([TotalX, TotalY, _BaseThickness]);
+			cube([TotalX + _BaseExtra, TotalY + _BaseExtra, _BaseThickness]);
 		}
 	}
 }
