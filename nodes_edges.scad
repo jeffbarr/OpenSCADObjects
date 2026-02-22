@@ -128,16 +128,19 @@ module Node(NodeShape, Radius, Height, RimHeight, RimThickness, NodeExtruder, Ri
 			/* Rim */
 			Extruder(RimExtruder)
 			{
-				for (dd = [0 : 1.5 : 3])
+				translate([0, 0, Height])
 				{
-					linear_extrude(RimHeight)
+					for (dd = [0 : 1.5 : 3])
 					{
-						difference()
+						linear_extrude(RimHeight)
 						{
-							circle(Radius - dd, $fn=NodeShape);
-							offset(delta=-RimThickness)
+							difference()
 							{
 								circle(Radius - dd, $fn=NodeShape);
+								offset(delta=-RimThickness)
+								{
+									circle(Radius - dd, $fn=NodeShape);
+								}
 							}
 						}
 					}
@@ -174,14 +177,17 @@ module Edge(Length, Width, Height, RimHeight, RimThickness, EdgeExtruder, RimExt
 		{
 			for (dd = [0 : 1.6 : 3.2])
 			{
-				linear_extrude(RimHeight)
+				translate([0, 0, Height])
 				{
-					difference()
+					linear_extrude(RimHeight)
 					{
-						EdgeElement(Length - dd, Width - dd);
-						offset(delta=-RimThickness)
+						difference()
 						{
 							EdgeElement(Length - dd, Width - dd);
+							offset(delta=-RimThickness)
+							{
+								EdgeElement(Length - dd, Width - dd);
+							}
 						}
 					}
 				}
