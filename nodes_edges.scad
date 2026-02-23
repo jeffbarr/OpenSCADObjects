@@ -3,9 +3,13 @@
 /*
  * TODO:
  *
- * Round the short edges of the nodes
+ * Round the short ends of the edges
+ * Add additional rim types / styles, eg solid
+ * Control number of items in the rim
+ * Rename rim to be more general
  * Connect nodes in odd rows in Y direction
  * Ability to print a subset as a fancy hexagon
+ * Fix base edge size calculations to work for all node shapes
  */
 
 // Node radius
@@ -155,7 +159,10 @@ module Node(NodeShape, Radius, Height, RimHeight, RimThickness, NodeExtruder, Ri
 // Render the element that makes up the edge
 module EdgeElement(Length, Width)
 {
-	square([Length, Width], center=true);
+	if (Length > 0)
+	{
+		square([Length, Width], center=true);
+	}
 }
 
 // Render an edge, with a rim
