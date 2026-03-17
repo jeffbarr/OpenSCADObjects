@@ -33,18 +33,6 @@ _SpaceY = 30;
 // Column spacing
 _SpaceX = 32;
 
-// Node height
-_NodeHeight = 3;
-
-// Node rim height
-_NodeRimHeight = 3.4;
-
-// Edge rim height
-_EdgeRimHeight = 3.4;
-
-// Edge height
-_EdgeHeight = 3.0;
-
 // Edge width
 _EdgeWidth = 6;
 
@@ -57,11 +45,25 @@ _EdgeLengthXYFactor = 0.9;
 // Rim thickness
 _RimThickness = 0.5;
 
-// Base thickness
-_BaseThickness = 0.2;
-
 // Base extra (X and Y)
 _BaseExtra = 10.0;
+
+/* [Heights] */
+
+// Base height
+_BaseHeight = 0.2;
+
+// Node height
+_NodeHeight = 0.8;
+
+// Node rim height
+_NodeRimHeight = 0.4;
+
+// Edge rim height
+_EdgeRimHeight = 0.4;
+
+// Edge height
+_EdgeHeight = 0.8;
 
 /* [Extruders] */
 
@@ -297,7 +299,7 @@ module NodesAndEdges(CountX, CountY, SpaceX, SpaceY, AngA, OddShiftX, OffsetOdd,
 	}
 }
 
-module main(CountX, CountY, SpaceX, SpaceY, OddShiftX, OffsetOdd, NodeShape, NodeSize, NodeHeight, NodeRimHeight, EdgeWidth, EdgeHeight, EdgeRimHeight, EdgeLengthXFactor, EdgeLengthXYFactor, BaseThickness, BaseExtra, RimThickness, BaseExtruder, NodeExtruder, EdgeExtruder, RimExtruder)
+module main(CountX, CountY, SpaceX, SpaceY, OddShiftX, OffsetOdd, NodeShape, NodeSize, NodeHeight, NodeRimHeight, EdgeWidth, EdgeHeight, EdgeRimHeight, EdgeLengthXFactor, EdgeLengthXYFactor, BaseHeight, BaseExtra, RimThickness, BaseExtruder, NodeExtruder, EdgeExtruder, RimExtruder)
 {
 	/* Compute angle for edges, special case if not offsetting odd rows */
 	C = SpaceX / 2;
@@ -315,20 +317,20 @@ module main(CountX, CountY, SpaceX, SpaceY, OddShiftX, OffsetOdd, NodeShape, Nod
 	NodesAndEdges(CountX, CountY, SpaceX, SpaceY, AngA, OddShiftX, OffsetOdd, NodeShape, NodeSize, NodeHeight, NodeRimHeight, EdgeLengthX, EdgeLengthXY, EdgeWidth, EdgeHeight, EdgeRimHeight, RimThickness, NodeExtruder, EdgeExtruder, RimExtruder);
 
 	/* Render optional base */
-	if (BaseThickness > 0)
+	if (BaseHeight > 0)
 	{
 		/* Compute size of base */
 		TotalX = (CountX - 1) * SpaceX + (SpaceX / 2) + NodeSize + NodeSize;
 		TotalY = (CountY - 1) * SpaceY + (SpaceY / 2);
 
-		translate([-(NodeSize + BaseExtra / 2), -(NodeSize + BaseExtra / 2), - BaseThickness])
+		translate([-(NodeSize + BaseExtra / 2), -(NodeSize + BaseExtra / 2), - BaseHeight])
 		{
 			Extruder(BaseExtruder)
 			{
-				cube([TotalX + BaseExtra, TotalY + BaseExtra, BaseThickness]);
+				cube([TotalX + BaseExtra, TotalY + BaseExtra, BaseHeight]);
 			}
 		}
 	}
 }
 
-main(_CountX, _CountY, _SpaceX, _SpaceY, _OddShiftX, _OffsetOdd, _NodeShape, _NodeSize, _NodeHeight, _NodeRimHeight, _EdgeWidth, _EdgeHeight, _EdgeRimHeight, _EdgeLengthXFactor, _EdgeLengthXYFactor, _BaseThickness, _BaseExtra, _RimThickness, _BaseExtruder, _NodeExtruder, _EdgeExtruder, _RimExtruder);
+main(_CountX, _CountY, _SpaceX, _SpaceY, _OddShiftX, _OffsetOdd, _NodeShape, _NodeSize, _NodeHeight, _NodeRimHeight, _EdgeWidth, _EdgeHeight, _EdgeRimHeight, _EdgeLengthXFactor, _EdgeLengthXYFactor, _BaseHeight, _BaseExtra, _RimThickness, _BaseExtruder, _NodeExtruder, _EdgeExtruder, _RimExtruder);
