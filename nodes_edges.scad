@@ -42,8 +42,15 @@ _EdgeLengthXFactor = 0.9;
 // Percentage of full length for edges in XY direction
 _EdgeLengthXYFactor = 0.9;
 
+/* [Rim] */
 // Rim thickness
 _RimThickness = 0.5;
+
+// Node rim count
+_NodeRimCount = 3;
+
+// Edge rim count
+_EdgeRimCount = 3;
 
 // Base extra (X and Y)
 _BaseExtra = 10.0;
@@ -118,7 +125,7 @@ module Extruder(DoExtruder)
 }
 
 // Render a node, with a rim
-module Node(NodeShape, Radius, Height, RimHeight, RimThickness, NodeExtruder, RimExtruder)
+module Node(NodeShape, Radius, Height, RimHeight, RimThickness, RimCount, NodeExtruder, RimExtruder)
 {	
 	rotate([0, 0, NodeRotation])
 	{
@@ -138,8 +145,9 @@ module Node(NodeShape, Radius, Height, RimHeight, RimThickness, NodeExtruder, Ri
 			{
 				translate([0, 0, Height])
 				{
-					for (dd = [0 : 1.5 : 3])
+					for (R = [0 : RimCount - 1])
 					{
+						dd = R * 1.5;
 						if ((Radius - dd) > 0)
 						{
 							linear_extrude(RimHeight)
@@ -171,7 +179,7 @@ module EdgeElement(Length, Width)
 }
 
 // Render an edge, with a rim
-module Edge(Length, Width, Height, RimHeight, RimThickness, EdgeExtruder, RimExtruder)
+module Edge(Length, Width, Height, RimHeight, RimThickness, RimCount, EdgeExtruder, RimExtruder)
 {
 	union()
 	{
@@ -189,9 +197,10 @@ module Edge(Length, Width, Height, RimHeight, RimThickness, EdgeExtruder, RimExt
 		/* Rim */
 		Extruder(RimExtruder)
 		{
-			for (dd = [0 : 2.0 : 4])
+			for (R = [0 : RimCount - 1])
 			{
-				if ((Length - dd) > 0)
+				dd = 2.0 * R;
+				if (((Length - dd) > 0) && ((Width - dd) > 0))
 				{
 					translate([0, 0, Height])
 					{
@@ -218,7 +227,7 @@ function NodeX(x, y, OddShiftX, SpaceX) = ((y % 2) == 1) ? OddShiftX + (x * Spac
 function NodeY(x, y, SpaceY) = y * SpaceY;
 
 // Render nodes and edges
-module NodesAndEdges(CountX, CountY, SpaceX, SpaceY, AngA, OddShiftX, OffsetOdd, NodeShape, NodeSize, NodeHeight, NodeRimHeight, EdgeLengthX, EdgeLengthXY, EdgeWidth, EdgeHeight, EdgeRimHeight, RimThickness, NodeExtruder, EdgeExtruder, RimExtruder)
+module NodesAndEdges(CountX, CountY, SpaceX, SpaceY, AngA, OddShiftX, OffsetOdd, NodeShape, NodeSize, NodeHeight, NodeRimHeight, NodeRimCount, EdgeLengthX, EdgeLengthXY, EdgeWidth, EdgeHeight, EdgeRimHeight, EdgeRimCount, RimThickness, NodeExtruder, EdgeExtruder, RimExtruder)
 {
 	/* Nodes */
 	for (x = [0 : CountX - 1])
@@ -230,7 +239,7 @@ module NodesAndEdges(CountX, CountY, SpaceX, SpaceY, AngA, OddShiftX, OffsetOdd,
 			
 			translate([PtX, PtY, 0])
 			{
-				Node(NodeShape, NodeSize, NodeHeight, NodeRimHeight, RimThickness, NodeExtruder, RimExtruder);
+				Node(NodeShape, NodeSize, NodeHeight, NodeRimHeight, RimThickness, NodeRimCount, NodeExtruder, RimExtruder);
 			}
 		}
 	}
@@ -253,7 +262,7 @@ module NodesAndEdges(CountX, CountY, SpaceX, SpaceY, AngA, OddShiftX, OffsetOdd,
 				
 				translate([StartPtX + MidPtX, StartPtY + MidPtY, 0])
 				{
-					Edge(EdgeLengthX, EdgeWidth, EdgeHeight, EdgeRimHeight, RimThickness, EdgeExtruder, RimExtruder);
+					Edge(EdgeLengthX, EdgeWidth, EdgeHeight, EdgeRimHeight, RimThickness, EdgeRimCount, EdgeExtruder, RimExtruder);
 				}
 			}		
 	
@@ -274,7 +283,7 @@ module NodesAndEdges(CountX, CountY, SpaceX, SpaceY, AngA, OddShiftX, OffsetOdd,
 					{
 						rotate([0, 0, AngA])
 							{
-								Edge(EdgeLengthXY, EdgeWidth, EdgeHeight, EdgeRimHeight, RimThickness, EdgeExtruder, RimExtruder);
+								Edge(EdgeLengthXY, EdgeWidth, EdgeHeight, EdgeRimHeight, RimThickness, EdgeRimCount, EdgeExtruder, RimExtruder);
 							}
 					}
 				}
@@ -296,7 +305,7 @@ module NodesAndEdges(CountX, CountY, SpaceX, SpaceY, AngA, OddShiftX, OffsetOdd,
 					{
 						rotate([0, 0, 180-AngA])
 						{
-							Edge(EdgeLengthXY, EdgeWidth, EdgeHeight, EdgeRimHeight, RimThickness, EdgeExtruder, RimExtruder);
+							Edge(EdgeLengthXY, EdgeWidth, EdgeHeight, EdgeRimHeight, RimThickness, EdgeRimCount, EdgeExtruder, RimExtruder);
 						}
 					}
 				}
@@ -305,7 +314,7 @@ module NodesAndEdges(CountX, CountY, SpaceX, SpaceY, AngA, OddShiftX, OffsetOdd,
 	}
 }
 
-module main(CountX, CountY, SpaceX, SpaceY, OddShiftX, OffsetOdd, NodeShape, NodeSize, NodeHeight, NodeRimHeight, EdgeWidth, EdgeHeight, EdgeRimHeight, EdgeLengthXFactor, EdgeLengthXYFactor, BaseHeight, BaseExtra, RimThickness, BaseExtruder, NodeExtruder, EdgeExtruder, RimExtruder)
+module main(CountX, CountY, SpaceX, SpaceY, OddShiftX, OffsetOdd, NodeShape, NodeSize, NodeHeight, NodeRimHeight, NodeRimCount, EdgeWidth, EdgeHeight, EdgeRimHeight, EdgeRimCount, EdgeLengthXFactor, EdgeLengthXYFactor, BaseHeight, BaseExtra, RimThickness, BaseExtruder, NodeExtruder, EdgeExtruder, RimExtruder)
 {
 	/* Compute angle for edges, special case if not offsetting odd rows */
 	C = SpaceX / 2;
@@ -320,7 +329,7 @@ module main(CountX, CountY, SpaceX, SpaceY, OddShiftX, OffsetOdd, NodeShape, Nod
 	echo("EdgeLengthXY", EdgeLengthXY);
 
 	/* Render nodes and edges to connect them */
-	NodesAndEdges(CountX, CountY, SpaceX, SpaceY, AngA, OddShiftX, OffsetOdd, NodeShape, NodeSize, NodeHeight, NodeRimHeight, EdgeLengthX, EdgeLengthXY, EdgeWidth, EdgeHeight, EdgeRimHeight, RimThickness, NodeExtruder, EdgeExtruder, RimExtruder);
+	NodesAndEdges(CountX, CountY, SpaceX, SpaceY, AngA, OddShiftX, OffsetOdd, NodeShape, NodeSize, NodeHeight, NodeRimHeight, NodeRimCount, EdgeLengthX, EdgeLengthXY, EdgeWidth, EdgeHeight, EdgeRimHeight, EdgeRimCount, RimThickness, NodeExtruder, EdgeExtruder, RimExtruder);
 
 	/* Render optional base */
 	if (BaseHeight > 0)
@@ -339,4 +348,4 @@ module main(CountX, CountY, SpaceX, SpaceY, OddShiftX, OffsetOdd, NodeShape, Nod
 	}
 }
 
-main(_CountX, _CountY, _SpaceX, _SpaceY, _OddShiftX, _OffsetOdd, _NodeShape, _NodeSize, _NodeHeight, _NodeRimHeight, _EdgeWidth, _EdgeHeight, _EdgeRimHeight, _EdgeLengthXFactor, _EdgeLengthXYFactor, _BaseHeight, _BaseExtra, _RimThickness, _BaseExtruder, _NodeExtruder, _EdgeExtruder, _RimExtruder);
+main(_CountX, _CountY, _SpaceX, _SpaceY, _OddShiftX, _OffsetOdd, _NodeShape, _NodeSize, _NodeHeight, _NodeRimHeight, _NodeRimCount, _EdgeWidth, _EdgeHeight, _EdgeRimHeight, _EdgeRimCount,_EdgeLengthXFactor, _EdgeLengthXYFactor, _BaseHeight, _BaseExtra, _RimThickness, _BaseExtruder, _NodeExtruder, _EdgeExtruder, _RimExtruder);
