@@ -54,7 +54,7 @@ _BaseExtra = 10.0;
 _BaseHeight = 0.2;
 
 // Node height
-_NodeHeight = 0.8;
+_NodeHeight = 1.2;
 
 // Node rim height
 _NodeRimHeight = 0.4;
@@ -63,7 +63,7 @@ _NodeRimHeight = 0.4;
 _EdgeRimHeight = 0.4;
 
 // Edge height
-_EdgeHeight = 0.8;
+_EdgeHeight = 1.2;
 
 /* [Extruders] */
 
@@ -140,14 +140,17 @@ module Node(NodeShape, Radius, Height, RimHeight, RimThickness, NodeExtruder, Ri
 				{
 					for (dd = [0 : 1.5 : 3])
 					{
-						linear_extrude(RimHeight)
+						if ((Radius - dd) > 0)
 						{
-							difference()
+							linear_extrude(RimHeight)
 							{
-								circle(Radius - dd, $fn=NodeShape);
-								offset(delta=-RimThickness)
+								difference()
 								{
 									circle(Radius - dd, $fn=NodeShape);
+									offset(delta=-RimThickness)
+									{
+										circle(Radius - dd, $fn=NodeShape);
+									}
 								}
 							}
 						}
@@ -186,18 +189,21 @@ module Edge(Length, Width, Height, RimHeight, RimThickness, EdgeExtruder, RimExt
 		/* Rim */
 		Extruder(RimExtruder)
 		{
-			for (dd = [0 : 1.6 : 3.2])
+			for (dd = [0 : 2.0 : 4])
 			{
-				translate([0, 0, Height])
+				if ((Length - dd) > 0)
 				{
-					linear_extrude(RimHeight)
+					translate([0, 0, Height])
 					{
-						difference()
+						linear_extrude(RimHeight)
 						{
-							EdgeElement(Length - dd, Width - dd);
-							offset(delta=-RimThickness)
+							difference()
 							{
 								EdgeElement(Length - dd, Width - dd);
+								offset(delta=-RimThickness)
+								{
+									EdgeElement(Length - dd, Width - dd);
+								}
 							}
 						}
 					}
