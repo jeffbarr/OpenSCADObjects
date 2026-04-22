@@ -6,6 +6,7 @@ Here's a review of each one:
 * [arcs.scad]
 * [aws_fabric_tiles.scad](https://github.com/jeffbarr/OpenSCADObjects#aws_fabric_tilesscad)
 * [dentist_square.scad](https://github.com/jeffbarr/OpenSCADObjects#dentist_squarescad)
+* [diamonds.scad]
 * [fan_blades.scad]
 * [growing_quads.scad]
 * [impossible_ring.scad](https://github.com/jeffbarr/OpenSCADObjects#impossible_ringscad)
@@ -13,11 +14,11 @@ Here's a review of each one:
 * [neo_strip.scad](https://github.com/jeffbarr/OpenSCADObjects#neo_stripscad)
 * [nodes_edges.scad](https://github.com/jeffbarr/OpenSCADObjects#nodes_edgesscad)
 * [nodes_graph.scad](https://github.com/jeffbarr/OpenSCADObjects#nodes_graphscad)
-* polygon.scad
+* [polygon.scad]
 * [pride_hearts.scad](https://github.com/jeffbarr/OpenSCADObjects/blob/main/pride_hearts.scad)
 * [quads.scad](https://github.com/jeffbarr/OpenSCADObjects#quadsscad)
 * [rhombitrihexagon.scad](https://github.com/jeffbarr/OpenSCADObjects#rhombitrihexagonscad)
-* routing_tiles.scad
+* [routing_tiles.scad]
 * [scales.scad](https://github.com/jeffbarr/OpenSCADObjects#scalesscad)
 * [spikes.scad](https://github.com/jeffbarr/OpenSCADObjects#spikesscad)
 * [super_hexagons.scad](https://github.com/jeffbarr/OpenSCADObjects#super_hexagonsscad)
@@ -36,6 +37,11 @@ This file is fully customizer-enabled.
 
 An OpenSCAD replica of an interesting pattern that I found and captured in my dentist's office.
 ![Dentist Square](https://github.com/jeffbarr/OpenSCADObjects/blob/main/images/dentist_square_sample.jpg)
+
+## [diamonds.scad](https://github.com/jeffbarr/OpenSCADObjects/blob/main/diamonds.scad)
+
+A grid of large and small diamonds with nice rims on top, fully customizer-enabled.
+![Diamonds](https://github.com/jeffbarr/OpenSCADObjects/blob/main/images/diamonds_sample.png)
 
 ## [impossible_ring.scad](https://github.com/jeffbarr/OpenSCADObjects/blob/main/impossible_ring.scad)
 
