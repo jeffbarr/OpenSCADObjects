@@ -18,6 +18,13 @@
  *
  *			  QT_TOPO - Polyhedrons that meet at the edges, works best when
  *						HeightMode is HM_RANDOM.
+ *
+ * TODO:
+ *	- Make sure that the randomness actually is random
+ *  - Convert all globals to _ prefix
+ *	- Add main()
+ * 	- Increase modularity
+ *	- Update documentation
  */
 
 /*
@@ -107,6 +114,23 @@ Heights    = 7;		// [1 : 20]
 // Quad type
 QuadType = "QT_VERT"; // [QT_VERT, QT_TAPER, QT_TOPO]
 
+/* [Extruders] */
+
+// Multiple extruder
+_MultiExtruder = false;
+
+// first extruder
+_FirstExtruder = 1;
+
+// Last extruder
+_LastExtruder = 4;
+
+// [Extruder to render]
+_WhichExtruder = "All"; // ["All", 1, 2, 3, 4, 5]
+
+// Random seed
+_RandomSeed = 1313;
+
 /* End of customization */
 module __Customizer_Limit__ () {}
 
@@ -122,12 +146,35 @@ assert(ColPert >= 0);
 assert((HeightMode == "HM_FIXED") || (HeightMode == "HM_RANDOM"));
 assert((QuadType == "QT_VERT") || (QuadType == "QT_TAPER") || (QuadType == "QT_TOPO"));
 
-/* Seed the RNG */
-X = rands(0, 100, 1, 131313);
+// Map a value of _WhichExtruder to an OpenSCAD color
+function ExtruderColor(Extruder) = 
+  (Extruder == 1  ) ? "red"    : 
+  (Extruder == 2  ) ? "green"  : 
+  (Extruder == 3  ) ? "blue"   : 
+  (Extruder == 4  ) ? "pink"   :
+  (Extruder == 5  ) ? "yellow" :
+                      "purple" ;
+
+// If _WhichExtruder is "All" or is not "All" and matches the 
+// requested extruder, render the child nodes.
+
+module Extruder(DoExtruder)
+{
+   color(ExtruderColor(DoExtruder))
+   {
+     if (_WhichExtruder == "All" || DoExtruder == _WhichExtruder)
+     {
+       children();
+     }
+   }
+}
+					  
+/* Seed the RNG?? */
+X = rands(0, 100, 1, _RandomSeed);
 
 /* Rotate around Z */
-cur_vpr = $vpr;
-$vpr = [cur_vpr[0], cur_vpr[1], 360 * $t];
+//cur_vpr = $vpr;
+//$vpr = [cur_vpr[0], cur_vpr[1], 360 * $t];
 
 /* Compute overall size */
 Width = (Cols * RectWidth) + ((Cols - 1) * RectColGap);
@@ -180,7 +227,20 @@ for (r = [0 : Rows])
 	echo("  Row: ", r);
 	echo("    ", H[r], "\n");
 }
-	
+
+/* Generate random extruders/colors */
+_ExtruderGrid = 
+[
+	for (r = [1 : Rows]) 
+		[
+			for (c = [1 : Cols])
+				round(rands(_FirstExtruder, _LastExtruder, _RandomSeed)[0])
+		]
+];
+
+echo("Extruder Grid:");
+echo(_ExtruderGrid);
+
 /*
  * Names of the X_BL (Bottom Left) define the four corners of the rectangle:
  *
@@ -196,7 +256,7 @@ for (r = [0 : Rows])
  * quadrilateral, with names suffixed by _G.
  */
 
-translate([-Width / 2, -Depth / 2, 0])
+//translate([-Width / 2, -Depth / 2, 0])
 /* Construct polygons */
 for (r = [0 : Rows - 1])
 {
@@ -232,60 +292,64 @@ for (r = [0 : Rows - 1])
 			(HeightMode == "HM_RANDOM") ? BaseHeight + floor(rands(0, Heights, 1)[0]) * HeightInc :
 			0;
 		
-		/* Generate quad based on QuadType */
-		if (QuadType == "QT_VERT")
+		QuadExtruder = _MultiExtruder ? _ExtruderGrid[r][c] : 1;
+		Extruder(QuadExtruder)
 		{
-			linear_extrude(Height)
-				polygon([[X_BL_G, Y_BL_G], [X_BR_G, Y_BR_G], 
-						 [X_TR_G, Y_TR_G], [X_TL_G, Y_TL_G]]);
-		}
-		else 
-		if (QuadType == "QT_TAPER")
-		{
-			X_Center = X_BL + RectWidth / 2;
-			Y_Center = Y_BL + RectDepth / 2;
-			
-			translate([X_Center, Y_Center, 0])
-				linear_extrude(Height, scale=0.5)
-					translate([-X_Center, -Y_Center, 0])
-						polygon([[X_BL_G, Y_BL_G], [X_BR_G, Y_BR_G], 
-								 [X_TR_G, Y_TR_G], [X_TL_G, Y_TL_G]]);
-		}
-		else if (QuadType == "QT_TOPO")
-		{
-			/* Get height of each corner */
-			Z_BL = H[r][c];
-			Z_BR = H[r][c+1];
-			Z_TL = H[r+1][c];
-			Z_TR = H[r+1][c+1];
-			
-			echo("[", r, ", ", c, "]: ", Z_TL, ", ", Z_TR, ", ", Z_BL, ", ", Z_BR);
-			
-			/* Create points for polyhedron */
-			PolyPoints = 
-			[
-				[X_BL_G, Y_BL_G, 0],		// 0
-				[X_BR_G, Y_BR_G, 0],		// 1
-				[X_TR_G, Y_TR_G, 0],		// 2
-				[X_TL_G, Y_TL_G, 0],		// 3
-				[X_BL_G, Y_BL_G, Z_BL],		// 4
-				[X_BR_G, Y_BR_G, Z_BR],		// 5
-				[X_TR_G, Y_TR_G, Z_TR],		// 6
-				[X_TL_G, Y_TL_G, Z_TL],		// 7
-			];
-			
-			/* Create polyhedron */
-			PolyFaces =
-			[  
-				[0,1,2,3],  // bottom
-				[4,5,1,0],  // front
-				[7,6,5,4],  // top
-				[5,6,2,1],  // right
-				[6,7,3,2],  // back
-				[7,4,0,3]	// left
-			];
+			/* Generate quad based on QuadType */
+			if (QuadType == "QT_VERT")
+			{
+				linear_extrude(Height)
+					polygon([[X_BL_G, Y_BL_G], [X_BR_G, Y_BR_G], 
+							 [X_TR_G, Y_TR_G], [X_TL_G, Y_TL_G]]);
+			}
+			else 
+			if (QuadType == "QT_TAPER")
+			{
+				X_Center = X_BL + RectWidth / 2;
+				Y_Center = Y_BL + RectDepth / 2;
+				
+				translate([X_Center, Y_Center, 0])
+					linear_extrude(Height, scale=0.5)
+						translate([-X_Center, -Y_Center, 0])
+							polygon([[X_BL_G, Y_BL_G], [X_BR_G, Y_BR_G], 
+									 [X_TR_G, Y_TR_G], [X_TL_G, Y_TL_G]]);
+			}
+			else if (QuadType == "QT_TOPO")
+			{
+				/* Get height of each corner */
+				Z_BL = H[r][c];
+				Z_BR = H[r][c+1];
+				Z_TL = H[r+1][c];
+				Z_TR = H[r+1][c+1];
+				
+				echo("[", r, ", ", c, "]: ", Z_TL, ", ", Z_TR, ", ", Z_BL, ", ", Z_BR);
+				
+				/* Create points for polyhedron */
+				PolyPoints = 
+				[
+					[X_BL_G, Y_BL_G, 0],		// 0
+					[X_BR_G, Y_BR_G, 0],		// 1
+					[X_TR_G, Y_TR_G, 0],		// 2
+					[X_TL_G, Y_TL_G, 0],		// 3
+					[X_BL_G, Y_BL_G, Z_BL],		// 4
+					[X_BR_G, Y_BR_G, Z_BR],		// 5
+					[X_TR_G, Y_TR_G, Z_TR],		// 6
+					[X_TL_G, Y_TL_G, Z_TL],		// 7
+				];
+				
+				/* Create polyhedron */
+				PolyFaces =
+				[  
+					[0,1,2,3],  // bottom
+					[4,5,1,0],  // front
+					[7,6,5,4],  // top
+					[5,6,2,1],  // right
+					[6,7,3,2],  // back
+					[7,4,0,3]	// left
+				];
 
-			polyhedron(points=PolyPoints,faces=PolyFaces);
+				polyhedron(points=PolyPoints,faces=PolyFaces);
+			}
 		}
 	}
 }
