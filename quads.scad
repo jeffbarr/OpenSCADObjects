@@ -111,6 +111,9 @@ _HeightInc  = 0.4; 	// [0.2 : 0.2 : 10]
 // Number of random heights
 _Heights    = 7;		// [1 : 20]
 
+// Scale at top of QT_TAPER quad
+_TaperTopScale = 0.5;	// [0.0 : 0.1 : 1.0]
+
 /* 
  * Set quad type:
  */
@@ -265,7 +268,7 @@ echo(_ExtruderGrid);
 
 /* Render the grid of quadrilaterals */
 
-module RenderQuadGrid(Rows, Cols, QuadType, HeightMode, RectWidth, RectDepth, RectRowGap, RectColGap, RowPert, ColPert, BaseHeight, HeightInc, Heights, MultiExtruder, FirstExtruder, LastExtruder)
+module RenderQuadGrid(Rows, Cols, QuadType, HeightMode, RectWidth, RectDepth, RectRowGap, RectColGap, RowPert, ColPert, BaseHeight, HeightInc, Heights, TaperTopScale, MultiExtruder, FirstExtruder, LastExtruder)
 {
 	for (r = [0 : Rows - 1])
 	{
@@ -318,7 +321,7 @@ module RenderQuadGrid(Rows, Cols, QuadType, HeightMode, RectWidth, RectDepth, Re
 					Y_Center = Y_BL + RectDepth / 2;
 					
 					translate([X_Center, Y_Center, 0])
-						linear_extrude(Height, scale=0.5)
+						linear_extrude(Height, scale=TaperTopScale)
 							translate([-X_Center, -Y_Center, 0])
 								polygon([[X_BL_G, Y_BL_G], [X_BR_G, Y_BR_G], 
 										 [X_TR_G, Y_TR_G], [X_TL_G, Y_TL_G]]);
@@ -364,9 +367,9 @@ module RenderQuadGrid(Rows, Cols, QuadType, HeightMode, RectWidth, RectDepth, Re
 	}
 }
 
-module main(Rows, Cols, QuadType, HeightMode, RectWidth, RectDepth, RectRowGap, RectColGap, RowPert, ColPert, BaseHeight, HeightInc, Heights, MultiExtruder, FirstExtruder, LastExtruder)
+module main(Rows, Cols, QuadType, HeightMode, RectWidth, RectDepth, RectRowGap, RectColGap, RowPert, ColPert, BaseHeight, HeightInc, Heights, TaperTopScale, MultiExtruder, FirstExtruder, LastExtruder)
 {
-	RenderQuadGrid(Rows, Cols, QuadType, HeightMode, RectWidth, RectDepth, RectRowGap, RectColGap, RowPert, ColPert, BaseHeight, HeightInc, Heights, MultiExtruder, FirstExtruder, LastExtruder);
+	RenderQuadGrid(Rows, Cols, QuadType, HeightMode, RectWidth, RectDepth, RectRowGap, RectColGap, RowPert, ColPert, BaseHeight, HeightInc, Heights, TaperTopScale, MultiExtruder, FirstExtruder, LastExtruder);
 }
 
-main(_Rows, _Cols, _QuadType, _HeightMode, _RectWidth, _RectDepth, _RectRowGap, _RectColGap, _RowPert, _ColPert, _BaseHeight, _HeightInc, _Heights, _MultiExtruder, _FirstExtruder, _LastExtruder);
+main(_Rows, _Cols, _QuadType, _HeightMode, _RectWidth, _RectDepth, _RectRowGap, _RectColGap, _RowPert, _ColPert, _BaseHeight, _HeightInc, _Heights, _TaperTopScale, _MultiExtruder, _FirstExtruder, _LastExtruder);
