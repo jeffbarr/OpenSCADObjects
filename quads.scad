@@ -55,6 +55,7 @@
  
 // Number of rows in the grid 
 _Rows = 12;
+
 // Number of columns in the grid 
 _Cols = 12;
 
@@ -64,6 +65,7 @@ _Cols = 12;
 
 // Width of each rectangle
 _RectWidth = 15;
+
 // Depth of each rectangle
 _RectDepth = 15;
 
@@ -73,6 +75,7 @@ _RectDepth = 15;
 
 // Gap between each row of rectangles
 _RectRowGap = 2;
+
 // Gap between each column of rectangles
 _RectColGap = 2;
 
@@ -84,6 +87,7 @@ _RectColGap = 2;
  
 // Max perturbation between rows
 _RowPert = 8;
+
 // Max perturbation between columns
 _ColPert = 8;
 
@@ -100,8 +104,10 @@ _HeightMode = "HM_FIXED"; // [HM_FIXED, HM_RANDOM]
 
 // Base height
 _BaseHeight = 3;		// [0.2 : 10]
+
 // Height increment
 _HeightInc  = 0.4; 	// [0.2 : 0.2 : 10]
+
 // Number of random heights
 _Heights    = 7;		// [1 : 20]
 
