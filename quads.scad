@@ -21,8 +21,6 @@
  *
  * TODO:
  *	- Make sure that the randomness actually is random
- *  - Convert all globals to _ prefix
- *	- Add main()
  * 	- Increase modularity
  *	- Update documentation
  */
@@ -56,27 +54,27 @@
  */
  
 // Number of rows in the grid 
-Rows = 12;
+_Rows = 12;
 // Number of columns in the grid 
-Cols = 12;
+_Cols = 12;
 
 /* 
  * Define size of each rectangle in the grid:
  */
 
 // Width of each rectangle
-RectWidth = 15;
+_RectWidth = 15;
 // Depth of each rectangle
-RectDepth = 15;
+_RectDepth = 15;
 
 /* 
  * Define gap between rectangles:
  */
 
 // Gap between each row of rectangles
-RectRowGap = 2;
+_RectRowGap = 2;
 // Gap between each column of rectangles
-RectColGap = 2;
+_RectColGap = 2;
 
 /* 
  * Define amount of perturbation per rectangle, this is -/+, so the 
@@ -85,34 +83,34 @@ RectColGap = 2;
  */
  
 // Max perturbation between rows
-RowPert = 8;
+_RowPert = 8;
 // Max perturbation between columns
-ColPert = 8;
+_ColPert = 8;
 
 /* 
  * Set height mode:
  */
  
 // Height mode
-HeightMode = "HM_FIXED"; // [HM_FIXED, HM_RANDOM]
+_HeightMode = "HM_FIXED"; // [HM_FIXED, HM_RANDOM]
 
 /*
  * Define height parameters:
 */
 
 // Base height
-BaseHeight = 3;		// [0.2 : 10]
+_BaseHeight = 3;		// [0.2 : 10]
 // Height increment
-HeightInc  = 0.4; 	// [0.2 : 0.2 : 10]
+_HeightInc  = 0.4; 	// [0.2 : 0.2 : 10]
 // Number of random heights
-Heights    = 7;		// [1 : 20]
+_Heights    = 7;		// [1 : 20]
 
 /* 
  * Set quad type:
  */
  
 // Quad type
-QuadType = "QT_VERT"; // [QT_VERT, QT_TAPER, QT_TOPO]
+_QuadType = "QT_VERT"; // [QT_VERT, QT_TAPER, QT_TOPO]
 
 /* [Extruders] */
 
@@ -135,16 +133,16 @@ _RandomSeed = 1313;
 module __Customizer_Limit__ () {}
 
 /* Perform sanity checks */
-assert(Rows > 0);
-assert(Cols > 0);
-assert(RectWidth > 0);
-assert(RectDepth > 0);
-assert(RectRowGap >= 0);
-assert(RectColGap >= 0);
-assert(RowPert >= 0);
-assert(ColPert >= 0);
-assert((HeightMode == "HM_FIXED") || (HeightMode == "HM_RANDOM"));
-assert((QuadType == "QT_VERT") || (QuadType == "QT_TAPER") || (QuadType == "QT_TOPO"));
+assert(_Rows > 0);
+assert(_Cols > 0);
+assert(_RectWidth > 0);
+assert(_RectDepth > 0);
+assert(_RectRowGap >= 0);
+assert(_RectColGap >= 0);
+assert(_RowPert >= 0);
+assert(_ColPert >= 0);
+assert((_HeightMode == "HM_FIXED") || (_HeightMode == "HM_RANDOM"));
+assert((_QuadType == "QT_VERT") || (_QuadType == "QT_TAPER") || (_QuadType == "QT_TOPO"));
 
 // Map a value of _WhichExtruder to an OpenSCAD color
 function ExtruderColor(Extruder) = 
@@ -177,30 +175,30 @@ X = rands(0, 100, 1, _RandomSeed);
 //$vpr = [cur_vpr[0], cur_vpr[1], 360 * $t];
 
 /* Compute overall size */
-Width = (Cols * RectWidth) + ((Cols - 1) * RectColGap);
-Depth = (Cols * RectDepth) + ((Rows - 1) * RectRowGap);
+Width = (_Cols * _RectWidth) + ((_Cols - 1) * _RectColGap);
+Depth = (_Cols * _RectDepth) + ((_Rows - 1) * _RectRowGap);
 
 echo ("Overall size: ", Width, Depth);
 
 /* Build the G grid */
 G = 
 [
-	[for (c = [0 : Cols]) [ 0, 0]],
+	[for (c = [0 : _Cols]) [ 0, 0]],
 		
-	for (r = [1 : Rows - 1]) 
+	for (r = [1 : _Rows - 1]) 
 		[
 			[0, 0],
-			for (c = [1 : Cols - 1]) [
-				round(rands(-RowPert, RowPert, 1)[0]), 
-				round(rands(-ColPert, ColPert, 1)[0])],
+			for (c = [1 : _Cols - 1]) [
+				round(rands(-_RowPert, _RowPert, 1)[0]), 
+				round(rands(-_ColPert, _ColPert, 1)[0])],
 			[0, 0]				
 		],
 			
-	[for (c = [0 : Cols]) [ 0, 0]],
+	[for (c = [0 : _Cols]) [ 0, 0]],
 ];
 
 echo("G Grid:");
-for (r = [0 : Rows])
+for (r = [0 : _Rows])
 {
 	echo("  Row: ", r);
 	echo("    ", G[r], "\n");
@@ -209,20 +207,20 @@ for (r = [0 : Rows])
 /* Build the H grid */
 H =
 [
-	[for (c = [0 : Cols]) BaseHeight],
+	[for (c = [0 : _Cols]) _BaseHeight],
 		
-	for (r = [1 : Rows - 1]) 
+	for (r = [1 : _Rows - 1]) 
 		[	
-			BaseHeight,
-			for (c = [1 : Cols - 1]) BaseHeight + floor(rands(0, Heights, 1)[0]) * HeightInc,
-			BaseHeight				
+			_BaseHeight,
+			for (c = [1 : _Cols - 1]) _BaseHeight + floor(rands(0, _Heights, 1)[0]) * _HeightInc,
+			_BaseHeight				
 		],	
 		
-	[for (c = [0 : Cols]) BaseHeight],
+	[for (c = [0 : _Cols]) _BaseHeight],
 ];
 	
 echo("H Grid:");
-for (r = [0 : Rows])
+for (r = [0 : _Rows])
 {
 	echo("  Row: ", r);
 	echo("    ", H[r], "\n");
@@ -231,9 +229,9 @@ for (r = [0 : Rows])
 /* Generate random extruders/colors */
 _ExtruderGrid = 
 [
-	for (r = [1 : Rows]) 
+	for (r = [1 : _Rows]) 
 		[
-			for (c = [1 : Cols])
+			for (c = [1 : _Cols])
 				round(rands(_FirstExtruder, _LastExtruder, _RandomSeed)[0])
 		]
 ];
@@ -258,98 +256,111 @@ echo(_ExtruderGrid);
 
 //translate([-Width / 2, -Depth / 2, 0])
 /* Construct polygons */
-for (r = [0 : Rows - 1])
+
+/* Render the grid of quadrilaterals */
+
+module RenderQuadGrid(Rows, Cols, QuadType, HeightMode, RectWidth, RectDepth, RectRowGap, RectColGap, RowPert, ColPert, BaseHeight, HeightInc, Heights, MultiExtruder, FirstExtruder, LastExtruder)
 {
-	for (c = [0 : Cols - 1])
-	{ 
-		/* Compute coordinates of each rectangle */
-		X_BL = (c * (RectWidth + RectColGap)); 
-		X_BR = X_BL + RectWidth;
-		X_TL = X_BL;
-		X_TR = X_BR;
-	
-		Y_BL = (r * (RectDepth + RectRowGap)); 
-		Y_TL = Y_BL + RectDepth;
-		Y_BR = Y_BL;
-		Y_TR = Y_TL;
-	
-		/* Adjust by the per-corner perturbation in the grid */
-		X_BL_G = X_BL + G[r][c][1];
-		Y_BL_G = Y_BL + G[r][c][0];
-
-		X_BR_G = X_BR + G[r][c+1][1];
-		Y_BR_G = Y_BR + G[r][c+1][0];
-	
-		X_TL_G = X_TL + G[r+1][c][1];
-		Y_TL_G = Y_TL + G[r+1][c][0];
-
-		X_TR_G = X_TR + G[r+1][c+1][1];
-		Y_TR_G = Y_TR + G[r+1][c+1][0];		
-	
-		/* Pick a height based on HeightMode (this value is not used for QT_TOPO, since each corner has a distinct height) */
-		Height =
-			(HeightMode == "HM_FIXED")  ? BaseHeight :
-			(HeightMode == "HM_RANDOM") ? BaseHeight + floor(rands(0, Heights, 1)[0]) * HeightInc :
-			0;
+	for (r = [0 : Rows - 1])
+	{
+		for (c = [0 : Cols - 1])
+		{ 
+			/* Compute coordinates of each rectangle */
+			X_BL = (c * (RectWidth + RectColGap)); 
+			X_BR = X_BL + RectWidth;
+			X_TL = X_BL;
+			X_TR = X_BR;
 		
-		QuadExtruder = _MultiExtruder ? _ExtruderGrid[r][c] : 1;
-		Extruder(QuadExtruder)
-		{
-			/* Generate quad based on QuadType */
-			if (QuadType == "QT_VERT")
-			{
-				linear_extrude(Height)
-					polygon([[X_BL_G, Y_BL_G], [X_BR_G, Y_BR_G], 
-							 [X_TR_G, Y_TR_G], [X_TL_G, Y_TL_G]]);
-			}
-			else 
-			if (QuadType == "QT_TAPER")
-			{
-				X_Center = X_BL + RectWidth / 2;
-				Y_Center = Y_BL + RectDepth / 2;
-				
-				translate([X_Center, Y_Center, 0])
-					linear_extrude(Height, scale=0.5)
-						translate([-X_Center, -Y_Center, 0])
-							polygon([[X_BL_G, Y_BL_G], [X_BR_G, Y_BR_G], 
-									 [X_TR_G, Y_TR_G], [X_TL_G, Y_TL_G]]);
-			}
-			else if (QuadType == "QT_TOPO")
-			{
-				/* Get height of each corner */
-				Z_BL = H[r][c];
-				Z_BR = H[r][c+1];
-				Z_TL = H[r+1][c];
-				Z_TR = H[r+1][c+1];
-				
-				echo("[", r, ", ", c, "]: ", Z_TL, ", ", Z_TR, ", ", Z_BL, ", ", Z_BR);
-				
-				/* Create points for polyhedron */
-				PolyPoints = 
-				[
-					[X_BL_G, Y_BL_G, 0],		// 0
-					[X_BR_G, Y_BR_G, 0],		// 1
-					[X_TR_G, Y_TR_G, 0],		// 2
-					[X_TL_G, Y_TL_G, 0],		// 3
-					[X_BL_G, Y_BL_G, Z_BL],		// 4
-					[X_BR_G, Y_BR_G, Z_BR],		// 5
-					[X_TR_G, Y_TR_G, Z_TR],		// 6
-					[X_TL_G, Y_TL_G, Z_TL],		// 7
-				];
-				
-				/* Create polyhedron */
-				PolyFaces =
-				[  
-					[0,1,2,3],  // bottom
-					[4,5,1,0],  // front
-					[7,6,5,4],  // top
-					[5,6,2,1],  // right
-					[6,7,3,2],  // back
-					[7,4,0,3]	// left
-				];
+			Y_BL = (r * (RectDepth + RectRowGap)); 
+			Y_TL = Y_BL + RectDepth;
+			Y_BR = Y_BL;
+			Y_TR = Y_TL;
+		
+			/* Adjust by the per-corner perturbation in the grid */
+			X_BL_G = X_BL + G[r][c][1];
+			Y_BL_G = Y_BL + G[r][c][0];
 
-				polyhedron(points=PolyPoints,faces=PolyFaces);
+			X_BR_G = X_BR + G[r][c+1][1];
+			Y_BR_G = Y_BR + G[r][c+1][0];
+		
+			X_TL_G = X_TL + G[r+1][c][1];
+			Y_TL_G = Y_TL + G[r+1][c][0];
+
+			X_TR_G = X_TR + G[r+1][c+1][1];
+			Y_TR_G = Y_TR + G[r+1][c+1][0];		
+		
+			/* Pick a height based on HeightMode (this value is not used for QT_TOPO, since each corner has a distinct height) */
+			Height =
+				(HeightMode == "HM_FIXED")  ? BaseHeight :
+				(HeightMode == "HM_RANDOM") ? BaseHeight + floor(rands(0, Heights, 1)[0]) * HeightInc :
+				0;
+			
+			QuadExtruder = _MultiExtruder ? _ExtruderGrid[r][c] : 1;
+			Extruder(QuadExtruder)
+			{
+				/* Generate quad based on QuadType */
+				if (QuadType == "QT_VERT")
+				{
+					linear_extrude(Height)
+						polygon([[X_BL_G, Y_BL_G], [X_BR_G, Y_BR_G], 
+								 [X_TR_G, Y_TR_G], [X_TL_G, Y_TL_G]]);
+				}
+				else 
+				if (QuadType == "QT_TAPER")
+				{
+					X_Center = X_BL + RectWidth / 2;
+					Y_Center = Y_BL + RectDepth / 2;
+					
+					translate([X_Center, Y_Center, 0])
+						linear_extrude(Height, scale=0.5)
+							translate([-X_Center, -Y_Center, 0])
+								polygon([[X_BL_G, Y_BL_G], [X_BR_G, Y_BR_G], 
+										 [X_TR_G, Y_TR_G], [X_TL_G, Y_TL_G]]);
+				}
+				else if (QuadType == "QT_TOPO")
+				{
+					/* Get height of each corner */
+					Z_BL = H[r][c];
+					Z_BR = H[r][c+1];
+					Z_TL = H[r+1][c];
+					Z_TR = H[r+1][c+1];
+					
+					echo("[", r, ", ", c, "]: ", Z_TL, ", ", Z_TR, ", ", Z_BL, ", ", Z_BR);
+					
+					/* Create points for polyhedron */
+					PolyPoints = 
+					[
+						[X_BL_G, Y_BL_G, 0],		// 0
+						[X_BR_G, Y_BR_G, 0],		// 1
+						[X_TR_G, Y_TR_G, 0],		// 2
+						[X_TL_G, Y_TL_G, 0],		// 3
+						[X_BL_G, Y_BL_G, Z_BL],		// 4
+						[X_BR_G, Y_BR_G, Z_BR],		// 5
+						[X_TR_G, Y_TR_G, Z_TR],		// 6
+						[X_TL_G, Y_TL_G, Z_TL],		// 7
+					];
+					
+					/* Create polyhedron */
+					PolyFaces =
+					[  
+						[0,1,2,3],  // bottom
+						[4,5,1,0],  // front
+						[7,6,5,4],  // top
+						[5,6,2,1],  // right
+						[6,7,3,2],  // back
+						[7,4,0,3]	// left
+					];
+
+					polyhedron(points=PolyPoints,faces=PolyFaces);
+				}
 			}
 		}
 	}
 }
+
+module main(Rows, Cols, QuadType, HeightMode, RectWidth, RectDepth, RectRowGap, RectColGap, RowPert, ColPert, BaseHeight, HeightInc, Heights, MultiExtruder, FirstExtruder, LastExtruder)
+{
+	RenderQuadGrid(Rows, Cols, QuadType, HeightMode, RectWidth, RectDepth, RectRowGap, RectColGap, RowPert, ColPert, BaseHeight, HeightInc, Heights, MultiExtruder, FirstExtruder, LastExtruder);
+}
+
+main(_Rows, _Cols, _QuadType, _HeightMode, _RectWidth, _RectDepth, _RectRowGap, _RectColGap, _RowPert, _ColPert, _BaseHeight, _HeightInc, _Heights, _MultiExtruder, _FirstExtruder, _LastExtruder);
