@@ -1,82 +1,114 @@
-/* Hexagons in an offset grid with a frame */
-{
-  /* hexagons_l15_3_23 */
-  R = 11.5; // Radius
-  H = 1.2;    //Height 
-  G = 19;   // Gap between items 
-  F = 6;    // Hexagon 
-  V = 16;    // Height count in Y direction
-  W = 18;    // Width count in X direction
-}
-
-{
-  /* hexagons_7_12_19_31
-   *
-   * Fills 250x150 bed with allowance for frame
-   */
-/*  
-  R = 7;   // Radius
-  H = 3;   // Height
-  G = 12;  // Gap between items
-  F = 6;   // Hexagon
-  V = 19;    // Height count in Y direction
-  W = 31;  // Width count in X direction
- */
-}
-
-
 /* 
- * frame
+ * Hexagons in an offset grid with a frame.
+ *
+ * TODO:
+ * - Add multi-extruder 
+ * - Add options to choose extruder (random, cyclic)
+ * - Compute frame size and position
+ * - Add fancy top patterns for hexagons
+ * - Render hexagon in a module
  */
 
-OuterWidth = 250;
-OuterDepth = 150;
-Border = 7;
-Step = 10;
+/* [Hexagons] */
 
-translate([Border + Border + 2, Border + Border + Border + 2, 0])
+// Hexagon radius
+_HexRadius = 11.5; 
+
+// Hexagon height
+_HexHeight = 1.2;
+
+/* [Grid] */
+
+// Rows
+_RowCount = 16;
+
+// Columns
+_ColCount = 18;
+
+// Gap
+_Gap = 19;
+
+/* [Frame] */
+
+// Render frame
+_Frame = false;
+
+// Frame outer width
+_FrameOuterWidth = 250;
+
+// Frame outer depth
+_FrameOuterDepth = 150;
+
+// Frame border
+_FrameBorder = 7;
+
+/* [Extruders] */
+
+module RenderHexagons(RowCount, ColCount, HexRadius, HexHeight, Gap, FrameBorder)
 {
-    for (y = [0 : 2 : V / 2])
-    {
-        /* Even Row */
-        for (x=[0 : 2 : W])
-        { 
-            color("red")
-            linear_extrude(height=H) translate([x * R, (y * G), 0]) rotate([0, 0,90]) circle(R, $fn=F);
-        }
-        
-        /* Odd Row */
-        for (x =[1 : 2 : W])
-        {
-            color("blue")
-            linear_extrude(height = H) translate([x * R, ((y + 1) * G), 0]) rotate([0, 0,90]) circle(R, $fn=F);
-        }
-        
-        /* Initial half-hexagon at start of odd row */
-        /* Not yet working, need genuine hexagon math */
-        /*
-            color("purple")
-            linear_extrude(height = H) 
-             translate([- R, ((y + 1) * G), 0]) 
-                intersection()
-                {
-                    //rotate([0, 0,90])circle(R, $fn=F);
-                    translate([R/2, 0, 0]) rotate([0, 0, 0]) square([R/2, R], center=false);
-                }
-        */
-            
-    }
+	translate([FrameBorder + FrameBorder + FrameBorder + 2, FrameBorder + FrameBorder + FrameBorder + 2, 0])
+	{
+		for (y = [0 : 2 : RowCount / 2])
+		{
+			/* Even Row */
+			for (x = [0 : 2 : ColCount])
+			{ 
+				linear_extrude(height=HexHeight)
+				{
+					translate([x * HexRadius, (y * Gap), 0])
+					{
+						rotate([0, 0, 90])
+						{
+							circle(HexRadius, $fn=6);
+						}
+					}
+				}
+			}
+			
+			/* Odd Row */
+			for (x =[1 : 2 : ColCount])
+			{
+				linear_extrude(height=HexHeight)
+				{
+					translate([x * HexRadius, ((y + 1) * Gap), 0]) 
+					{
+						rotate([0, 0, 90])
+						{
+							circle(HexRadius, $fn=6);
+						}
+					}
+				}
+			}
+		}
+	}
 }
 
-InnerWidth = OuterWidth - (2 * Border);
-InnerDepth = OuterDepth - (2 * Border);
+module RenderFrame(FrameOuterWidth, FrameOuterDepth, FrameBorder, HexHeight)
+{
+	InnerWidth = FrameOuterWidth - (2 * FrameBorder);
+	InnerDepth = FrameOuterDepth - (2 * FrameBorder);
 
-linear_extrude(height=H) 
-    {
-      difference () 
-      {
-          //square([OuterWidth, OuterDepth]);
-          //translate([Border, Border, 0]) square([InnerWidth, InnerDepth]);
-      }
-    };
+	linear_extrude(height=_HexHeight) 
+	{
+		difference () 
+		{
+			square([FrameOuterWidth, FrameOuterDepth]);
+			translate([FrameBorder, FrameBorder, 0]) 
+			{
+				square([InnerWidth, InnerDepth]);
+			}
+		}
+	}
+}
 
+module main(RowCount, ColCount, HexRadius, HexHeight, Gap, Frame, FrameOuterWidth, FrameOuterDepth, FrameBorder)
+{
+	RenderHexagons(RowCount, ColCount, HexRadius, HexHeight, Gap, FrameBorder);
+	
+	if (_Frame)
+	{
+		RenderFrame(FrameOuterWidth, FrameOuterDepth, FrameBorder, HexHeight);
+	}
+}
+	
+main(_RowCount, _ColCount, _HexRadius, _HexHeight, _Gap, _Frame, _FrameOuterWidth, _FrameOuterDepth, _FrameBorder);
