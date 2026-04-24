@@ -2,11 +2,11 @@
  * Hexagons in an offset grid with a frame.
  *
  * TODO:
- * - Add multi-extruder 
  * - Add options to choose extruder (random, cyclic)
+ * - Add frame extruder
+ * - Add separate height for frame
  * - Compute frame size and position
  * - Add fancy top patterns for hexagons
- * - Render hexagon in a module
  */
 
 /* [Hexagons] */
@@ -44,39 +44,83 @@ _FrameBorder = 7;
 
 /* [Extruders] */
 
-module RenderHexagons(RowCount, ColCount, HexRadius, HexHeight, Gap, FrameBorder)
+// Extruder mode
+//_ExtruderMode = "Random";	// ["Random"]
+
+// first extruder
+_FirstExtruder = 1;
+
+// Last extruder
+_LastExtruder = 4;
+
+// [Extruder to render]
+_WhichExtruder = "All"; // ["All", 1, 2, 3, 4, 5]
+
+// Random seed
+_RandomSeed = 1313;
+
+// Map a value of _WhichExtruder to an OpenSCAD color
+function ExtruderColor(Extruder) = 
+  (Extruder == 1  ) ? "red"    : 
+  (Extruder == 2  ) ? "green"  : 
+  (Extruder == 3  ) ? "blue"   : 
+  (Extruder == 4  ) ? "pink"   :
+  (Extruder == 5  ) ? "yellow" :
+                      "purple" ;
+					  
+// If _WhichExtruder is "All" or is not "All" and matches the 
+// requested extruder, render the child nodes.
+
+module Extruder(DoExtruder)
+{
+   color(ExtruderColor(DoExtruder))
+   {
+     if (_WhichExtruder == "All" || DoExtruder == _WhichExtruder)
+     {
+       children();
+     }
+   }
+}
+
+module RenderHexagon(Radius, Height, Extruder)
+{
+	Extruder(Extruder)
+	{
+		linear_extrude(Height)
+		{
+			rotate([0, 0, 90])
+			{
+				circle(Radius, $fn=6);
+			}
+		}
+	}
+}
+
+module RenderHexagonGrid(RowCount, ColCount, HexRadius, HexHeight, HexExtruders, Gap, FrameBorder)
 {
 	translate([FrameBorder + FrameBorder + FrameBorder + 2, FrameBorder + FrameBorder + FrameBorder + 2, 0])
 	{
 		for (y = [0 : 2 : RowCount / 2])
 		{
 			/* Even Row */
-			for (x = [0 : 2 : ColCount])
+			for (x = [0 : 2 : ColCount - 1])
 			{ 
-				linear_extrude(height=HexHeight)
+				Extruder = HexExtruders[x][y];
+
+				translate([x * HexRadius, (y * Gap), 0])
 				{
-					translate([x * HexRadius, (y * Gap), 0])
-					{
-						rotate([0, 0, 90])
-						{
-							circle(HexRadius, $fn=6);
-						}
-					}
+					RenderHexagon(HexRadius, HexHeight, Extruder);
 				}
 			}
 			
 			/* Odd Row */
-			for (x =[1 : 2 : ColCount])
+			for (x = [1 : 2 : ColCount - 1])
 			{
-				linear_extrude(height=HexHeight)
+				Extruder = HexExtruders[x][y];
+
+				translate([x * HexRadius, ((y + 1) * Gap), 0]) 
 				{
-					translate([x * HexRadius, ((y + 1) * Gap), 0]) 
-					{
-						rotate([0, 0, 90])
-						{
-							circle(HexRadius, $fn=6);
-						}
-					}
+					RenderHexagon(HexRadius, HexHeight, Extruder);
 				}
 			}
 		}
@@ -103,7 +147,18 @@ module RenderFrame(FrameOuterWidth, FrameOuterDepth, FrameBorder, HexHeight)
 
 module main(RowCount, ColCount, HexRadius, HexHeight, Gap, Frame, FrameOuterWidth, FrameOuterDepth, FrameBorder)
 {
-	RenderHexagons(RowCount, ColCount, HexRadius, HexHeight, Gap, FrameBorder);
+	HexExtruders = 
+	[
+		for (r = [1 : RowCount]) 
+		[
+			for (c = [1 : ColCount])
+				round(rands(_FirstExtruder, _LastExtruder, _RandomSeed)[0])
+		]
+	];
+	
+	echo(HexExtruders);
+	
+	RenderHexagonGrid(RowCount, ColCount, HexRadius, HexHeight, HexExtruders, Gap, FrameBorder);
 	
 	if (_Frame)
 	{
