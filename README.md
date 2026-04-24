@@ -9,6 +9,7 @@ Here's a review of each one:
 * [diamonds.scad](https://github.com/jeffbarr/OpenSCADObjects#diamondsscad)
 * [fan_blades.scad]
 * [growing_quads.scad]
+* [hexagons_framed.scad]
 * [impossible_ring.scad](https://github.com/jeffbarr/OpenSCADObjects#impossible_ringscad)
 * [mirror_shapes.scad](https://github.com/jeffbarr/OpenSCADObjects#impossible_ringscad)
 * [neo_strip.scad](https://github.com/jeffbarr/OpenSCADObjects#neo_stripscad)
