@@ -147,12 +147,15 @@ module RenderFrame(FrameOuterWidth, FrameOuterDepth, FrameBorder, HexHeight)
 
 module main(RowCount, ColCount, HexRadius, HexHeight, Gap, Frame, FrameOuterWidth, FrameOuterDepth, FrameBorder)
 {
+	XR = rands(_FirstExtruder, _LastExtruder, RowCount * ColCount, _RandomSeed);
+	echo(XR);
+	
 	HexExtruders = 
 	[
-		for (r = [1 : RowCount]) 
+		for (c = [0 : ColCount - 1])
 		[
-			for (c = [1 : ColCount])
-				round(rands(_FirstExtruder, _LastExtruder, _RandomSeed)[0])
+			for (r = [0 : RowCount - 1]) 
+					round(XR[r * ColCount + c])
 		]
 	];
 	
