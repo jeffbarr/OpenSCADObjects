@@ -25,8 +25,11 @@ _RowCount = 16;
 // Columns
 _ColCount = 18;
 
-// Gap
-_Gap = 19;
+// Row gap
+_RowGap = 19;
+
+// Column gap
+_ColGap = 19;
 
 /* [Frame] */
 
@@ -96,7 +99,7 @@ module RenderHexagon(Radius, Height, Extruder)
 	}
 }
 
-module RenderHexagonGrid(RowCount, ColCount, HexRadius, HexHeight, HexExtruders, Gap, FrameBorder)
+module RenderHexagonGrid(RowCount, ColCount, HexRadius, HexHeight, HexExtruders, RowGap, ColGap, FrameBorder)
 {
 	translate([FrameBorder + FrameBorder + FrameBorder + 2, FrameBorder + FrameBorder + FrameBorder + 2, 0])
 	{
@@ -107,7 +110,7 @@ module RenderHexagonGrid(RowCount, ColCount, HexRadius, HexHeight, HexExtruders,
 			{ 
 				Extruder = HexExtruders[x][y];
 
-				translate([x * HexRadius, (y * Gap), 0])
+				translate([x * ColGap, (y * RowGap), 0])
 				{
 					RenderHexagon(HexRadius, HexHeight, Extruder);
 				}
@@ -118,7 +121,7 @@ module RenderHexagonGrid(RowCount, ColCount, HexRadius, HexHeight, HexExtruders,
 			{
 				Extruder = HexExtruders[x][y];
 
-				translate([x * HexRadius, ((y + 1) * Gap), 0]) 
+				translate([x * ColGap, ((y + 1) * RowGap), 0]) 
 				{
 					RenderHexagon(HexRadius, HexHeight, Extruder);
 				}
@@ -145,7 +148,7 @@ module RenderFrame(FrameOuterWidth, FrameOuterDepth, FrameBorder, HexHeight)
 	}
 }
 
-module main(RowCount, ColCount, HexRadius, HexHeight, Gap, Frame, FrameOuterWidth, FrameOuterDepth, FrameBorder)
+module main(RowCount, ColCount, HexRadius, HexHeight, RowGap, ColGap, Frame, FrameOuterWidth, FrameOuterDepth, FrameBorder)
 {
 	XR = rands(_FirstExtruder, _LastExtruder, RowCount * ColCount, _RandomSeed);
 	echo(XR);
@@ -161,7 +164,7 @@ module main(RowCount, ColCount, HexRadius, HexHeight, Gap, Frame, FrameOuterWidt
 	
 	echo(HexExtruders);
 	
-	RenderHexagonGrid(RowCount, ColCount, HexRadius, HexHeight, HexExtruders, Gap, FrameBorder);
+	RenderHexagonGrid(RowCount, ColCount, HexRadius, HexHeight, HexExtruders, RowGap, ColGap, FrameBorder);
 	
 	if (_Frame)
 	{
@@ -169,4 +172,4 @@ module main(RowCount, ColCount, HexRadius, HexHeight, Gap, Frame, FrameOuterWidt
 	}
 }
 	
-main(_RowCount, _ColCount, _HexRadius, _HexHeight, _Gap, _Frame, _FrameOuterWidth, _FrameOuterDepth, _FrameBorder);
+main(_RowCount, _ColCount, _HexRadius, _HexHeight, _RowGap, _ColGap, _Frame, _FrameOuterWidth, _FrameOuterDepth, _FrameBorder);
