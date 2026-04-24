@@ -3,10 +3,9 @@
  *
  * TODO:
  * - Add options to choose extruder (random, cyclic)
- * - Add frame extruder
- * - Add separate height for frame
  * - Compute frame size and position
  * - Add fancy top patterns for hexagons
+ * - Add optional inset edge (and extruder) for hexagons
  */
 
 /* [Hexagons] */
@@ -45,6 +44,9 @@ _FrameOuterDepth = 150;
 // Frame border
 _FrameBorder = 7;
 
+// Frame height
+_FrameHeight = 1.2;
+
 /* [Extruders] */
 
 // Extruder mode
@@ -55,6 +57,9 @@ _FirstExtruder = 1;
 
 // Last extruder
 _LastExtruder = 4;
+
+// Frame extruder
+_FrameExtruder = 1;
 
 // [Extruder to render]
 _WhichExtruder = "All"; // ["All", 1, 2, 3, 4, 5]
@@ -130,25 +135,28 @@ module RenderHexagonGrid(RowCount, ColCount, HexRadius, HexHeight, HexExtruders,
 	}
 }
 
-module RenderFrame(FrameOuterWidth, FrameOuterDepth, FrameBorder, HexHeight)
+module RenderFrame(FrameOuterWidth, FrameOuterDepth, FrameBorder, FrameHeight, FrameExtruder, HexHeight)
 {
 	InnerWidth = FrameOuterWidth - (2 * FrameBorder);
 	InnerDepth = FrameOuterDepth - (2 * FrameBorder);
 
-	linear_extrude(height=_HexHeight) 
+	Extruder(FrameExtruder)
 	{
-		difference () 
+		linear_extrude(height=FrameHeight) 
 		{
-			square([FrameOuterWidth, FrameOuterDepth]);
-			translate([FrameBorder, FrameBorder, 0]) 
+			difference () 
 			{
-				square([InnerWidth, InnerDepth]);
+				square([FrameOuterWidth, FrameOuterDepth]);
+				translate([FrameBorder, FrameBorder, 0]) 
+				{
+					square([InnerWidth, InnerDepth]);
+				}
 			}
 		}
 	}
 }
 
-module main(RowCount, ColCount, HexRadius, HexHeight, RowGap, ColGap, Frame, FrameOuterWidth, FrameOuterDepth, FrameBorder)
+module main(RowCount, ColCount, HexRadius, HexHeight, RowGap, ColGap, Frame, FrameOuterWidth, FrameOuterDepth, FrameBorder, FrameHeight, FrameExtruder)
 {
 	XR = rands(_FirstExtruder, _LastExtruder, RowCount * ColCount, _RandomSeed);
 	echo(XR);
@@ -168,8 +176,8 @@ module main(RowCount, ColCount, HexRadius, HexHeight, RowGap, ColGap, Frame, Fra
 	
 	if (_Frame)
 	{
-		RenderFrame(FrameOuterWidth, FrameOuterDepth, FrameBorder, HexHeight);
+		RenderFrame(FrameOuterWidth, FrameOuterDepth, FrameBorder, FrameHeight, FrameExtruder, HexHeight);
 	}
 }
 	
-main(_RowCount, _ColCount, _HexRadius, _HexHeight, _RowGap, _ColGap, _Frame, _FrameOuterWidth, _FrameOuterDepth, _FrameBorder);
+main(_RowCount, _ColCount, _HexRadius, _HexHeight, _RowGap, _ColGap, _Frame, _FrameOuterWidth, _FrameOuterDepth, _FrameBorder, _FrameHeight, _FrameExtruder);
