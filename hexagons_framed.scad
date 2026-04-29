@@ -2,7 +2,9 @@
  * Hexagons in an offset grid with a frame.
  *
  * TODO:
- * - Add options to choose extruder (random, cyclic)
+ * - un-globalize _FirstExtruder, _LastExtruder
+ * - Add "computed" extruder mode
+ * - Rename extruder mode to pattern
  * - Compute frame size and position
  * - Add fancy top patterns for hexagons
  * - Add optional inset edge (and extruder) for hexagons
@@ -50,7 +52,7 @@ _FrameHeight = 1.2;
 /* [Extruders] */
 
 // Extruder mode
-//_ExtruderMode = "Random";	// ["Random"]
+_ExtruderMode = "Random";	// ["Random", "Stripes"]
 
 // first extruder
 _FirstExtruder = 1;
@@ -156,22 +158,39 @@ module RenderFrame(FrameOuterWidth, FrameOuterDepth, FrameBorder, FrameHeight, F
 	}
 }
 
-module main(RowCount, ColCount, HexRadius, HexHeight, RowGap, ColGap, Frame, FrameOuterWidth, FrameOuterDepth, FrameBorder, FrameHeight, FrameExtruder)
+module main(RowCount, ColCount, HexRadius, HexHeight, RowGap, ColGap, Frame, FrameOuterWidth, FrameOuterDepth, FrameBorder, FrameHeight, FrameExtruder, ExtruderMode)
 {
 	XR = rands(0, 1, RowCount * ColCount, _RandomSeed);
 	echo(XR);
 	
-	HexExtruders = 
+	ExtruderCount = _LastExtruder - _FirstExtruder + 1;
+
+	HexRandomExtruders = 
 	[
 		for (c = [0 : ColCount - 1])
 		[
 			for (r = [0 : RowCount - 1]) 
-				floor(XR[r * ColCount + c] * (_LastExtruder - _FirstExtruder + 1)) + _FirstExtruder
+				_FirstExtruder + floor(XR[r * ColCount + c] * ExtruderCount)
 		]
 	];
 	
-	echo(HexExtruders);
+	HexStripeExtruders = 
+	[
+		for (c = [0 : ColCount - 1])
+		[
+			for (r = [0 : RowCount - 1])
+				_FirstExtruder + floor((c / ColCount) * ExtruderCount)
+		]
+	];
 	
+	echo("Random Extruders:",   HexRandomExtruders);
+	echo("");
+	echo("Stripe Extruders:",   HexStripeExtruders);
+	
+	HexExtruders = (ExtruderMode == "Random")   ? HexRandomExtruders   :
+	               (ExtruderMode == "Stripes")  ? HexStripeExtruders   :
+				                                  0;
+				   
 	RenderHexagonGrid(RowCount, ColCount, HexRadius, HexHeight, HexExtruders, RowGap, ColGap, FrameBorder);
 	
 	if (_Frame)
@@ -180,4 +199,4 @@ module main(RowCount, ColCount, HexRadius, HexHeight, RowGap, ColGap, Frame, Fra
 	}
 }
 	
-main(_RowCount, _ColCount, _HexRadius, _HexHeight, _RowGap, _ColGap, _Frame, _FrameOuterWidth, _FrameOuterDepth, _FrameBorder, _FrameHeight, _FrameExtruder);
+main(_RowCount, _ColCount, _HexRadius, _HexHeight, _RowGap, _ColGap, _Frame, _FrameOuterWidth, _FrameOuterDepth, _FrameBorder, _FrameHeight, _FrameExtruder, _ExtruderMode);
