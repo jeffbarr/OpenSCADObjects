@@ -2,12 +2,12 @@
  * Hexagons in an offset grid with a frame.
  *
  * TODO:
- * - un-globalize _FirstExtruder, _LastExtruder
+ * - un-globalize _FirstExtruder, _LastExtruder, _Frame
+ * - Change Rim and Frame to _RenderRim and _RenderFrame
  * - Add "computed" extruder mode
  * - Rename extruder mode to pattern
  * - Compute frame size and position
- * - Add fancy top patterns for hexagons
- * - Add optional inset edge (and extruder) for hexagons
+ * - Add more Rim parameters
  */
 
 /* [Hexagons] */
@@ -49,6 +49,17 @@ _FrameBorder = 7;
 // Frame height
 _FrameHeight = 1.2;
 
+/* [Rim] */
+
+// Render rim
+_Rim = true;
+
+// Additional Rim Height
+_RimHeight = 0.4;
+
+// Rim Thickness
+_RimThickness = 0.5;
+
 /* [Extruders] */
 
 // Extruder mode
@@ -62,6 +73,9 @@ _LastExtruder = 4;
 
 // Frame extruder
 _FrameExtruder = 1;
+
+// Rim extruder
+_RimExtruder = 5;
 
 // [Extruder to render]
 _WhichExtruder = "All"; // ["All", 1, 2, 3, 4, 5]
@@ -92,21 +106,48 @@ module Extruder(DoExtruder)
    }
 }
 
+module RenderFlatHexagon(Radius)
+{
+	rotate([0, 0, 90])
+	{
+		circle(Radius, $fn=6);
+	}
+}
+
 module RenderHexagon(Radius, Height, Extruder)
 {
 	Extruder(Extruder)
 	{
 		linear_extrude(Height)
 		{
-			rotate([0, 0, 90])
+			RenderFlatHexagon(Radius);
+		}
+	}
+}
+
+module RenderRim(Radius, Height, Thickness, Extruder)
+{
+	Extruder(Extruder)
+	{
+		for (dd = [0 : 1.5 : 3])
+		{
+			linear_extrude(Height)
 			{
-				circle(Radius, $fn=6);
+				difference()
+				{
+					RenderFlatHexagon(Radius - dd);
+					
+					offset(delta=-Thickness)
+					{
+						RenderFlatHexagon(Radius-dd);
+					}
+				}
 			}
 		}
 	}
 }
 
-module RenderHexagonGrid(RowCount, ColCount, HexRadius, HexHeight, HexExtruders, RowGap, ColGap, FrameBorder)
+module RenderHexagonGrid(RowCount, ColCount, HexRadius, HexHeight, HexExtruders, RowGap, ColGap, FrameBorder, Rim, RimHeight, RimThickness, RimExtruder)
 {
 	translate([FrameBorder + FrameBorder + FrameBorder + 2, FrameBorder + FrameBorder + FrameBorder + 2, 0])
 	{
@@ -120,6 +161,14 @@ module RenderHexagonGrid(RowCount, ColCount, HexRadius, HexHeight, HexExtruders,
 				translate([x * ColGap, (y * RowGap), 0])
 				{
 					RenderHexagon(HexRadius, HexHeight, Extruder);
+					
+					if (Rim)
+					{
+						translate([0, 0, HexHeight])
+						{
+							RenderRim(HexRadius, RimHeight, RimThickness, RimExtruder);
+						}
+					}
 				}
 			}
 			
@@ -131,6 +180,14 @@ module RenderHexagonGrid(RowCount, ColCount, HexRadius, HexHeight, HexExtruders,
 				translate([x * ColGap, ((y + 1) * RowGap), 0]) 
 				{
 					RenderHexagon(HexRadius, HexHeight, Extruder);
+					
+					if (Rim)
+					{
+						translate([0, 0, HexHeight])
+						{
+							RenderRim(HexRadius, RimHeight, RimThickness, RimExtruder);
+						}
+					}
 				}
 			}
 		}
@@ -158,7 +215,7 @@ module RenderFrame(FrameOuterWidth, FrameOuterDepth, FrameBorder, FrameHeight, F
 	}
 }
 
-module main(RowCount, ColCount, HexRadius, HexHeight, RowGap, ColGap, Frame, FrameOuterWidth, FrameOuterDepth, FrameBorder, FrameHeight, FrameExtruder, ExtruderMode)
+module main(RowCount, ColCount, HexRadius, HexHeight, RowGap, ColGap, Frame, FrameOuterWidth, FrameOuterDepth, FrameBorder, FrameHeight, FrameExtruder, ExtruderMode, Rim, RimHeight, RimThickness, RimExtruder)
 {
 	XR = rands(0, 1, RowCount * ColCount, _RandomSeed);
 	echo(XR);
@@ -191,7 +248,7 @@ module main(RowCount, ColCount, HexRadius, HexHeight, RowGap, ColGap, Frame, Fra
 	               (ExtruderMode == "Stripes")  ? HexStripeExtruders   :
 				                                  0;
 				   
-	RenderHexagonGrid(RowCount, ColCount, HexRadius, HexHeight, HexExtruders, RowGap, ColGap, FrameBorder);
+	RenderHexagonGrid(RowCount, ColCount, HexRadius, HexHeight, HexExtruders, RowGap, ColGap, FrameBorder, Rim, RimHeight, RimThickness, RimExtruder);
 	
 	if (_Frame)
 	{
@@ -199,4 +256,4 @@ module main(RowCount, ColCount, HexRadius, HexHeight, RowGap, ColGap, Frame, Fra
 	}
 }
 	
-main(_RowCount, _ColCount, _HexRadius, _HexHeight, _RowGap, _ColGap, _Frame, _FrameOuterWidth, _FrameOuterDepth, _FrameBorder, _FrameHeight, _FrameExtruder, _ExtruderMode);
+main(_RowCount, _ColCount, _HexRadius, _HexHeight, _RowGap, _ColGap, _Frame, _FrameOuterWidth, _FrameOuterDepth, _FrameBorder, _FrameHeight, _FrameExtruder, _ExtruderMode, _Rim, _RimHeight, _RimThickness, _RimExtruder);
