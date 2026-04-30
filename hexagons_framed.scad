@@ -2,8 +2,6 @@
  * Hexagons in an offset grid with a frame.
  *
  * TODO:
- * - un-globalize _FirstExtruder, _LastExtruder, _Frame
- * - Change Rim and Frame to _RenderRim and _RenderFrame
  * - Add "computed" extruder mode
  * - Rename extruder mode to pattern
  * - Compute frame size and position
@@ -35,7 +33,7 @@ _ColGap = 19;
 /* [Frame] */
 
 // Render frame
-_Frame = false;
+_RenderFrame = false;
 
 // Frame outer width
 _FrameOuterWidth = 250;
@@ -52,7 +50,7 @@ _FrameHeight = 1.2;
 /* [Rim] */
 
 // Render rim
-_Rim = true;
+_RenderRim = true;
 
 // Additional Rim Height
 _RimHeight = 0.4;
@@ -215,19 +213,19 @@ module RenderFrame(FrameOuterWidth, FrameOuterDepth, FrameBorder, FrameHeight, F
 	}
 }
 
-module main(RowCount, ColCount, HexRadius, HexHeight, RowGap, ColGap, Frame, FrameOuterWidth, FrameOuterDepth, FrameBorder, FrameHeight, FrameExtruder, ExtruderMode, Rim, RimHeight, RimThickness, RimExtruder)
+module main(RowCount, ColCount, HexRadius, HexHeight, RowGap, ColGap, RenderFrame, FrameOuterWidth, FrameOuterDepth, FrameBorder, FrameHeight, FirstExtruder, LastExtruder, FrameExtruder, ExtruderMode, RenderRim, RimHeight, RimThickness, RimExtruder)
 {
 	XR = rands(0, 1, RowCount * ColCount, _RandomSeed);
 	echo(XR);
 	
-	ExtruderCount = _LastExtruder - _FirstExtruder + 1;
+	ExtruderCount = LastExtruder - FirstExtruder + 1;
 
 	HexRandomExtruders = 
 	[
 		for (c = [0 : ColCount - 1])
 		[
 			for (r = [0 : RowCount - 1]) 
-				_FirstExtruder + floor(XR[r * ColCount + c] * ExtruderCount)
+				FirstExtruder + floor(XR[r * ColCount + c] * ExtruderCount)
 		]
 	];
 	
@@ -236,7 +234,7 @@ module main(RowCount, ColCount, HexRadius, HexHeight, RowGap, ColGap, Frame, Fra
 		for (c = [0 : ColCount - 1])
 		[
 			for (r = [0 : RowCount - 1])
-				_FirstExtruder + floor((c / ColCount) * ExtruderCount)
+				FirstExtruder + floor((c / ColCount) * ExtruderCount)
 		]
 	];
 	
@@ -248,12 +246,12 @@ module main(RowCount, ColCount, HexRadius, HexHeight, RowGap, ColGap, Frame, Fra
 	               (ExtruderMode == "Stripes")  ? HexStripeExtruders   :
 				                                  0;
 				   
-	RenderHexagonGrid(RowCount, ColCount, HexRadius, HexHeight, HexExtruders, RowGap, ColGap, FrameBorder, Rim, RimHeight, RimThickness, RimExtruder);
+	RenderHexagonGrid(RowCount, ColCount, HexRadius, HexHeight, HexExtruders, RowGap, ColGap, FrameBorder, RenderRim, RimHeight, RimThickness, RimExtruder);
 	
-	if (_Frame)
+	if (RenderFrame)
 	{
 		RenderFrame(FrameOuterWidth, FrameOuterDepth, FrameBorder, FrameHeight, FrameExtruder, HexHeight);
 	}
 }
 	
-main(_RowCount, _ColCount, _HexRadius, _HexHeight, _RowGap, _ColGap, _Frame, _FrameOuterWidth, _FrameOuterDepth, _FrameBorder, _FrameHeight, _FrameExtruder, _ExtruderMode, _Rim, _RimHeight, _RimThickness, _RimExtruder);
+main(_RowCount, _ColCount, _HexRadius, _HexHeight, _RowGap, _ColGap, _RenderFrame, _FrameOuterWidth, _FrameOuterDepth, _FrameBorder, _FrameHeight, _FirstExtruder, _LastExtruder, _FrameExtruder, _ExtruderMode, _RenderRim, _RimHeight, _RimThickness, _RimExtruder);
