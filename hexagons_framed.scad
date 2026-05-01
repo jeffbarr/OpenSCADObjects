@@ -2,10 +2,8 @@
  * Hexagons in an offset grid with a frame.
  *
  * TODO:
- * - Add "computed" extruder mode
- * - Rename extruder mode to pattern
  * - Compute frame size and position
- * - Add more Rim parameters
+ * - Add more Rim parameters & options
  */
 
 /* [Hexagons] */
@@ -60,8 +58,8 @@ _RimThickness = 0.5;
 
 /* [Extruders] */
 
-// Extruder mode
-_ExtruderMode = "Random";	// ["Random", "Stripes"]
+// Extruder color pattern
+_ExtruderPattern = "Random";	// ["Random", "Stripes", "Cyclic"]
 
 // first extruder
 _FirstExtruder = 1;
@@ -213,12 +211,12 @@ module RenderFrame(FrameOuterWidth, FrameOuterDepth, FrameBorder, FrameHeight, F
 	}
 }
 
-module main(RowCount, ColCount, HexRadius, HexHeight, RowGap, ColGap, RenderFrame, FrameOuterWidth, FrameOuterDepth, FrameBorder, FrameHeight, FirstExtruder, LastExtruder, FrameExtruder, ExtruderMode, RenderRim, RimHeight, RimThickness, RimExtruder)
+module main(RowCount, ColCount, HexRadius, HexHeight, RowGap, ColGap, RenderFrame, FrameOuterWidth, FrameOuterDepth, FrameBorder, FrameHeight, FirstExtruder, LastExtruder, FrameExtruder, ExtruderPattern, RenderRim, RimHeight, RimThickness, RimExtruder)
 {
 	XR = rands(0, 1, RowCount * ColCount, _RandomSeed);
 	echo(XR);
 	
-	ExtruderCount = LastExtruder - FirstExtruder + 1;
+	ExtruderCount = LastExtruder - FirstExtruder + 1; echo(ExtruderCount);
 
 	HexRandomExtruders = 
 	[
@@ -238,12 +236,24 @@ module main(RowCount, ColCount, HexRadius, HexHeight, RowGap, ColGap, RenderFram
 		]
 	];
 	
-	echo("Random Extruders:",   HexRandomExtruders);
-	echo("");
-	echo("Stripe Extruders:",   HexStripeExtruders);
+	HexCyclicExtruders =
+	[
+		for (c = [0 : ColCount - 1])
+		[
+			for (r = [0 : RowCount - 1])
+				FirstExtruder + (c % ExtruderCount)
+		]	
+	];
 	
-	HexExtruders = (ExtruderMode == "Random")   ? HexRandomExtruders   :
-	               (ExtruderMode == "Stripes")  ? HexStripeExtruders   :
+	echo("Random Extruders:", HexRandomExtruders);
+	echo("");
+	echo("Stripe Extruders:", HexStripeExtruders);
+	echo("");
+	echo("Cyclic Extruders:", HexCyclicExtruders);
+	
+	HexExtruders = (ExtruderPattern == "Random")  ? HexRandomExtruders   :
+	               (ExtruderPattern == "Stripes") ? HexStripeExtruders   :
+				   (ExtruderPattern == "Cyclic")  ? HexCyclicExtruders   :
 				                                  0;
 				   
 	RenderHexagonGrid(RowCount, ColCount, HexRadius, HexHeight, HexExtruders, RowGap, ColGap, FrameBorder, RenderRim, RimHeight, RimThickness, RimExtruder);
@@ -254,4 +264,4 @@ module main(RowCount, ColCount, HexRadius, HexHeight, RowGap, ColGap, RenderFram
 	}
 }
 	
-main(_RowCount, _ColCount, _HexRadius, _HexHeight, _RowGap, _ColGap, _RenderFrame, _FrameOuterWidth, _FrameOuterDepth, _FrameBorder, _FrameHeight, _FirstExtruder, _LastExtruder, _FrameExtruder, _ExtruderMode, _RenderRim, _RimHeight, _RimThickness, _RimExtruder);
+main(_RowCount, _ColCount, _HexRadius, _HexHeight, _RowGap, _ColGap, _RenderFrame, _FrameOuterWidth, _FrameOuterDepth, _FrameBorder, _FrameHeight, _FirstExtruder, _LastExtruder, _FrameExtruder, _ExtruderPattern, _RenderRim, _RimHeight, _RimThickness, _RimExtruder);
