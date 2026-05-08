@@ -189,13 +189,6 @@ module Extruder(DoExtruder)
      }
    }
 }
-					  
-/* Seed the RNG?? */
-X = rands(0, 100, 1, _RandomSeed);
-
-/* Rotate around Z */
-//cur_vpr = $vpr;
-//$vpr = [cur_vpr[0], cur_vpr[1], 360 * $t];
 
 /* Compute overall size */
 Width = (_Cols * _RectWidth) + ((_Cols - 1) * _RectColGap);
