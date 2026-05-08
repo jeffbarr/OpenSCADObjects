@@ -21,7 +21,6 @@
  *
  * TODO:
  *	- Make sure that the randomness actually is random
- *	- Add Render modules for Taper and Topo
  * 	- Increase modularity
  *	- Update documentation
  */
@@ -315,6 +314,33 @@ module RenderQuadVert(QuadPoly, QuadExtruder, QuadHeight, RenderRim, RimExtruder
 	}
 }
 
+/* Render a quadrilateral of type QT_TAPER */
+module RenderQuadTaper(X_Center, Y_Center, TaperPoly, QuadExtruder, Height, TaperTopScale)
+{
+	Extruder(QuadExtruder)
+	{
+		translate([X_Center, Y_Center, 0])
+		{
+			linear_extrude(Height, scale=TaperTopScale)
+			{
+				translate([-X_Center, -Y_Center, 0])
+				{
+					polygon(TaperPoly);
+				}
+			}
+		}
+	}
+}
+
+/* Render a quadrilateral of type QT_TOPO */
+module RenderQuadTopo(PolyPoints, PolyFaces, QuadExtruder)
+{
+	Extruder(QuadExtruder)
+	{
+		polyhedron(points=PolyPoints,faces=PolyFaces);
+	}
+}
+
 /* Render the grid of quadrilaterals */
 module RenderQuadGrid(Rows, Cols, QuadType, HeightMode, RectWidth, RectDepth, RectRowGap, RectColGap, RowPert, ColPert, BaseHeight, HeightInc, Heights, TaperTopScale, MultiExtruder, FirstExtruder, LastExtruder, RimExtruder, RenderRim, RimHeight, RimThickness)
 {
@@ -368,12 +394,9 @@ module RenderQuadGrid(Rows, Cols, QuadType, HeightMode, RectWidth, RectDepth, Re
 				X_Center = X_BL + RectWidth / 2;
 				Y_Center = Y_BL + RectDepth / 2;
 				
-				Extruder(QuadExtruder)
-					translate([X_Center, Y_Center, 0])
-						linear_extrude(Height, scale=TaperTopScale)
-							translate([-X_Center, -Y_Center, 0])
-								polygon([[X_BL_G, Y_BL_G], [X_BR_G, Y_BR_G], 
-										[X_TR_G, Y_TR_G], [X_TL_G, Y_TL_G]]);
+				TaperPoly = [[X_BL_G, Y_BL_G], [X_BR_G, Y_BR_G], [X_TR_G, Y_TR_G], [X_TL_G, Y_TL_G]];
+				
+				RenderQuadTaper(X_Center, Y_Center, TaperPoly, QuadExtruder, Height, TaperTopScale);
 			}
 			
 			else if (QuadType == "QT_TOPO")
@@ -410,10 +433,7 @@ module RenderQuadGrid(Rows, Cols, QuadType, HeightMode, RectWidth, RectDepth, Re
 					[7,4,0,3]	// left
 				];
 
-				Extruder(QuadExtruder)
-				{
-					polyhedron(points=PolyPoints,faces=PolyFaces);
-				}
+				RenderQuadTopo(PolyPoints, PolyFaces, QuadExtruder);
 			}
 		}
 	}
