@@ -21,6 +21,7 @@
  *
  * TODO:
  *	- Make sure that the randomness actually is random
+ *	- Add Render modules for Taper and Topo
  * 	- Increase modularity
  *	- Update documentation
  */
@@ -121,6 +122,17 @@ _TaperTopScale = 0.5;	// [0.0 : 0.1 : 1.0]
 // Quad type
 _QuadType = "QT_VERT"; // [QT_VERT, QT_TAPER, QT_TOPO]
 
+/* [Rim] */
+
+// Render rim
+_RenderRim = true;
+
+// Additional Rim Height
+_RimHeight = 0.4;
+
+// Rim Thickness
+_RimThickness = 0.5;
+
 /* [Extruders] */
 
 // Multiple extruder
@@ -131,6 +143,9 @@ _FirstExtruder = 1;
 
 // Last extruder
 _LastExtruder = 4;
+
+// Rim extruder
+_RimExtruder = 5;
 
 // [Extruder to render]
 _WhichExtruder = "All"; // ["All", 1, 2, 3, 4, 5]
@@ -266,9 +281,42 @@ echo(_ExtruderGrid);
 //translate([-Width / 2, -Depth / 2, 0])
 /* Construct polygons */
 
-/* Render the grid of quadrilaterals */
+/* Render a quadrilateral of type QT_VERT */
+module RenderQuadVert(QuadPoly, QuadExtruder, QuadHeight, RenderRim, RimExtruder, RimHeight, RimThickness)
+{
+	Extruder(QuadExtruder)
+	{
+		linear_extrude(QuadHeight)
+		{	 
+			polygon(QuadPoly);
+		}
+	}
 
-module RenderQuadGrid(Rows, Cols, QuadType, HeightMode, RectWidth, RectDepth, RectRowGap, RectColGap, RowPert, ColPert, BaseHeight, HeightInc, Heights, TaperTopScale, MultiExtruder, FirstExtruder, LastExtruder)
+	if (RenderRim)
+	{
+		translate([0, 0, QuadHeight])
+		{
+			Extruder(RimExtruder)
+			{
+				linear_extrude(RimHeight)
+				{
+					difference()
+					{
+						polygon(QuadPoly);
+					
+						offset(delta=-RimThickness)
+						{
+							polygon(QuadPoly);
+						}
+					}	
+				}
+			}
+		}
+	}
+}
+
+/* Render the grid of quadrilaterals */
+module RenderQuadGrid(Rows, Cols, QuadType, HeightMode, RectWidth, RectDepth, RectRowGap, RectColGap, RowPert, ColPert, BaseHeight, HeightInc, Heights, TaperTopScale, MultiExtruder, FirstExtruder, LastExtruder, RimExtruder, RenderRim, RimHeight, RimThickness)
 {
 	for (r = [0 : Rows - 1])
 	{
@@ -305,61 +353,65 @@ module RenderQuadGrid(Rows, Cols, QuadType, HeightMode, RectWidth, RectDepth, Re
 				0;
 			
 			QuadExtruder = _MultiExtruder ? _ExtruderGrid[r][c] : 1;
-			Extruder(QuadExtruder)
+
+			/* Generate quad based on QuadType */
+			if (QuadType == "QT_VERT")
 			{
-				/* Generate quad based on QuadType */
-				if (QuadType == "QT_VERT")
-				{
-					linear_extrude(Height)
-						polygon([[X_BL_G, Y_BL_G], [X_BR_G, Y_BR_G], 
-								 [X_TR_G, Y_TR_G], [X_TL_G, Y_TL_G]]);
-				}
-				else 
-				if (QuadType == "QT_TAPER")
-				{
-					X_Center = X_BL + RectWidth / 2;
-					Y_Center = Y_BL + RectDepth / 2;
-					
+				QuadPoly = [[X_BL_G, Y_BL_G], [X_BR_G, Y_BR_G], 
+						[X_TR_G, Y_TR_G], [X_TL_G, Y_TL_G]];
+
+				RenderQuadVert(QuadPoly, QuadExtruder, Height, RenderRim, RimExtruder, RimHeight, RimThickness);
+			}
+			else 
+			if (QuadType == "QT_TAPER")
+			{
+				X_Center = X_BL + RectWidth / 2;
+				Y_Center = Y_BL + RectDepth / 2;
+				
+				Extruder(QuadExtruder)
 					translate([X_Center, Y_Center, 0])
 						linear_extrude(Height, scale=TaperTopScale)
 							translate([-X_Center, -Y_Center, 0])
 								polygon([[X_BL_G, Y_BL_G], [X_BR_G, Y_BR_G], 
-										 [X_TR_G, Y_TR_G], [X_TL_G, Y_TL_G]]);
-				}
-				else if (QuadType == "QT_TOPO")
-				{
-					/* Get height of each corner */
-					Z_BL = H[r][c];
-					Z_BR = H[r][c+1];
-					Z_TL = H[r+1][c];
-					Z_TR = H[r+1][c+1];
-					
-					echo("[", r, ", ", c, "]: ", Z_TL, ", ", Z_TR, ", ", Z_BL, ", ", Z_BR);
-					
-					/* Create points for polyhedron */
-					PolyPoints = 
-					[
-						[X_BL_G, Y_BL_G, 0],		// 0
-						[X_BR_G, Y_BR_G, 0],		// 1
-						[X_TR_G, Y_TR_G, 0],		// 2
-						[X_TL_G, Y_TL_G, 0],		// 3
-						[X_BL_G, Y_BL_G, Z_BL],		// 4
-						[X_BR_G, Y_BR_G, Z_BR],		// 5
-						[X_TR_G, Y_TR_G, Z_TR],		// 6
-						[X_TL_G, Y_TL_G, Z_TL],		// 7
-					];
-					
-					/* Create polyhedron */
-					PolyFaces =
-					[  
-						[0,1,2,3],  // bottom
-						[4,5,1,0],  // front
-						[7,6,5,4],  // top
-						[5,6,2,1],  // right
-						[6,7,3,2],  // back
-						[7,4,0,3]	// left
-					];
+										[X_TR_G, Y_TR_G], [X_TL_G, Y_TL_G]]);
+			}
+			
+			else if (QuadType == "QT_TOPO")
+			{
+				/* Get height of each corner */
+				Z_BL = H[r][c];
+				Z_BR = H[r][c+1];
+				Z_TL = H[r+1][c];
+				Z_TR = H[r+1][c+1];
+				
+				echo("[", r, ", ", c, "]: ", Z_TL, ", ", Z_TR, ", ", Z_BL, ", ", Z_BR);
+				
+				/* Create points for polyhedron */
+				PolyPoints = 
+				[
+					[X_BL_G, Y_BL_G, 0],		// 0
+					[X_BR_G, Y_BR_G, 0],		// 1
+					[X_TR_G, Y_TR_G, 0],		// 2
+					[X_TL_G, Y_TL_G, 0],		// 3
+					[X_BL_G, Y_BL_G, Z_BL],		// 4
+					[X_BR_G, Y_BR_G, Z_BR],		// 5
+					[X_TR_G, Y_TR_G, Z_TR],		// 6
+					[X_TL_G, Y_TL_G, Z_TL],		// 7
+				];
+				
+				/* Create polyhedron */
+				PolyFaces =
+				[  
+					[0,1,2,3],  // bottom
+					[4,5,1,0],  // front
+					[7,6,5,4],  // top
+					[5,6,2,1],  // right
+					[6,7,3,2],  // back
+					[7,4,0,3]	// left
+				];
 
+				Extruder(QuadExtruder)
+				{
 					polyhedron(points=PolyPoints,faces=PolyFaces);
 				}
 			}
@@ -367,9 +419,9 @@ module RenderQuadGrid(Rows, Cols, QuadType, HeightMode, RectWidth, RectDepth, Re
 	}
 }
 
-module main(Rows, Cols, QuadType, HeightMode, RectWidth, RectDepth, RectRowGap, RectColGap, RowPert, ColPert, BaseHeight, HeightInc, Heights, TaperTopScale, MultiExtruder, FirstExtruder, LastExtruder)
+module main(Rows, Cols, QuadType, HeightMode, RectWidth, RectDepth, RectRowGap, RectColGap, RowPert, ColPert, BaseHeight, HeightInc, Heights, TaperTopScale, MultiExtruder, FirstExtruder, LastExtruder, RimExtruder, RenderRim, RimHeight, RimThickness)
 {
-	RenderQuadGrid(Rows, Cols, QuadType, HeightMode, RectWidth, RectDepth, RectRowGap, RectColGap, RowPert, ColPert, BaseHeight, HeightInc, Heights, TaperTopScale, MultiExtruder, FirstExtruder, LastExtruder);
+	RenderQuadGrid(Rows, Cols, QuadType, HeightMode, RectWidth, RectDepth, RectRowGap, RectColGap, RowPert, ColPert, BaseHeight, HeightInc, Heights, TaperTopScale, MultiExtruder, FirstExtruder, LastExtruder, RimExtruder, RenderRim, RimHeight, RimThickness);
 }
 
-main(_Rows, _Cols, _QuadType, _HeightMode, _RectWidth, _RectDepth, _RectRowGap, _RectColGap, _RowPert, _ColPert, _BaseHeight, _HeightInc, _Heights, _TaperTopScale, _MultiExtruder, _FirstExtruder, _LastExtruder);
+main(_Rows, _Cols, _QuadType, _HeightMode, _RectWidth, _RectDepth, _RectRowGap, _RectColGap, _RowPert, _ColPert, _BaseHeight, _HeightInc, _Heights, _TaperTopScale, _MultiExtruder, _FirstExtruder, _LastExtruder, _RimExtruder, _RenderRim, _RimHeight, _RimThickness);
