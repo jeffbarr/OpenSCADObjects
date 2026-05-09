@@ -21,6 +21,7 @@
  *
  * TODO:
  *	- Make sure that the randomness actually is random
+ *	- Add optional base - height, margin, extruder
  * 	- Increase modularity
  *	- Update documentation
  */
@@ -102,8 +103,8 @@ _HeightMode = "HM_FIXED"; // [HM_FIXED, HM_RANDOM]
  * Define height parameters:
 */
 
-// Base height
-_BaseHeight = 3;		// [0.2 : 10]
+// Quad height
+_QuadHeight = 3;		// [0.2 : 10]
 
 // Height increment
 _HeightInc  = 0.4; 	// [0.2 : 0.2 : 10]
@@ -223,16 +224,16 @@ for (r = [0 : _Rows])
 /* Build the H grid */
 H =
 [
-	[for (c = [0 : _Cols]) _BaseHeight],
+	[for (c = [0 : _Cols]) _QuadHeight],
 		
 	for (r = [1 : _Rows - 1]) 
 		[	
-			_BaseHeight,
-			for (c = [1 : _Cols - 1]) _BaseHeight + floor(rands(0, _Heights, 1)[0]) * _HeightInc,
-			_BaseHeight				
+			_QuadHeight,
+			for (c = [1 : _Cols - 1]) _QuadHeight + floor(rands(0, _Heights, 1)[0]) * _HeightInc,
+			_QuadHeight				
 		],	
 		
-	[for (c = [0 : _Cols]) _BaseHeight],
+	[for (c = [0 : _Cols]) _QuadHeight],
 ];
 	
 echo("H Grid:");
@@ -335,7 +336,7 @@ module RenderQuadTopo(PolyPoints, PolyFaces, QuadExtruder)
 }
 
 /* Render the grid of quadrilaterals */
-module RenderQuadGrid(Rows, Cols, QuadType, HeightMode, RectWidth, RectDepth, RectRowGap, RectColGap, RowPert, ColPert, BaseHeight, HeightInc, Heights, TaperTopScale, MultiExtruder, FirstExtruder, LastExtruder, RimExtruder, RenderRim, RimHeight, RimThickness)
+module RenderQuadGrid(Rows, Cols, QuadType, HeightMode, RectWidth, RectDepth, RectRowGap, RectColGap, RowPert, ColPert, QuadHeight, HeightInc, Heights, TaperTopScale, MultiExtruder, FirstExtruder, LastExtruder, RimExtruder, RenderRim, RimHeight, RimThickness)
 {
 	for (r = [0 : Rows - 1])
 	{
@@ -367,8 +368,8 @@ module RenderQuadGrid(Rows, Cols, QuadType, HeightMode, RectWidth, RectDepth, Re
 		
 			/* Pick a height based on HeightMode (this value is not used for QT_TOPO, since each corner has a distinct height) */
 			Height =
-				(HeightMode == "HM_FIXED")  ? BaseHeight :
-				(HeightMode == "HM_RANDOM") ? BaseHeight + floor(rands(0, Heights, 1)[0]) * HeightInc :
+				(HeightMode == "HM_FIXED")  ? QuadHeight :
+				(HeightMode == "HM_RANDOM") ? QuadHeight + floor(rands(0, Heights, 1)[0]) * HeightInc :
 				0;
 			
 			QuadExtruder = _MultiExtruder ? _ExtruderGrid[r][c] : 1;
@@ -432,9 +433,9 @@ module RenderQuadGrid(Rows, Cols, QuadType, HeightMode, RectWidth, RectDepth, Re
 	}
 }
 
-module main(Rows, Cols, QuadType, HeightMode, RectWidth, RectDepth, RectRowGap, RectColGap, RowPert, ColPert, BaseHeight, HeightInc, Heights, TaperTopScale, MultiExtruder, FirstExtruder, LastExtruder, RimExtruder, RenderRim, RimHeight, RimThickness)
+module main(Rows, Cols, QuadType, HeightMode, RectWidth, RectDepth, RectRowGap, RectColGap, RowPert, ColPert, QuadHeight, HeightInc, Heights, TaperTopScale, MultiExtruder, FirstExtruder, LastExtruder, RimExtruder, RenderRim, RimHeight, RimThickness)
 {
-	RenderQuadGrid(Rows, Cols, QuadType, HeightMode, RectWidth, RectDepth, RectRowGap, RectColGap, RowPert, ColPert, BaseHeight, HeightInc, Heights, TaperTopScale, MultiExtruder, FirstExtruder, LastExtruder, RimExtruder, RenderRim, RimHeight, RimThickness);
+	RenderQuadGrid(Rows, Cols, QuadType, HeightMode, RectWidth, RectDepth, RectRowGap, RectColGap, RowPert, ColPert, QuadHeight, HeightInc, Heights, TaperTopScale, MultiExtruder, FirstExtruder, LastExtruder, RimExtruder, RenderRim, RimHeight, RimThickness);
 }
 
-main(_Rows, _Cols, _QuadType, _HeightMode, _RectWidth, _RectDepth, _RectRowGap, _RectColGap, _RowPert, _ColPert, _BaseHeight, _HeightInc, _Heights, _TaperTopScale, _MultiExtruder, _FirstExtruder, _LastExtruder, _RimExtruder, _RenderRim, _RimHeight, _RimThickness);
+main(_Rows, _Cols, _QuadType, _HeightMode, _RectWidth, _RectDepth, _RectRowGap, _RectColGap, _RowPert, _ColPert, _QuadHeight, _HeightInc, _Heights, _TaperTopScale, _MultiExtruder, _FirstExtruder, _LastExtruder, _RimExtruder, _RenderRim, _RimHeight, _RimThickness);
