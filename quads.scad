@@ -133,6 +133,17 @@ _RimHeight = 0.4;
 // Rim Thickness
 _RimThickness = 0.5;
 
+/* [Base] */
+
+// Render base
+_RenderBase = false;
+
+// Base height
+_BaseHeight = 0.2;		// [0.2 : 0.2 : 10]
+
+// Base margin
+_BaseMargin = 1.0;
+
 /* [Extruders] */
 
 // Multiple extruder
@@ -146,6 +157,9 @@ _LastExtruder = 4;
 
 // Rim extruder
 _RimExtruder = 5;
+
+// Basev extruder
+_BaseExtruder = 5;
 
 // [Extruder to render]
 _WhichExtruder = "All"; // ["All", 1, 2, 3, 4, 5]
@@ -191,11 +205,14 @@ module Extruder(DoExtruder)
    }
 }
 
-/* Compute overall size */
-Width = (_Cols * _RectWidth) + ((_Cols - 1) * _RectColGap);
-Depth = (_Cols * _RectDepth) + ((_Rows - 1) * _RectRowGap);
+/* Seed the Randome number generator */
+X = rands(0, 100, 1, _RandomSeed);
 
-echo ("Overall size: ", Width, Depth);
+/* Compute overall size */
+_OverallWidth = _BaseMargin + (_Cols * _RectWidth) + ((_Cols - 1) * _RectColGap) + _BaseMargin;
+_OverallDepth = _BaseMargin + (_Cols * _RectDepth) + ((_Rows - 1) * _RectRowGap) + _BaseMargin;
+
+echo ("Overall size: ", _OverallWidth, _OverallDepth);
 
 /* Build the G grid */
 G = 
@@ -433,9 +450,32 @@ module RenderQuadGrid(Rows, Cols, QuadType, HeightMode, RectWidth, RectDepth, Re
 	}
 }
 
-module main(Rows, Cols, QuadType, HeightMode, RectWidth, RectDepth, RectRowGap, RectColGap, RowPert, ColPert, QuadHeight, HeightInc, Heights, TaperTopScale, MultiExtruder, FirstExtruder, LastExtruder, RimExtruder, RenderRim, RimHeight, RimThickness)
+/* Render base below quads */
+module RenderQuadBase(Rows, Cols, RectWidth, RectDepth, RectRowGap, RectColGap, BaseHeight, BaseMargin, BaseExtruder)
 {
-	RenderQuadGrid(Rows, Cols, QuadType, HeightMode, RectWidth, RectDepth, RectRowGap, RectColGap, RowPert, ColPert, QuadHeight, HeightInc, Heights, TaperTopScale, MultiExtruder, FirstExtruder, LastExtruder, RimExtruder, RenderRim, RimHeight, RimThickness);
+	translate([-BaseMargin, -BaseMargin, 0])
+	{
+		Extruder(BaseExtruder)
+		{
+			linear_extrude(BaseHeight)
+			{
+				square([_OverallWidth, _OverallDepth], center=false);
+			}
+		}
+	}
 }
 
-main(_Rows, _Cols, _QuadType, _HeightMode, _RectWidth, _RectDepth, _RectRowGap, _RectColGap, _RowPert, _ColPert, _QuadHeight, _HeightInc, _Heights, _TaperTopScale, _MultiExtruder, _FirstExtruder, _LastExtruder, _RimExtruder, _RenderRim, _RimHeight, _RimThickness);
+module main(Rows, Cols, QuadType, HeightMode, RectWidth, RectDepth, RectRowGap, RectColGap, RowPert, ColPert, QuadHeight, HeightInc, Heights, TaperTopScale, MultiExtruder, FirstExtruder, LastExtruder, RimExtruder, RenderRim, RimHeight, RimThickness, RenderBase, BaseHeight, BaseMargin, BaseExtruder)
+{
+	RenderQuadGrid(Rows, Cols, QuadType, HeightMode, RectWidth, RectDepth, RectRowGap, RectColGap, RowPert, ColPert, QuadHeight, HeightInc, Heights, TaperTopScale, MultiExtruder, FirstExtruder, LastExtruder, RimExtruder, RenderRim, RimHeight, RimThickness);
+	
+	if (RenderBase)
+	{
+		translate([0, 0, -BaseHeight])
+		{
+			RenderQuadBase(Rows, Cols, RectWidth, RectDepth, RectRowGap, RectColGap, BaseHeight, BaseMargin, BaseExtruder);
+		}
+	}
+}
+
+main(_Rows, _Cols, _QuadType, _HeightMode, _RectWidth, _RectDepth, _RectRowGap, _RectColGap, _RowPert, _ColPert, _QuadHeight, _HeightInc, _Heights, _TaperTopScale, _MultiExtruder, _FirstExtruder, _LastExtruder, _RimExtruder, _RenderRim, _RimHeight, _RimThickness, _RenderBase, _BaseHeight, _BaseMargin, _BaseExtruder);
