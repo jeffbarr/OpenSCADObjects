@@ -21,8 +21,6 @@
  *
  * TODO:
  *	- Make sure that the randomness actually is random
- *	- Add optional base - height, margin, extruder
- * 	- Increase modularity
  *	- Update documentation
  */
 
@@ -214,7 +212,15 @@ _OverallDepth = _BaseMargin + (_Cols * _RectDepth) + ((_Rows - 1) * _RectRowGap)
 
 echo ("Overall size: ", _OverallWidth, _OverallDepth);
 
-/* Build the G grid */
+/*
+ * GridRowPert - Return a value that will be used to perturb a row coordinate in the G grid
+ * GridColPert - Return a value that will be used to perturb a column coordinate in the G grid
+ */
+ 
+function GridRowPert() = round(rands(-_RowPert, _RowPert, 1)[0]);
+function GridColPert() = round(rands(-_ColPert, _ColPert, 1)[0]);
+
+ /* Build the G grid */
 G = 
 [
 	[for (c = [0 : _Cols]) [ 0, 0]],
@@ -222,9 +228,10 @@ G =
 	for (r = [1 : _Rows - 1]) 
 		[
 			[0, 0],
-			for (c = [1 : _Cols - 1]) [
-				round(rands(-_RowPert, _RowPert, 1)[0]), 
-				round(rands(-_ColPert, _ColPert, 1)[0])],
+			for (c = [1 : _Cols - 1])
+				[
+					GridRowPert(), GridColPert()
+				],
 			[0, 0]				
 		],
 			
