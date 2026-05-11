@@ -21,6 +21,7 @@
  *
  * TODO:
  *	- Make sure that the randomness actually is random
+ *	- Add control of "lead" between quads for better stained glass (enable, extruder, height)
  *	- Update documentation
  */
 
@@ -105,7 +106,7 @@ _HeightMode = "HM_FIXED"; // [HM_FIXED, HM_RANDOM]
 _QuadHeight = 3;		// [0.2 : 10]
 
 // Height increment
-_HeightInc  = 0.4; 	// [0.2 : 0.2 : 10]
+_HeightInc  = 0.4; 		// [0.2 : 0.2 : 10]
 
 // Number of random heights
 _Heights    = 7;		// [1 : 20]
@@ -119,6 +120,9 @@ _TaperTopScale = 0.5;	// [0.0 : 0.1 : 1.0]
  
 // Quad type
 _QuadType = "QT_VERT"; // [QT_VERT, QT_TAPER, QT_TOPO]
+
+// Random seed
+_RandomSeed = 1313;
 
 /* [Rim] */
 
@@ -156,14 +160,11 @@ _LastExtruder = 4;
 // Rim extruder
 _RimExtruder = 5;
 
-// Basev extruder
+// Base extruder
 _BaseExtruder = 5;
 
 // [Extruder to render]
 _WhichExtruder = "All"; // ["All", 1, 2, 3, 4, 5]
-
-// Random seed
-_RandomSeed = 1313;
 
 /* End of customization */
 module __Customizer_Limit__ () {}
@@ -203,7 +204,7 @@ module Extruder(DoExtruder)
    }
 }
 
-/* Seed the Randome number generator */
+/* Seed the Random number generator */
 X = rands(0, 100, 1, _RandomSeed);
 
 /* Compute overall size */
