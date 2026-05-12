@@ -21,7 +21,6 @@
  *
  * TODO:
  *	- Make sure that the randomness actually is random
- *	- Add control of "lead" between quads for better stained glass (enable, extruder, height)
  *	- Update documentation
  */
 
@@ -146,6 +145,14 @@ _BaseHeight = 0.2;		// [0.2 : 0.2 : 10]
 // Base margin
 _BaseMargin = 1.0;
 
+/* [Lead] */
+
+// Render lead
+_RenderLead = false;
+
+// Lead height
+_LeadHeight = 0.4;		// [0.2 : 0.2 : 10]
+
 /* [Extruders] */
 
 // Multiple extruder
@@ -162,6 +169,9 @@ _RimExtruder = 5;
 
 // Base extruder
 _BaseExtruder = 5;
+
+// Lead extruder
+_LeadExtruder = 5;
 
 // [Extruder to render]
 _WhichExtruder = "All"; // ["All", 1, 2, 3, 4, 5]
@@ -361,7 +371,7 @@ module RenderQuadTopo(PolyPoints, PolyFaces, QuadExtruder)
 }
 
 /* Render the grid of quadrilaterals */
-module RenderQuadGrid(Rows, Cols, QuadType, HeightMode, RectWidth, RectDepth, RectRowGap, RectColGap, RowPert, ColPert, QuadHeight, HeightInc, Heights, TaperTopScale, MultiExtruder, FirstExtruder, LastExtruder, RimExtruder, RenderRim, RimHeight, RimThickness)
+module RenderQuadGrid(Rows, Cols, QuadType, HeightMode, RectWidth, RectDepth, RectRowGap, RectColGap, RowPert, ColPert, QuadHeight, HeightInc, Heights, TaperTopScale, MultiExtruder, SingleExtruder, RimExtruder, RenderRim, RimHeight, RimThickness)
 {
 	for (r = [0 : Rows - 1])
 	{
@@ -397,7 +407,9 @@ module RenderQuadGrid(Rows, Cols, QuadType, HeightMode, RectWidth, RectDepth, Re
 				(HeightMode == "HM_RANDOM") ? QuadHeight + floor(rands(0, Heights, 1)[0]) * HeightInc :
 				0;
 			
-			QuadExtruder = _MultiExtruder ? _ExtruderGrid[r][c] : 1;
+			// If MultiExtruder is specified use the pert-quad color from _ExtruderGrid, otherwise use the given single extruder
+			QuadExtruder = MultiExtruder ? _ExtruderGrid[r][c] : SingleExtruder;
+			echo(QuadExtruder);
 
 			/* Generate quad based on QuadType */
 			if (QuadType == "QT_VERT")
@@ -473,9 +485,9 @@ module RenderQuadBase(Rows, Cols, RectWidth, RectDepth, RectRowGap, RectColGap, 
 	}
 }
 
-module main(Rows, Cols, QuadType, HeightMode, RectWidth, RectDepth, RectRowGap, RectColGap, RowPert, ColPert, QuadHeight, HeightInc, Heights, TaperTopScale, MultiExtruder, FirstExtruder, LastExtruder, RimExtruder, RenderRim, RimHeight, RimThickness, RenderBase, BaseHeight, BaseMargin, BaseExtruder)
+module main(Rows, Cols, QuadType, HeightMode, RectWidth, RectDepth, RectRowGap, RectColGap, RowPert, ColPert, QuadHeight, HeightInc, Heights, TaperTopScale, MultiExtruder, RimExtruder, RenderRim, RimHeight, RimThickness, RenderBase, BaseHeight, BaseMargin, BaseExtruder, RenderLead, LeadHeight, LeadExtruder)
 {
-	RenderQuadGrid(Rows, Cols, QuadType, HeightMode, RectWidth, RectDepth, RectRowGap, RectColGap, RowPert, ColPert, QuadHeight, HeightInc, Heights, TaperTopScale, MultiExtruder, FirstExtruder, LastExtruder, RimExtruder, RenderRim, RimHeight, RimThickness);
+	RenderQuadGrid(Rows, Cols, QuadType, HeightMode, RectWidth, RectDepth, RectRowGap, RectColGap, RowPert, ColPert, QuadHeight, HeightInc, Heights, TaperTopScale, MultiExtruder, 1, RimExtruder, RenderRim, RimHeight, RimThickness);
 	
 	if (RenderBase)
 	{
@@ -484,6 +496,29 @@ module main(Rows, Cols, QuadType, HeightMode, RectWidth, RectDepth, RectRowGap, 
 			RenderQuadBase(Rows, Cols, RectWidth, RectDepth, RectRowGap, RectColGap, BaseHeight, BaseMargin, BaseExtruder);
 		}
 	}
+	
+	if (RenderLead)
+	{
+		difference()
+		{
+			// A full plate of lead
+			translate([-BaseMargin, -BaseMargin, 0])
+			{
+				Extruder(LeadExtruder)
+				{
+					linear_extrude(LeadHeight)
+					{
+						square([_OverallWidth, _OverallDepth], center=false);
+					}
+				}
+			}
+			
+			// With holes cut out for the quad grid
+			{
+				RenderQuadGrid(Rows, Cols, QuadType, "HM_FIXED", RectWidth, RectDepth, RectRowGap, RectColGap, RowPert, ColPert, LeadHeight, HeightInc, Heights, TaperTopScale, false, "All", RimExtruder, RenderRim, RimHeight, RimThickness);
+			}
+		}
+	}
 }
 
-main(_Rows, _Cols, _QuadType, _HeightMode, _RectWidth, _RectDepth, _RectRowGap, _RectColGap, _RowPert, _ColPert, _QuadHeight, _HeightInc, _Heights, _TaperTopScale, _MultiExtruder, _FirstExtruder, _LastExtruder, _RimExtruder, _RenderRim, _RimHeight, _RimThickness, _RenderBase, _BaseHeight, _BaseMargin, _BaseExtruder);
+main(_Rows, _Cols, _QuadType, _HeightMode, _RectWidth, _RectDepth, _RectRowGap, _RectColGap, _RowPert, _ColPert, _QuadHeight, _HeightInc, _Heights, _TaperTopScale, _MultiExtruder, _RimExtruder, _RenderRim, _RimHeight, _RimThickness, _RenderBase, _BaseHeight, _BaseMargin, _BaseExtruder, _RenderLead, _LeadHeight, _LeadExtruder);
