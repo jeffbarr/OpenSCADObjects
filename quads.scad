@@ -193,12 +193,13 @@ assert((_QuadType == "QT_VERT") || (_QuadType == "QT_TAPER") || (_QuadType == "Q
 
 // Map a value of _WhichExtruder to an OpenSCAD color
 function ExtruderColor(Extruder) = 
-  (Extruder == 1  ) ? "red"    : 
-  (Extruder == 2  ) ? "green"  : 
-  (Extruder == 3  ) ? "blue"   : 
-  (Extruder == 4  ) ? "pink"   :
-  (Extruder == 5  ) ? "yellow" :
-                      "purple" ;
+  (Extruder == 1  )   ? "red"    :  
+  (Extruder == 2  )   ? "green"  : 
+  (Extruder == 3  )   ? "blue"   : 
+  (Extruder == 4  )   ? "pink"   :
+  (Extruder == 5  )   ? "yellow" :
+  (Extruder == "All") ? "orange" : 
+                        "purple" ;
 
 // If _WhichExtruder is "All" or is not "All" and matches the 
 // requested extruder, render the child nodes.
@@ -207,7 +208,7 @@ module Extruder(DoExtruder)
 {
    color(ExtruderColor(DoExtruder))
    {
-     if (_WhichExtruder == "All" || DoExtruder == _WhichExtruder)
+     if (_WhichExtruder == "All" || DoExtruder == _WhichExtruder || DoExtruder == "All")
      {
        children();
      }
@@ -409,7 +410,6 @@ module RenderQuadGrid(Rows, Cols, QuadType, HeightMode, RectWidth, RectDepth, Re
 			
 			// If MultiExtruder is specified use the pert-quad color from _ExtruderGrid, otherwise use the given single extruder
 			QuadExtruder = MultiExtruder ? _ExtruderGrid[r][c] : SingleExtruder;
-			echo(QuadExtruder);
 
 			/* Generate quad based on QuadType */
 			if (QuadType == "QT_VERT")
