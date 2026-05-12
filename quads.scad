@@ -506,7 +506,7 @@ module main(Rows, Cols, QuadType, HeightMode, RectWidth, RectDepth, RectRowGap, 
 			{
 				Extruder(LeadExtruder)
 				{
-					linear_extrude(LeadHeight)
+					linear_extrude(LeadHeight - 0.001)
 					{
 						square([_OverallWidth, _OverallDepth], center=false);
 					}
