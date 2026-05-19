@@ -20,7 +20,6 @@
  *						HeightMode is HM_RANDOM.
  *
  * TODO:
- *	- Make sure that all of the randomness actually is random
  *	- Update documentation
  */
 
@@ -229,8 +228,8 @@ echo ("Overall size: ", _OverallWidth, _OverallDepth);
  * GridColPert - Return a value that will be used to perturb a column coordinate in the G grid
  */
  
-function GridRowPert() = round(rands(-_RowPert, _RowPert, 1)[0]);
-function GridColPert() = round(rands(-_ColPert, _ColPert, 1)[0]);
+function GridRowPert() = rands(-_RowPert, _RowPert, 1)[0];
+function GridColPert() = rands(-_ColPert, _ColPert, 1)[0];
 
  /* Build the G grid */
 G = 
