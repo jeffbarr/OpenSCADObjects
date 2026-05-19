@@ -20,7 +20,7 @@
  *						HeightMode is HM_RANDOM.
  *
  * TODO:
- *	- Make sure that the randomness actually is random
+ *	- Make sure that all of the randomness actually is random
  *	- Update documentation
  */
 
@@ -285,7 +285,7 @@ _ExtruderGrid =
 	for (r = [1 : _Rows]) 
 		[
 			for (c = [1 : _Cols])
-				round(rands(_FirstExtruder, _LastExtruder, _RandomSeed)[0])
+				floor(rands(0, 1, _RandomSeed)[0] * (_LastExtruder - _FirstExtruder + 1)) + _FirstExtruder
 		]
 ];
 
