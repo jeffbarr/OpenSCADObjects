@@ -27,7 +27,7 @@ _RingHeight = 2;
 _RingShadowWidth = 4;
 
 // Ring Shape
-_RingShape = "Circle"; // [Circle, Square, Pentagon, Hexagon, Octagon]
+_RingShape = "Circle"; // [Circle, Triangle, Square, Pentagon, Hexagon, Octagon]
 
 // Ring Rotation
 _RingRotation = 0.0;
@@ -195,6 +195,7 @@ module main()
 {
 	RingSides = 
 	  (_RingShape == "Circle")   ? 99 :
+	  (_RingShape == "Triangle") ? 3  :
 	  (_RingShape == "Square")   ? 4  :
 	  (_RingShape == "Pentagon") ? 5  :
 	  (_RingShape == "Hexagon")  ? 6  :
