@@ -3,6 +3,14 @@
 // https://en.wikipedia.org/wiki/Rhombitrihexagonal_tiling
 //
 
+/* [Rhombitrihexagon]  */
+
+// Column count
+_CountX = 3;
+
+// Row count
+_CountY = 4;
+
 // Hexagon radius
 _HexRadius = 17.5;
 
@@ -10,19 +18,19 @@ _HexRadius = 17.5;
 _Inset = 0.5;
 
 // Hexagon height
-_HexHeight = 2;
+_HexHeight = 0.6;
 
 // Square height
-_SquareHeight = 1.6;
+_SquareHeight = 0.6;
 
 // Triangle height
-_TriangleHeight = 1.2;
+_TriangleHeight = 0.6;
 
 // Rim thickness
 _RimThickness = 0.4;
 
 // Rim height
-_RimHeight = 2.4;
+_RimHeight = 0.8;
 
 // Gap between rim elements
 _RimGap = 1.5;
@@ -30,45 +38,88 @@ _RimGap = 1.5;
 // Max rim elements on a shape
 _RimMaxElements = 99;
 
+/* [Extruders] */
+
+// Hexagon extruder
+_HexagonExtruder = 1;
+
+// Square extruder
+_SquareExtruder = 2;
+
+// Triangle extruder
+_TriangleExtruder = 3;
+
+// Rim extruder
+_RimExtruder = 4;
+
+// [Extruder to render]
+_WhichExtruder = "All"; // ["All", 1, 2, 3, 4, 5]
+
+// Map a value of _WhichExtruder to an OpenSCAD color
+function ExtruderColor(Extruder) = 
+  (Extruder == 1  ) ? "red"    : 
+  (Extruder == 2  ) ? "green"  : 
+  (Extruder == 3  ) ? "blue"   : 
+  (Extruder == 4  ) ? "pink"   :
+  (Extruder == 5  ) ? "yellow" :
+                      "purple" ;
+					  
 module __end_cust() {};
+
+// If _WhichExtruder is "All" or is not "All" and matches the 
+// requested extruder, render the child nodes.
+
+module Extruder(DoExtruder)
+{
+   color(ExtruderColor(DoExtruder))
+   {
+     if (_WhichExtruder == "All" || DoExtruder == _WhichExtruder)
+     {
+       children();
+     }
+   }
+}
 
 //
 // Render a rim for a polygon
 //
 
-module RimShape(Points, Inset, Thickness, Height, Gap, MaxElements)
+module RimShape(Points, Inset, Thickness, Height, Gap, MaxElements, RimExtruder)
 {
-	for (r = [0 : MaxElements - 1])
+	Extruder(RimExtruder)
 	{
-		linear_extrude(Height)
+		for (r = [0 : MaxElements - 1])
 		{
-			difference()
+			linear_extrude(Height)
 			{
-				offset(delta=-(Inset + (r * Gap))) 
+				difference()
 				{
-					polygon(Points);
-				}
-				
-				offset(delta=-(Thickness + Inset + (r * Gap)))
-				{
-					polygon(Points);
+					offset(delta=-(Inset + (r * Gap))) 
+					{
+						polygon(Points);
+					}
+					
+					offset(delta=-(Thickness + Inset + (r * Gap)))
+					{
+						polygon(Points);
+					}
 				}
 			}
 		}
-	}	
+	}
 }
 
 //
 // Render a square
 //
 
-module SquareShape(Points, Inset, Height, RimThickness, RimHeight, RimGap, RimMaxElements)
+module SquareShape(Points, Inset, Height, RimThickness, RimHeight, RimGap, RimMaxElements, SquareExtruder, RimExtruder)
 {
-	color("blue")
-	{	
-		union()
+	union()
+	{
+		// Square
+		Extruder(SquareExtruder)
 		{
-			// Square
 			linear_extrude(Height)
 			{
 				offset(-Inset)
@@ -76,10 +127,10 @@ module SquareShape(Points, Inset, Height, RimThickness, RimHeight, RimGap, RimMa
 					polygon(Points);
 				}
 			}
-
-			// Rim
-			RimShape(Points, Inset, RimThickness, RimHeight, RimGap, RimMaxElements);
 		}
+
+		// Rim
+		RimShape(Points, Inset, RimThickness, RimHeight, RimGap, RimMaxElements, RimExtruder);
 	}
 }
 
@@ -87,13 +138,13 @@ module SquareShape(Points, Inset, Height, RimThickness, RimHeight, RimGap, RimMa
 // Render a triangle
 //
 
-module TriangleShape(Points, Inset, Height, RimThickness, RimHeight, RimGap, RimMaxElements)
+module TriangleShape(Points, Inset, Height, RimThickness, RimHeight, RimGap, RimMaxElements, TriangleExtruder, RimExtruder)
 {
-	color("red")
-	{	
-		union()
+	union()
+	{
+		// Triangle
+		Extruder(TriangleExtruder)
 		{
-			// Triangle
 			linear_extrude(Height)
 			{
 				offset(-Inset)
@@ -101,32 +152,35 @@ module TriangleShape(Points, Inset, Height, RimThickness, RimHeight, RimGap, Rim
 					polygon(Points);
 				}
 			}
-			
-			// Rim
-			RimShape(Points, Inset, RimThickness, RimHeight, RimGap, RimMaxElements);
-		}	
-	}
+		}
+		
+		// Rim
+		RimShape(Points, Inset, RimThickness, RimHeight, RimGap, RimMaxElements, RimExtruder);
+	}	
 }
 
 //
 // Render a hexagon
 //
 
-module HexagonShape(Points, Inset, Height, RimThickness, RimHeight, RimGap, RimMaxElements)
+module HexagonShape(Points, Inset, Height, RimThickness, RimHeight, RimGap, RimMaxElements, HexagonExtruder, RimExtruder)
 {	
 	union()
 	{
 		// Hexagon
-		linear_extrude(Height)
+		Extruder(HexagonExtruder)
 		{
-			offset(-Inset)
+			linear_extrude(Height)
 			{
-				polygon(Points);
+				offset(-Inset)
+				{
+					polygon(Points);
+				}
 			}
 		}
 			
 		// Rim
-		RimShape(Points, Inset, RimThickness, RimHeight, RimGap, RimMaxElements);
+		RimShape(Points, Inset, RimThickness, RimHeight, RimGap, RimMaxElements, RimExtruder);
 	}
 }
 
@@ -146,12 +200,12 @@ module DodecagonShape(Points, Inset, Height, RimThickness, RimHeight, RimGap, Ri
 }
 
 //
-// Render all or part of a rhombitrihexagon, with given inset and heights
+// Render all or part of a rhombitrihexagon, with given inset, heights, and extruders
 //
 // Squares and triangles are numbered counter-clockwise, with 0 intersecting the Y axis on the +x side.
 //
 
-module Rhombitrihexagon(HexRadius, Inset, HexHeight, SquareHeight, TriangleHeight, SquareList, TriangleList, RimThickness, RimHeight, RimGap, RimMaxElements)
+module Rhombitrihexagon(HexRadius, Inset, HexHeight, SquareHeight, TriangleHeight, SquareList, TriangleList, RimThickness, RimHeight, RimGap, RimMaxElements, HexagonExtruder, TriangleExtruder, SquareExtruder, RimExtruder)
 {
 	// Compute apothem of hexagon then use it to compute radius of dodecagon
 	Apothem = 0.5 * sqrt(3) * HexRadius;
@@ -246,17 +300,17 @@ module Rhombitrihexagon(HexRadius, Inset, HexHeight, SquareHeight, TriangleHeigh
 	// Render desired squares
 	for (Square = SquareList)
 	{
-		SquareShape(Squares[Square], Inset, SquareHeight, RimThickness, RimHeight, RimGap, RimMaxElements);
+		SquareShape(Squares[Square], Inset, SquareHeight, RimThickness, RimHeight, RimGap, RimMaxElements, SquareExtruder, RimExtruder);
 	}
 
 	// Render desired triangles
 	for (Triangle = TriangleList)
 	{
-		TriangleShape(Triangles[Triangle], Inset, TriangleHeight, RimThickness, RimHeight, RimGap, RimMaxElements);
+		TriangleShape(Triangles[Triangle], Inset, TriangleHeight, RimThickness, RimHeight, RimGap, RimMaxElements, TriangleExtruder, RimExtruder);
 	}
 
 	// Render hexagon
-	HexagonShape(HexPoints, Inset, HexHeight, RimThickness, RimHeight, RimGap, RimMaxElements);
+	HexagonShape(HexPoints, Inset, HexHeight, RimThickness, RimHeight, RimGap, RimMaxElements, HexagonExtruder, RimExtruder);
 	
 	// Render dodecahedron (testing only)
 	//DodecagonShape(DodPoints, 0, HexHeight - 0.6, RimThickness, RimHeight, RimGap, RimMaxElements);
@@ -270,12 +324,6 @@ module main()
 	NextSquares   = [0, 1, 2, 3, 5];
 	NextTriangles = [0, 1, 2, 3];
 	
-	FirstMidSquares   = [4];
-	FirstMidTriangles = [];
-	
-	NoSquares   = [];
-	NoTriangles = [];
-	
 	// Compute X Spacing
 	B = _HexRadius * sin(60);
 	SpaceX = _HexRadius + B + _HexRadius + B + _HexRadius;
@@ -283,44 +331,44 @@ module main()
 	// Compute Y Spacing
 	SpaceY = B + _HexRadius + B;
 
-	// Grid of  at full spacing
-	// Row 0
-	translate([0, 0, 0])
-	{
-		Rhombitrihexagon(_HexRadius, _Inset, _HexHeight, _SquareHeight, _TriangleHeight, AllSquares, AllTriangles, _RimThickness, _RimHeight, _RimGap, _RimMaxElements);
-	}
-	
-	/*translate([SpaceX, 0, 0])
-	{
-		Rhombitrihexagon(_HexRadius, _Inset, _HexHeight, _SquareHeight, _TriangleHeight, AllSquares, AllTriangles, _RimThickness, _RimHeight _RimGap, _RimMaxElements);
-	}
-	
-	// Row 1
-	translate([0, SpaceY, 0])
-	{
-		Rhombitrihexagon(_HexRadius, _Inset, _HexHeight, _SquareHeight, _TriangleHeight, NextSquares, NextTriangles, _RimThickness, _RimHeight _RimGap, _RimMaxElements);	
-	}
-	
-	translate([SpaceX, SpaceY, 0])
-	{
-		Rhombitrihexagon(_HexRadius, _Inset, _HexHeight, _SquareHeight, _TriangleHeight, NextSquares, NextTriangles, _RimThickness, _RimHeight _RimGap, _RimMaxElements);
-	}
+	// Gap between rhombitrihexagons for debugging (set to 0 for production)
+	Explode = 0;
 
-	// Fill in between row
-	translate([SpaceX / 2, -SpaceY / 2, 0])
+	// Grid of nearly complete rhombitrihexagons at integer coordinates
+	for (X = [0 : _CountX - 1])
 	{
-		Rhombitrihexagon(_HexRadius, _Inset, _HexHeight, _SquareHeight, _TriangleHeight, [3, 4, 5], [4, 5], _RimThickness, _RimHeight _RimGap, _RimMaxElements);
+		for (Y = [0 : _CountY - 1])
+		{
+			// Compute location
+			PointX = X * (SpaceX + Explode);
+			PointY = Y * (SpaceY + Explode);
+
+			// Figure out which squares and triangles to render
+			RenderSquares   = (Y == 0) ? AllSquares   : NextSquares;
+			RenderTriangles = (Y == 0) ? AllTriangles : NextTriangles;
+			
+			translate([PointX, PointY, 0])
+			{
+				Rhombitrihexagon(_HexRadius, _Inset, _HexHeight, _SquareHeight, _TriangleHeight, RenderSquares, RenderTriangles, _RimThickness, _RimHeight, _RimGap, _RimMaxElements, _HexagonExtruder, _TriangleExtruder, _SquareExtruder, _RimExtruder);
+			}
+		}
 	}
 	
-	translate([SpaceX / 2, SpaceY / 2, 0])
+	// Grid of very partial rhombitrihexagons at 0.5 coordinates
+	for (X = [0 : _CountX - 2])
 	{
-		Rhombitrihexagon(_HexRadius, _Inset, _HexHeight, _SquareHeight, _TriangleHeight, FirstMidSquares, FirstMidTriangles, _RimThickness, _RimHeight _RimGap, _RimMaxElements);
-	}
+		for (Y = [0 : _CountY - 1])
+		{
+			// Compute location
+			PointX = (X * (SpaceX + Explode)) + SpaceX / 2 + Explode / 2;
+			PointY = (Y * (SpaceY + Explode)) + SpaceY / 2 + Explode / 2;
 
-	translate([SpaceX / 2, SpaceY + SpaceY / 2, 0])
-	{
-		Rhombitrihexagon(_HexRadius, _Inset, _HexHeight, _SquareHeight, _TriangleHeight, [0, 1, 2, 4], [1, 2], _RimThickness, _RimHeight, _RimGap, _RimMaxElements);	
-	}*/
+			translate([PointX, PointY, 0])
+			{
+				Rhombitrihexagon(_HexRadius, _Inset, _HexHeight, _SquareHeight, _TriangleHeight, [4], [], _RimThickness, _RimHeight, _RimGap, _RimMaxElements, _HexagonExtruder, _TriangleExtruder, _SquareExtruder, _RimExtruder);
+			}
+		}
+	}
 }
 
 main();
