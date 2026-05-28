@@ -30,7 +30,7 @@ _TriangleHeight = 0.6;
 _RimThickness = 0.4;
 
 // Rim height
-_RimHeight = 0.8;
+_RimHeight = 0.4;
 
 // Gap between rim elements
 _RimGap = 1.5;
@@ -130,7 +130,10 @@ module SquareShape(Points, Inset, Height, RimThickness, RimHeight, RimGap, RimMa
 		}
 
 		// Rim
-		RimShape(Points, Inset, RimThickness, RimHeight, RimGap, RimMaxElements, RimExtruder);
+		translate([0, 0, Height])
+		{
+			RimShape(Points, Inset, RimThickness, RimHeight, RimGap, RimMaxElements, RimExtruder);
+		}
 	}
 }
 
@@ -155,7 +158,10 @@ module TriangleShape(Points, Inset, Height, RimThickness, RimHeight, RimGap, Rim
 		}
 		
 		// Rim
-		RimShape(Points, Inset, RimThickness, RimHeight, RimGap, RimMaxElements, RimExtruder);
+		translate([0, 0, Height])
+		{
+			RimShape(Points, Inset, RimThickness, RimHeight, RimGap, RimMaxElements, RimExtruder);
+		}
 	}	
 }
 
@@ -180,7 +186,10 @@ module HexagonShape(Points, Inset, Height, RimThickness, RimHeight, RimGap, RimM
 		}
 			
 		// Rim
-		RimShape(Points, Inset, RimThickness, RimHeight, RimGap, RimMaxElements, RimExtruder);
+		translate([0, 0, Height])
+		{
+			RimShape(Points, Inset, RimThickness, RimHeight, RimGap, RimMaxElements, RimExtruder);
+		}
 	}
 }
 
