@@ -21,7 +21,7 @@ _RingInnerDiameter = 10;
 _RingOuterDiameter = 32;
 
 // Ring Height
-_RingHeight = 2;
+_RingHeight = 0.8;
 
 // Ring Shadow Width
 _RingShadowWidth = 4;
@@ -35,7 +35,7 @@ _RingRotation = 0.0;
 /* [Ring Brim] */
 
 // Ring Brim Height
-_RingBrimHeight = 2.4;
+_RingBrimHeight = 0.4;
 
 // Ring Brim Width
 _RingBrimWidth = 0.6;
@@ -44,7 +44,7 @@ _RingBrimWidth = 0.6;
 _RingBrimCount = 3;
 
 // Ring Brim Spacing
-_RingBrimSpacing = 0.4;
+_RingBrimSpacing = 0.8;
 
 module __end_customization() {}
 
@@ -97,7 +97,7 @@ module RenderRingBrims(CountX, CountY, SpaceX, SpaceY, RingSides, RingRotation, 
 				for (r = [ 0 : RingBrimCount - 1])
 				{
 					linear_extrude(RingBrimHeight)
-					{
+					{echo(RingBrimHeight);
 						rotate(RingRotation)
 						{
 							difference()
@@ -174,7 +174,10 @@ module Render(CountX, CountY, SpaceX, SpaceY, RingSides, RingRotation, RingInner
 			union()
 			{
 				RenderRings(CountX, CountY, SpaceX, SpaceY, RingSides, RingRotation, RingInnerDiameter, RingOuterDiameter, RingHeight);
-				RenderRingBrims(CountX, CountY, SpaceX, SpaceY, RingSides, RingRotation, RingOuterDiameter, RingBrimHeight, RingBrimWidth, RingBrimCount, RingBrimSpacing);
+				translate([0, 0, RingHeight])
+				{
+					RenderRingBrims(CountX, CountY, SpaceX, SpaceY, RingSides, RingRotation, RingOuterDiameter, RingBrimHeight, RingBrimWidth, RingBrimCount, RingBrimSpacing);
+				}
 			}
 		}
 		
@@ -182,7 +185,7 @@ module Render(CountX, CountY, SpaceX, SpaceY, RingSides, RingRotation, RingInner
 		{
 			union()
 			{
-				RenderRingShadows(CountX, CountY, SpaceX, SpaceY, RingSides, RingRotation, RingBrimHeight, RingInnerShadowDiameter, RingOuterShadowDiameter);
+				RenderRingShadows(CountX, CountY, SpaceX, SpaceY, RingSides, RingRotation, RingHeight + RingBrimHeight, RingInnerShadowDiameter, RingOuterShadowDiameter);
 				RenderRingHoles(CountX, CountY, SpaceX, SpaceY, RingSides, RingRotation, RingBrimHeight, RingInnerDiameter);
 			}
 		}
