@@ -27,7 +27,7 @@ _RingHeight = 2;
 _RingShadowWidth = 4;
 
 // Ring Shape
-_RingShape = "Circle"; // [Circle, Square, Pentagon, Hexagon, Octagon]
+_RingShape = "Circle"; // [Circle, Triangle, Square, Pentagon, Hexagon, Octagon]
 
 // Ring Rotation
 _RingRotation = 0.0;
@@ -53,8 +53,6 @@ _RingOuterShadowDiameter = _RingOuterDiameter + _RingShadowWidth;
 
 // Ring Antimatter Shadow Inner Diameter
 _RingInnerShadowDiameter = _RingOuterDiameter;
-
-__SIDES = 6;
 
 // Render grid of rings
 module RenderRings(CountX, CountY, SpaceX, SpaceY, RingSides, RingRotation, RingInnerDiameter, RingOuterDiameter, RingHeight)
@@ -191,19 +189,19 @@ module Render(CountX, CountY, SpaceX, SpaceY, RingSides, RingRotation, RingInner
 	}
 }
 
-module main()
+module main(CountX, CountY, SpaceX, SpaceY, RingShape, RingRotation, RingInnerDiameter, RingOuterDiameter, RingHeight, RingBrimHeight, RingBrimWidth, RingBrimCount, RingBrimSpacing, RingInnerShadowDiameter, RingOuterShadowDiameter)
 {
 	RingSides = 
-	  (_RingShape == "Circle")   ? 99 :
-	  (_RingShape == "Square")   ? 4  :
-	  (_RingShape == "Pentagon") ? 5  :
-	  (_RingShape == "Hexagon")  ? 6  :
-	  (_RingShape == "Octagon")  ? 8  :
-	                               0;
+	  (RingShape == "Circle")   ? 99 :
+	  (RingShape == "Triangle") ? 3  :
+	  (RingShape == "Square")   ? 4  :
+	  (RingShape == "Pentagon") ? 5  :
+	  (RingShape == "Hexagon")  ? 6  :
+	  (RingShape == "Octagon")  ? 8  :
+	                              0;
 								 
-	Render(_CountX, _CountY, _SpaceX, _SpaceY, RingSides, _RingRotation, _RingInnerDiameter, _RingOuterDiameter, _RingHeight, _RingBrimHeight, _RingBrimWidth, _RingBrimCount, _RingBrimSpacing,
-_RingInnerShadowDiameter, _RingOuterShadowDiameter);
+	Render(CountX, CountY, SpaceX, SpaceY, RingSides, RingRotation, RingInnerDiameter, RingOuterDiameter, RingHeight, RingBrimHeight, RingBrimWidth, RingBrimCount, RingBrimSpacing, RingInnerShadowDiameter, RingOuterShadowDiameter);
 }
 
-main();
+main(_CountX, _CountY, _SpaceX, _SpaceY, _RingShape, _RingRotation, _RingInnerDiameter, _RingOuterDiameter, _RingHeight, _RingBrimHeight, _RingBrimWidth, _RingBrimCount, _RingBrimSpacing, _RingInnerShadowDiameter, _RingOuterShadowDiameter);
 
