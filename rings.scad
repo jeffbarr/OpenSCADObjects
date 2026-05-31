@@ -51,8 +51,20 @@ _RingBrimSpacing = 0.8;
 // Ring extruder
 _RingExtruder = 1;
 
-// Brim extruder
-_BrimExtruder = 2;
+// Brim extruder 1
+_BrimExtruder1 = true;
+
+// Brim extruder 2
+_BrimExtruder2 = true;
+
+// Brim extruder 3
+_BrimExtruder3 = true;
+
+// Brim extruder 4
+_BrimExtruder4 = true;
+
+// Brim extruder 5
+_BrimExtruder5 = true;
 
 // [Extruder to render]
 _WhichExtruder = "All"; // ["All", 1, 2, 3, 4, 5]
@@ -67,6 +79,19 @@ function ExtruderColor(Extruder) =
   (Extruder == 4  ) ? "pink"   :
   (Extruder == 5  ) ? "yellow" :
                       "purple" ;
+
+// Create vector of brim extruders					  
+_BrimExtrudersRaw =
+[
+	false,
+	_BrimExtruder1 ? 1 : 0,
+	_BrimExtruder2 ? 2 : 0,
+	_BrimExtruder3 ? 3 : 0,
+	_BrimExtruder4 ? 4 : 0,
+	_BrimExtruder5 ? 5 : 0
+];
+
+_BrimExtruders = [for (i = [0 : 5]) if (_BrimExtrudersRaw[i]) i];
 					  
 // If _WhichExtruder is "All" or is not "All" and matches the 
 // requested extruder, render the child nodes.
@@ -120,7 +145,7 @@ module RenderRings(CountX, CountY, SpaceX, SpaceY, RingSides, RingRotation, Ring
 }
 
 // Render grid of ring brims
-module RenderRingBrims(CountX, CountY, SpaceX, SpaceY, RingSides, RingRotation, RingOuterDiameter, RingBrimHeight, RingBrimWidth, RingBrimCount, RingBrimSpacing, BrimExtruder)
+module RenderRingBrims(CountX, CountY, SpaceX, SpaceY, RingSides, RingRotation, RingOuterDiameter, RingBrimHeight, RingBrimWidth, RingBrimCount, RingBrimSpacing, BrimExtruders)
 {
 	for (x = [ 0 : CountX - 1])
 	{
@@ -133,7 +158,7 @@ module RenderRingBrims(CountX, CountY, SpaceX, SpaceY, RingSides, RingRotation, 
 			{
 				for (r = [ 0 : RingBrimCount - 1])
 				{
-					Extruder(BrimExtruder)
+					Extruder(BrimExtruders[r % len(BrimExtruders)])
 					{
 						linear_extrude(RingBrimHeight)
 						{
@@ -205,7 +230,7 @@ module RenderRingHoles(CountX, CountY, SpaceX, SpaceY, RingSides, RingRotation, 
 	}
 }
 // Render rings, then subtract the outer shadows and inner holes
-module Render(CountX, CountY, SpaceX, SpaceY, RingSides, RingRotation, RingInnerDiameter, RingOuterDiameter, RingHeight, RingBrimHeight, RingBrimWidth, RingBrimCount, RingBrimSpacing, RingInnerShadowDiameter, RingOuterShadowDiameter, RingExtruder, BrimExtruder)
+module Render(CountX, CountY, SpaceX, SpaceY, RingSides, RingRotation, RingInnerDiameter, RingOuterDiameter, RingHeight, RingBrimHeight, RingBrimWidth, RingBrimCount, RingBrimSpacing, RingInnerShadowDiameter, RingOuterShadowDiameter, RingExtruder, BrimExtruders)
 {
 	difference()
 	{	
@@ -217,7 +242,7 @@ module Render(CountX, CountY, SpaceX, SpaceY, RingSides, RingRotation, RingInner
 				
 				translate([0, 0, RingHeight])
 				{
-					RenderRingBrims(CountX, CountY, SpaceX, SpaceY, RingSides, RingRotation, RingOuterDiameter, RingBrimHeight, RingBrimWidth, RingBrimCount, RingBrimSpacing, BrimExtruder);
+					RenderRingBrims(CountX, CountY, SpaceX, SpaceY, RingSides, RingRotation, RingOuterDiameter, RingBrimHeight, RingBrimWidth, RingBrimCount, RingBrimSpacing, BrimExtruders);
 				}
 			}
 		}
@@ -233,7 +258,7 @@ module Render(CountX, CountY, SpaceX, SpaceY, RingSides, RingRotation, RingInner
 	}
 }
 
-module main(CountX, CountY, SpaceX, SpaceY, RingShape, RingRotation, RingInnerDiameter, RingOuterDiameter, RingHeight, RingBrimHeight, RingBrimWidth, RingBrimCount, RingBrimSpacing, RingInnerShadowDiameter, RingOuterShadowDiameter, RingExtruder, BrimExtruder)
+module main(CountX, CountY, SpaceX, SpaceY, RingShape, RingRotation, RingInnerDiameter, RingOuterDiameter, RingHeight, RingBrimHeight, RingBrimWidth, RingBrimCount, RingBrimSpacing, RingInnerShadowDiameter, RingOuterShadowDiameter, RingExtruder, BrimExtruders)
 {
 	RingSides = 
 	  (RingShape == "Circle")   ? 99 :
@@ -244,8 +269,8 @@ module main(CountX, CountY, SpaceX, SpaceY, RingShape, RingRotation, RingInnerDi
 	  (RingShape == "Octagon")  ? 8  :
 	                              0;
 								 
-	Render(CountX, CountY, SpaceX, SpaceY, RingSides, RingRotation, RingInnerDiameter, RingOuterDiameter, RingHeight, RingBrimHeight, RingBrimWidth, RingBrimCount, RingBrimSpacing, RingInnerShadowDiameter, RingOuterShadowDiameter, RingExtruder, BrimExtruder);
+	Render(CountX, CountY, SpaceX, SpaceY, RingSides, RingRotation, RingInnerDiameter, RingOuterDiameter, RingHeight, RingBrimHeight, RingBrimWidth, RingBrimCount, RingBrimSpacing, RingInnerShadowDiameter, RingOuterShadowDiameter, RingExtruder, BrimExtruders);
 }
 
-main(_CountX, _CountY, _SpaceX, _SpaceY, _RingShape, _RingRotation, _RingInnerDiameter, _RingOuterDiameter, _RingHeight, _RingBrimHeight, _RingBrimWidth, _RingBrimCount, _RingBrimSpacing, _RingInnerShadowDiameter, _RingOuterShadowDiameter, _RingExtruder, _BrimExtruder);
+main(_CountX, _CountY, _SpaceX, _SpaceY, _RingShape, _RingRotation, _RingInnerDiameter, _RingOuterDiameter, _RingHeight, _RingBrimHeight, _RingBrimWidth, _RingBrimCount, _RingBrimSpacing, _RingInnerShadowDiameter, _RingOuterShadowDiameter, _RingExtruder, _BrimExtruders);
 
