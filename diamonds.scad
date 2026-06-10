@@ -1,5 +1,11 @@
 /* Diamonds */
 
+/*
+ * TODO
+ *
+ * Add color patterns based on X,Y modulo
+ */
+ 
 // Primary Diamond Size
 PrimaryDiamondSize = 10;
 
@@ -19,8 +25,7 @@ RimHeight = 0.5;
 RimThickness = 0.5;
 
 // Column count
-CountX = 6
-;
+CountX = 6;
 
 // Row count
 CountY = 8;
@@ -30,6 +35,78 @@ SpaceY = 18;
 
 // Column spacing
 SpaceX = 31;
+
+/* [Multiple Extruders] */
+
+// First primary diamond extruder
+_FirstPrimaryExtruder = 1;
+
+// Last primary diamond extruder
+_LastPrimaryExtruder = 2;
+
+// First filler diamond extruder
+_FirstFillerExtruder = 3;
+
+// Last filler diamond extruder
+_LastFillerExtruder = 4;
+
+// Rim extruder
+_RimExtruder = 5;
+
+// Random seed
+_RandomSeed = 131313;
+
+// [Extruder to render]
+_WhichExtruder = "All"; // ["All", 1, 2, 3, 4, 5]
+
+module EndCustomization(){}
+
+// Randomize
+ZZZ = rands(0, 1, 1, _RandomSeed);
+
+/* Generate random extruders/colors for primary diamonds */
+_PrimaryExtruderGrid = 
+[
+	for (x = [1 : CountX]) 
+		[
+			for (y = [1 : CountY])
+				floor(rands(0, 1, 1)[0] * (_LastPrimaryExtruder - _FirstPrimaryExtruder + 1)) + _FirstPrimaryExtruder
+		]
+];
+
+/* Generate random extruders/colors for filler diamonds */
+_FillerExtruderGrid = 
+[
+	for (x = [1 : CountX]) 
+		[
+			for (y = [1 : CountY])
+				floor(rands(0, 1, 1)[0] * (_LastFillerExtruder - _FirstFillerExtruder + 1)) + _FirstFillerExtruder
+		]
+];
+
+// Map a value of _WhichExtruder to an OpenSCAD color
+function ExtruderColor(Extruder) = 
+  (Extruder == 1  )   ? "red"    :  
+  (Extruder == 2  )   ? "green"  : 
+  (Extruder == 3  )   ? "blue"   : 
+  (Extruder == 4  )   ? "pink"   :
+  (Extruder == 5  )   ? "yellow" :
+  (Extruder == "All") ? "orange" : 
+                        "purple" ;
+
+// If _WhichExtruder is "All" or is not "All" and matches the 
+// requested extruder, render the child nodes.
+
+module Extruder(DoExtruder)
+{
+	color(ExtruderColor(DoExtruder))
+	{
+		if (_WhichExtruder == "All" || DoExtruder == _WhichExtruder || DoExtruder == "All")
+		{
+			children();
+		}
+	}
+}
 
 module FlatDiamond(Size)
 {
@@ -46,61 +123,86 @@ module FlatDiamond(Size)
     }  
 }
 
-module Diamond(Size, Height, RimHeight)
+module Diamond(Size, Height, RimHeight, DiamondExtruder, RimExtruder)
 {
     union()
     {
-        // The diamond
-        linear_extrude(Height)
-        {
-            FlatDiamond(Size);
+		// The diamond
+		Extruder(DiamondExtruder)
+		{
+			linear_extrude(Height)
+			{
+				FlatDiamond(Size);
+			}
         }
-        
+		
         // The rim
-        for (dd = [0 : 1.5 : 3])
-        {
-        linear_extrude(RimHeight)
-        {
-            difference()
-            {
-                FlatDiamond(Size - dd);
-                offset(delta=-RimThickness)
-                {
-                    FlatDiamond(Size - dd);
-                }
-            }
-        }
-    }
+		Extruder(RimExtruder)
+		{
+			translate([0, 0, Height])
+			{
+				for (dd = [0 : 1.5 : 3])
+				{
+					linear_extrude(RimHeight)
+					{
+						difference()
+						{
+							FlatDiamond(Size - dd);
+							offset(delta=-RimThickness)
+							{
+								FlatDiamond(Size - dd);
+							}
+						}
+					}
+				}
+			}
+		}
     }
 }
 
 /* Primary Diamonds */
-for (x = [0 : CountX - 1])
+module PrimaryDiamonds(FirstDiamondExtruder, LastDiamondExtruder, RimExtruder)
 {
-	for (y = [0 : CountY - 1])
+	for (x = [0 : CountX - 1])
 	{
-        PtX = x * SpaceX;
-		PtY = y * SpaceY;
-	
-		translate([PtX, PtY, 0])
+		for (y = [0 : CountY - 1])
 		{
-			Diamond(PrimaryDiamondSize, PrimaryDiamondHeight, PrimaryDiamondHeight+RimHeight);
+			PtX = x * SpaceX;
+			PtY = y * SpaceY;
+		
+		    DiamondExtruder = _PrimaryExtruderGrid[x][y];
+			translate([PtX, PtY, 0])
+			{
+				Diamond(PrimaryDiamondSize, PrimaryDiamondHeight, RimHeight, DiamondExtruder, RimExtruder);
+			}
 		}
 	}
 }
 
 /* Filler Diamonds */
-for (x = [0 : CountX - 1])
+module FillerDiamonds(FirstDiamondExtruder, LastDiamondExtruder, RimExtruder)
 {
-	for (y = [0 : CountY - 1])
+	for (x = [0 : CountX - 1])
 	{
-        PtX = (x * SpaceX) + (SpaceX / 2);
-		PtY = (y * SpaceY) + (SpaceY / 2);
-	
-		translate([PtX, PtY, 0])
+		for (y = [0 : CountY - 1])
 		{
-			Diamond(FillerDiamondSize, FillerDiamondHeight, FillerDiamondHeight+RimHeight);
+			PtX = (x * SpaceX) + (SpaceX / 2);
+			PtY = (y * SpaceY) + (SpaceY / 2);
+		
+		    DiamondExtruder = _FillerExtruderGrid[x][y];
+			translate([PtX, PtY, 0])
+			{
+				Diamond(FillerDiamondSize, FillerDiamondHeight, RimHeight, DiamondExtruder, RimExtruder);
+			}
 		}
 	}
 }
+
+module main()
+{
+	PrimaryDiamonds(_FirstPrimaryExtruder, _LastPrimaryExtruder, _RimExtruder);
+	FillerDiamonds(_FirstFillerExtruder, _LastFillerExtruder, _RimExtruder);
+}
+
+main();
 
