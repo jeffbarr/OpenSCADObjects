@@ -3,7 +3,17 @@
 /*
  * TODO
  *
- * Add color patterns based on X,Y modulo
+ * Color modes for primary and filler diamonds work as follows:
+ *
+ * Random - Color for each diamond is chosen at random within the range of
+ *          _FirstPrimaryDiamond to _LastPrimaryDiamond or _FirstFillerDiamond
+ *          to _LastFillerDiamond.
+ *
+ * By Row - Colors cycle row by row within the respective ranges.
+ *
+ * By Col - Colors cycle column by column within the respective ranges.
+ *
+ * Diagonal - Colors cycle diagonally within the respective ranges.
  */
  
 // Primary Diamond Size
@@ -38,6 +48,12 @@ SpaceX = 31;
 
 /* [Multiple Extruders] */
 
+// Primary diamond color mode
+_PrimaryColorMode = "Random";       // ["Random", "By Row", "By Col", "Diagonal"]
+
+// Filler diamond color mode
+_FillerColorMode = "Random";        // ["Random", "By Row", "By Col", "Diagonal"]
+
 // First primary diamond extruder
 _FirstPrimaryExtruder = 1;
 
@@ -60,6 +76,14 @@ _RandomSeed = 131313;
 _WhichExtruder = "All"; // ["All", 1, 2, 3, 4, 5]
 
 module EndCustomization(){}
+
+// Return the extruder for the given color mode
+function ExtruderForColorMode(ColorMode, X, Y, ExtruderGrid, FirstExtruder, LastExtruder) =
+    (ColorMode == "Random")   ? ExtruderGrid[X][Y] :
+    (ColorMode == "By Row")   ? FirstExtruder + Y       % (LastExtruder - FirstExtruder + 1) :  
+    (ColorMode == "By Col")   ? FirstExtruder + X       % (LastExtruder - FirstExtruder + 1) :
+    (ColorMode == "Diagonal") ? FirstExtruder + (X + Y) % (LastExtruder - FirstExtruder + 1) :
+                                -1; 
 
 // Randomize
 ZZZ = rands(0, 1, 1, _RandomSeed);
@@ -161,7 +185,7 @@ module Diamond(Size, Height, RimHeight, DiamondExtruder, RimExtruder)
 }
 
 /* Primary Diamonds */
-module PrimaryDiamonds(FirstDiamondExtruder, LastDiamondExtruder, RimExtruder)
+module PrimaryDiamonds(ColorMode, FirstDiamondExtruder, LastDiamondExtruder, RimExtruder)
 {
 	for (x = [0 : CountX - 1])
 	{
@@ -170,7 +194,10 @@ module PrimaryDiamonds(FirstDiamondExtruder, LastDiamondExtruder, RimExtruder)
 			PtX = x * SpaceX;
 			PtY = y * SpaceY;
 		
-		    DiamondExtruder = _PrimaryExtruderGrid[x][y];
+            // Choose extruder
+            DiamondExtruder = ExtruderForColorMode(ColorMode, x, y, _PrimaryExtruderGrid, FirstDiamondExtruder, LastDiamondExtruder);
+            
+            // Render primary diamond
 			translate([PtX, PtY, 0])
 			{
 				Diamond(PrimaryDiamondSize, PrimaryDiamondHeight, RimHeight, DiamondExtruder, RimExtruder);
@@ -180,7 +207,7 @@ module PrimaryDiamonds(FirstDiamondExtruder, LastDiamondExtruder, RimExtruder)
 }
 
 /* Filler Diamonds */
-module FillerDiamonds(FirstDiamondExtruder, LastDiamondExtruder, RimExtruder)
+module FillerDiamonds(ColorMode, FirstDiamondExtruder, LastDiamondExtruder, RimExtruder)
 {
 	for (x = [0 : CountX - 1])
 	{
@@ -189,7 +216,10 @@ module FillerDiamonds(FirstDiamondExtruder, LastDiamondExtruder, RimExtruder)
 			PtX = (x * SpaceX) + (SpaceX / 2);
 			PtY = (y * SpaceY) + (SpaceY / 2);
 		
-		    DiamondExtruder = _FillerExtruderGrid[x][y];
+            // Choose extruder
+            DiamondExtruder = ExtruderForColorMode(ColorMode, x + 1, y, _FillerExtruderGrid, FirstDiamondExtruder, LastDiamondExtruder);
+            
+            // Render filler diamond
 			translate([PtX, PtY, 0])
 			{
 				Diamond(FillerDiamondSize, FillerDiamondHeight, RimHeight, DiamondExtruder, RimExtruder);
@@ -200,8 +230,8 @@ module FillerDiamonds(FirstDiamondExtruder, LastDiamondExtruder, RimExtruder)
 
 module main()
 {
-	PrimaryDiamonds(_FirstPrimaryExtruder, _LastPrimaryExtruder, _RimExtruder);
-	FillerDiamonds(_FirstFillerExtruder, _LastFillerExtruder, _RimExtruder);
+	PrimaryDiamonds(_PrimaryColorMode, _FirstPrimaryExtruder, _LastPrimaryExtruder, _RimExtruder);
+	FillerDiamonds(_FillerColorMode, _FirstFillerExtruder, _LastFillerExtruder, _RimExtruder);
 }
 
 main();
