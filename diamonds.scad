@@ -35,16 +35,16 @@ RimHeight = 0.5;
 RimThickness = 0.5;
 
 // Column count
-CountX = 6;
+_CountX = 6;
 
 // Row count
-CountY = 8;
+_CountY = 8;
 
 // Row spacing
-SpaceY = 18;
+_SpaceY = 18;
 
 // Column spacing
-SpaceX = 31;
+_SpaceX = 31;
 
 /* [Multiple Extruders] */
 
@@ -91,9 +91,9 @@ ZZZ = rands(0, 1, 1, _RandomSeed);
 /* Generate random extruders/colors for primary diamonds */
 _PrimaryExtruderGrid = 
 [
-	for (x = [1 : CountX]) 
+	for (x = [1 : _CountX]) 
 		[
-			for (y = [1 : CountY])
+			for (y = [1 : _CountY])
 				floor(rands(0, 1, 1)[0] * (_LastPrimaryExtruder - _FirstPrimaryExtruder + 1)) + _FirstPrimaryExtruder
 		]
 ];
@@ -101,9 +101,9 @@ _PrimaryExtruderGrid =
 /* Generate random extruders/colors for filler diamonds */
 _FillerExtruderGrid = 
 [
-	for (x = [1 : CountX]) 
+	for (x = [1 : _CountX + 1]) 
 		[
-			for (y = [1 : CountY])
+			for (y = [1 : _CountY])
 				floor(rands(0, 1, 1)[0] * (_LastFillerExtruder - _FirstFillerExtruder + 1)) + _FirstFillerExtruder
 		]
 ];
@@ -141,8 +141,12 @@ module FlatDiamond(Size)
             circle($fn=3, r=Size);
             
             translate([-Size, 0, 0])
+			{
                 rotate([0 ,0, 60])
+				{
                     circle($fn=3, r=Size);
+				}
+			}
         }
     }  
 }
@@ -185,7 +189,7 @@ module Diamond(Size, Height, RimHeight, DiamondExtruder, RimExtruder)
 }
 
 /* Primary Diamonds */
-module PrimaryDiamonds(ColorMode, FirstDiamondExtruder, LastDiamondExtruder, RimExtruder)
+module PrimaryDiamonds(CountX, CountY, SpaceX, SpaceY, ColorMode, FirstDiamondExtruder, LastDiamondExtruder, RimExtruder)
 {
 	for (x = [0 : CountX - 1])
 	{
@@ -207,7 +211,7 @@ module PrimaryDiamonds(ColorMode, FirstDiamondExtruder, LastDiamondExtruder, Rim
 }
 
 /* Filler Diamonds */
-module FillerDiamonds(ColorMode, FirstDiamondExtruder, LastDiamondExtruder, RimExtruder)
+module FillerDiamonds(CountX, CountY, SpaceX, SpaceY, ColorMode, FirstDiamondExtruder, LastDiamondExtruder, RimExtruder)
 {
 	for (x = [0 : CountX - 1])
 	{
@@ -230,8 +234,8 @@ module FillerDiamonds(ColorMode, FirstDiamondExtruder, LastDiamondExtruder, RimE
 
 module main()
 {
-	PrimaryDiamonds(_PrimaryColorMode, _FirstPrimaryExtruder, _LastPrimaryExtruder, _RimExtruder);
-	FillerDiamonds(_FillerColorMode, _FirstFillerExtruder, _LastFillerExtruder, _RimExtruder);
+	PrimaryDiamonds(_CountX, _CountY, _SpaceX, _SpaceY, _PrimaryColorMode, _FirstPrimaryExtruder, _LastPrimaryExtruder, _RimExtruder);
+	FillerDiamonds(_CountX, _CountY, _SpaceX, _SpaceY, _FillerColorMode, _FirstFillerExtruder, _LastFillerExtruder, _RimExtruder);
 }
 
 main();
