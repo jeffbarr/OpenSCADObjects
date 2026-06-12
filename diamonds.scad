@@ -73,7 +73,7 @@ _RimExtruder = 5;
 _RandomSeed = 131313;
 
 // [Extruder to render]
-_WhichExtruder = "All"; // ["All", 1, 2, 3, 4, 5]
+_WhichExtruder = "All"; // ["All", 1, 2, 3, 4, 5, 6]
 
 module EndCustomization(){}
 
@@ -115,6 +115,7 @@ function ExtruderColor(Extruder) =
   (Extruder == 3  )   ? "blue"   : 
   (Extruder == 4  )   ? "pink"   :
   (Extruder == 5  )   ? "yellow" :
+  (Extruder == 6  )   ? "pink"   :
   (Extruder == "All") ? "orange" : 
                         "purple" ;
 
