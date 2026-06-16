@@ -19,9 +19,18 @@
  *			  QT_TOPO - Polyhedrons that meet at the edges, works best when
  *						HeightMode is HM_RANDOM.
  *
+ *
+ * ColorMode - Color mode for quads:
+ *
+ *			   CM_RANDOM - Random colors in range [FirstExtruder, LastExtruder].
+ *
+ *			   CM_RADIAL - Module radial colors in range [FirstExtruder, LastExtruder].
+ *                         This seems to look best when _Rows and _Cols are odd.
+ *
  * TODO:
- *	- Make sure that all of the randomness actually is random
  *	- Update documentation
+ *  - See if MultiExtruder is really needed
+ *  - Allow fractional RowGap and ColGap
  */
 
 /*
@@ -158,6 +167,9 @@ _LeadHeight = 0.4;		// [0.2 : 0.2 : 10]
 // Multiple extruder
 _MultiExtruder = false;
 
+// Color mode
+_ColorMode = "Random";	// ["Random", "Radial"]
+
 // first extruder
 _FirstExtruder = 1;
 
@@ -229,8 +241,8 @@ echo ("Overall size: ", _OverallWidth, _OverallDepth);
  * GridColPert - Return a value that will be used to perturb a column coordinate in the G grid
  */
  
-function GridRowPert() = round(rands(-_RowPert, _RowPert, 1)[0]);
-function GridColPert() = round(rands(-_ColPert, _ColPert, 1)[0]);
+function GridRowPert() = rands(-_RowPert, _RowPert, 1)[0];
+function GridColPert() = rands(-_ColPert, _ColPert, 1)[0];
 
  /* Build the G grid */
 G = 
@@ -280,7 +292,7 @@ for (r = [0 : _Rows])
 }
 
 /* Generate random extruders/colors */
-_ExtruderGrid = 
+_ExtruderGridRandom = 
 [
 	for (r = [1 : _Rows]) 
 		[
@@ -289,8 +301,25 @@ _ExtruderGrid =
 		]
 ];
 
-echo("Extruder Grid:");
-echo(_ExtruderGrid);
+echo("Extruder Grid Random:");
+echo(_ExtruderGridRandom);
+
+_CenterRow = floor(_Rows / 2);
+_CenterCol = floor(_Cols / 2);
+
+echo("CenterRow=", _CenterRow, ", _CenterCol=", _CenterCol);
+
+function Distance(X0, Y0, X1, Y1) = sqrt((X1 - X0) ^ 2 + (Y1 - Y0) ^ 2);
+
+/* Generate radial extruders/colors */
+_ExtruderGridRadial =
+[
+	for (r = [0 : _Rows - 1]) 
+		[
+			for (c = [0 : _Cols - 1])
+			    (round(Distance(_CenterRow, _CenterCol, r, c)) % (_LastExtruder - _FirstExtruder + 1)) + _FirstExtruder
+		]
+];
 
 /*
  * Names of the X_BL (Bottom Left) define the four corners of the rectangle:
@@ -372,7 +401,7 @@ module RenderQuadTopo(PolyPoints, PolyFaces, QuadExtruder)
 }
 
 /* Render the grid of quadrilaterals */
-module RenderQuadGrid(Rows, Cols, QuadType, HeightMode, RectWidth, RectDepth, RectRowGap, RectColGap, RowPert, ColPert, QuadHeight, HeightInc, Heights, TaperTopScale, MultiExtruder, SingleExtruder, RimExtruder, RenderRim, RimHeight, RimThickness)
+module RenderQuadGrid(Rows, Cols, QuadType, HeightMode, RectWidth, RectDepth, RectRowGap, RectColGap, RowPert, ColPert, QuadHeight, HeightInc, Heights, TaperTopScale, ColorMode, MultiExtruder, SingleExtruder, RimExtruder, RenderRim, RimHeight, RimThickness)
 {
 	for (r = [0 : Rows - 1])
 	{
@@ -408,8 +437,12 @@ module RenderQuadGrid(Rows, Cols, QuadType, HeightMode, RectWidth, RectDepth, Re
 				(HeightMode == "HM_RANDOM") ? QuadHeight + floor(rands(0, Heights, 1)[0]) * HeightInc :
 				0;
 			
-			// If MultiExtruder is specified use the pert-quad color from _ExtruderGrid, otherwise use the given single extruder
-			QuadExtruder = MultiExtruder ? _ExtruderGrid[r][c] : SingleExtruder;
+			// If MultiExtruder is specified use the pert-quad color from _ExtruderGridRandom or _ExtruderGridRadial per 
+			// ColorMode, otherwise use the given single extruder:
+			QuadExtruder = 
+			  (MultiExtruder && ColorMode == "Random") ? _ExtruderGridRandom[r][c] :
+			  (MultiExtruder && ColorMode == "Radial") ? _ExtruderGridRadial[r][c] :
+						                                 SingleExtruder;
 
 			/* Generate quad based on QuadType */
 			if (QuadType == "QT_VERT")
@@ -485,9 +518,9 @@ module RenderQuadBase(Rows, Cols, RectWidth, RectDepth, RectRowGap, RectColGap, 
 	}
 }
 
-module main(Rows, Cols, QuadType, HeightMode, RectWidth, RectDepth, RectRowGap, RectColGap, RowPert, ColPert, QuadHeight, HeightInc, Heights, TaperTopScale, MultiExtruder, RimExtruder, RenderRim, RimHeight, RimThickness, RenderBase, BaseHeight, BaseMargin, BaseExtruder, RenderLead, LeadHeight, LeadExtruder)
+module main(Rows, Cols, QuadType, HeightMode, RectWidth, RectDepth, RectRowGap, RectColGap, RowPert, ColPert, QuadHeight, HeightInc, Heights, TaperTopScale, ColorMode, MultiExtruder, RimExtruder, RenderRim, RimHeight, RimThickness, RenderBase, BaseHeight, BaseMargin, BaseExtruder, RenderLead, LeadHeight, LeadExtruder)
 {
-	RenderQuadGrid(Rows, Cols, QuadType, HeightMode, RectWidth, RectDepth, RectRowGap, RectColGap, RowPert, ColPert, QuadHeight, HeightInc, Heights, TaperTopScale, MultiExtruder, 1, RimExtruder, RenderRim, RimHeight, RimThickness);
+	RenderQuadGrid(Rows, Cols, QuadType, HeightMode, RectWidth, RectDepth, RectRowGap, RectColGap, RowPert, ColPert, QuadHeight, HeightInc, Heights, TaperTopScale, ColorMode, MultiExtruder, 1, RimExtruder, RenderRim, RimHeight, RimThickness);
 	
 	if (RenderBase)
 	{
@@ -515,10 +548,10 @@ module main(Rows, Cols, QuadType, HeightMode, RectWidth, RectDepth, RectRowGap, 
 			
 			// With holes cut out for the quad grid
 			{
-				RenderQuadGrid(Rows, Cols, QuadType, "HM_FIXED", RectWidth, RectDepth, RectRowGap, RectColGap, RowPert, ColPert, LeadHeight, HeightInc, Heights, TaperTopScale, false, "All", RimExtruder, RenderRim, RimHeight, RimThickness);
+				RenderQuadGrid(Rows, Cols, QuadType, "HM_FIXED", RectWidth, RectDepth, RectRowGap, RectColGap, RowPert, ColPert, LeadHeight, HeightInc, Heights, TaperTopScale, ColorMode, false, "All", RimExtruder, RenderRim, RimHeight, RimThickness);
 			}
 		}
 	}
 }
 
-main(_Rows, _Cols, _QuadType, _HeightMode, _RectWidth, _RectDepth, _RectRowGap, _RectColGap, _RowPert, _ColPert, _QuadHeight, _HeightInc, _Heights, _TaperTopScale, _MultiExtruder, _RimExtruder, _RenderRim, _RimHeight, _RimThickness, _RenderBase, _BaseHeight, _BaseMargin, _BaseExtruder, _RenderLead, _LeadHeight, _LeadExtruder);
+main(_Rows, _Cols, _QuadType, _HeightMode, _RectWidth, _RectDepth, _RectRowGap, _RectColGap, _RowPert, _ColPert, _QuadHeight, _HeightInc, _Heights, _TaperTopScale, _ColorMode, _MultiExtruder, _RimExtruder, _RenderRim, _RimHeight, _RimThickness, _RenderBase, _BaseHeight, _BaseMargin, _BaseExtruder, _RenderLead, _LeadHeight, _LeadExtruder);
