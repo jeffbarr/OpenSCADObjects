@@ -30,7 +30,6 @@
  * TODO:
  *	- Update documentation
  *  - See if MultiExtruder is really needed
- *  - Allow fractional RowGap and ColGap
  */
 
 /*
@@ -82,10 +81,10 @@ _RectDepth = 15;
  */
 
 // Gap between each row of rectangles
-_RectRowGap = 2;
+_RectRowGap = 1.0;		// [0.1 : 0.1 : 10]
 
 // Gap between each column of rectangles
-_RectColGap = 2;
+_RectColGap = 2;		// [0.1 : 0.1 : 10]
 
 /* 
  * Define amount of perturbation per rectangle, this is -/+, so the 
