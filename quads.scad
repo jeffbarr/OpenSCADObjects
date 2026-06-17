@@ -98,6 +98,12 @@ _RowPert = 8;
 // Max perturbation between columns
 _ColPert = 8;
 
+// Scale row perturbation
+_ScaleRowPert = false;
+
+// Scale columm perturbation
+_ScaleColPert = false;
+
 /* 
  * Set height mode:
  */
@@ -243,6 +249,18 @@ echo ("Overall size: ", _OverallWidth, _OverallDepth);
 function GridRowPert() = rands(-_RowPert, _RowPert, 1)[0];
 function GridColPert() = rands(-_ColPert, _ColPert, 1)[0];
 
+/*
+ * The following two functions return scaling (0 - 1) for row or column
+ * perturbation to allow for gradually increasing amounts of disorder.
+ *
+ *
+ * GridRowPertScale - Return scaling (0 - 1) as row goes from 0 to _Rows - 1
+ * GridColPertScale - Return scaling (0 - 1) as col goes from 0 to _Cols - 1
+ */
+ 
+ function GridRowPertScale(r, c) = _ScaleRowPert ? (c / (_Cols - 1)) : 1.0;
+ function GridColPertScale(r, c) = _ScaleColPert ? (r / (_Rows - 1)) : 1.0;
+
  /* Build the G grid */
 G = 
 [
@@ -253,7 +271,7 @@ G =
 			[0, 0],
 			for (c = [1 : _Cols - 1])
 				[
-					GridRowPert(), GridColPert()
+					GridRowPert() * GridRowPertScale(r -1, c - 1), GridColPert() * GridColPertScale(r - 1, c - 1)
 				],
 			[0, 0]				
 		],
