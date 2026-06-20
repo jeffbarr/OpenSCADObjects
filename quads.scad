@@ -99,10 +99,10 @@ _RowPert = 8;
 _ColPert = 8;
 
 // Scale row perturbation
-_ScaleRowPert = false;
+_ScaleRowPert = "None";		// ["None", "Start", "Center"]
 
 // Scale columm perturbation
-_ScaleColPert = false;
+_ScaleColPert = "None";		// ["None", "Start", "Center"]
 
 /* 
  * Set height mode:
@@ -251,17 +251,30 @@ function GridColPert() = rands(-_ColPert, _ColPert, 1)[0];
 
 /*
  * The following two functions return scaling (0 - 1) for row or column
- * perturbation to allow for gradually increasing amounts of disorder.
+ * perturbation to allow for gradually increasing amounts of disorder. There
+ * are three options, based on _ScaleRowPert/_ScaleColPert:
  *
+ * "None"		- No scaling.
  *
- * GridRowPertScale - Return scaling (0 - 1) as row goes from 0 to _Rows - 1
- * GridColPertScale - Return scaling (0 - 1) as col goes from 0 to _Cols - 1
+ * "Start"		- 0 1 as row or col goes from 0 to end of row (_Rows) or column (_Cols)
+ *
+ * "Center"		- 0 to 1 starting from center/midpoint.
+ *
  */
  
- function GridRowPertScale(r, c) = _ScaleRowPert ? (c / (_Cols - 1)) : 1.0;
- function GridColPertScale(r, c) = _ScaleColPert ? (r / (_Rows - 1)) : 1.0;
-
- /* Build the G grid */
+ function GridRowPertScale(r, c) =
+	(_ScaleRowPert == "None")   ? 1.0                                  :
+	(_ScaleRowPert == "Start")  ? (r - 1) / _Rows                      :
+	(_ScaleRowPert == "Center") ? abs(r - 1 - _Rows / 2) / (_Rows / 2) :
+                                  0;
+								  
+ function GridColPertScale(r, c) =
+	(_ScaleColPert == "None")   ? 1.0                                  :
+	(_ScaleColPert == "Start")  ? (c - 1)/ _Cols                       :
+    (_ScaleColPert == "Center") ? abs(c - 1 - _Cols / 2) / (_Cols / 2) :
+                                  0;
+ 
+/* Build the G grid */
 G = 
 [
 	[for (c = [0 : _Cols]) [ 0, 0]],
@@ -271,7 +284,7 @@ G =
 			[0, 0],
 			for (c = [1 : _Cols - 1])
 				[
-					GridRowPert() * GridRowPertScale(r -1, c - 1), GridColPert() * GridColPertScale(r - 1, c - 1)
+					GridRowPert() * GridRowPertScale(r, c), GridColPert() * GridColPertScale(r, c)
 				],
 			[0, 0]				
 		],
