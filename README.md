@@ -8,6 +8,7 @@ Here's a review of each one:
 * [dentist_square.scad](https://github.com/jeffbarr/OpenSCADObjects#dentist_squarescad)
 * [diamonds.scad](https://github.com/jeffbarr/OpenSCADObjects#diamondsscad)
 * [fan_blades.scad]
+* [flexi_arcs.scad]
 * [growing_quads.scad]
 * [hexagons_framed.scad]
 * [impossible_ring.scad](https://github.com/jeffbarr/OpenSCADObjects#impossible_ringscad)
