@@ -7,6 +7,9 @@
 // - Option to color like a checkerboard
 // - Generalize to use polygons instead of circles
 // - Recursive pattern on corners
+//
+// - Cornered ring:
+//   Add patterns for center, or recursive
 
 /* [Ring] */
 
@@ -33,6 +36,9 @@ _InnerToOuter = 4;
 
 // Arc inset
 _ArcInset = 0.4;		// [0.2 : 0.1 : 10]
+
+// Ring style
+_RingStyle = "Centered";		// ["Centered", "Cornered"]
 
 /* [Base] */
 
@@ -354,7 +360,62 @@ _Extruders = object
 				CornerExtruder = _CornerExtruder
 			);
 
-main(_CenterRadius, _RingCount, _RingWidth, _ArcInset, _Height, _InnerToOuter, _OuterStepDegrees, _InnerStepDegrees, _RenderBase, _BaseHeight, _BaseOutset, _RenderRim, _RimCount, _RimSpacing, _RimHeight, _RimThickness, _RenderCorners, _CornerOutset, _Extruders);
+// Render ring centered
+if (_RingStyle == "Centered")
+{
+	// Centered ring
+	main(_CenterRadius, _RingCount, _RingWidth, _ArcInset, _Height, _InnerToOuter, _OuterStepDegrees, _InnerStepDegrees, _RenderBase, _BaseHeight, _BaseOutset, _RenderRim, _RimCount, _RimSpacing, _RimHeight, _RimThickness, _RenderCorners, _CornerOutset, _Extruders);
+}
+
+// Render ring broken into 4 quadrants, mapped to corners
+if (_RingStyle == "Cornered")
+{
+	// Compute sizes
+	Diameter = 2 * (_CenterRadius + _RingCount * _RingWidth);
+	BaseDiameter = Diameter + _BaseOutset;
+	BaseRadius = BaseDiameter / 2;
+
+	//
+	// Set up translations to render quadrants in corners:
+	//
+	//	[0]	- Q1 in Q3
+	//	[1] - Q3 in Q1
+	//	[2] - Q4 in Q2
+	//	[3] - Q4 in Q2
+	//
+	
+	MainTranslation =
+	[
+		[-BaseRadius, 	-BaseRadius],
+		[BaseRadius, 	 BaseRadius],
+		[-BaseRadius, 	 BaseRadius],
+		[BaseRadius, 	-BaseRadius]
+	];
+	
+	CubeTranslation =
+	[
+		[-BaseRadius, 	-BaseRadius],
+		[0,				 0],
+		[-BaseRadius, 	 0],
+		[0, 			-BaseRadius]
+	];
+	
+	for (Q = [0 : 3])
+	{
+		intersection()
+		{
+			translate([MainTranslation[Q][0], MainTranslation[Q][1], 0])
+			{
+				main(_CenterRadius, _RingCount, _RingWidth, _ArcInset, _Height, _InnerToOuter, _OuterStepDegrees, _InnerStepDegrees, _RenderBase, _BaseHeight, _BaseOutset, _RenderRim, _RimCount, _RimSpacing, _RimHeight, _RimThickness, _RenderCorners, _CornerOutset, _Extruders);
+			}
+			
+			translate([CubeTranslation[Q][0], CubeTranslation[Q][1], -_BaseHeight])
+			{
+				cube([BaseRadius, BaseRadius, 99], center=false);
+			}
+		}
+	}
+}
 
 // DEBUGGING
 //RenderArc(30, 60, 0, 90, _Height, _RenderRim, _RimCount, _RimSpacing, _RimHeight, _RimThickness);
