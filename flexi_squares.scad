@@ -1,8 +1,17 @@
 // flexi_squares.scad
 //
-// From 8 segments to 16?
+// Nested squares divided into either eight Octants or sixteen Hexants
+// with optional rim and base.
+//
+// TODO:
+//	- Generalize naming - Octants should be sectors, rings should be tracks
+//	- Add outset around base
+//  - Add rim that is solid inset of shape
 
 /* [Flexi Square] */
+
+// Ant type
+_AntType = "Octants";		// ["Octants", "Hexants"]
 
 // Center length
 _CenterLength = 20;
@@ -80,7 +89,11 @@ function ExtruderColor(Extruder) =
 
 module EndCustomization(){}
 
-// OctantMatrix is used to rotate a triangle into the proper octant (1-8)
+//
+// OctantMatrix is used to rotate a triangle into the proper octant or hexant. 
+// It is indexed directly for octants, and with index/2 for hexants.
+//
+
 OctantMatrix =
 [
 	[	// 0 - Identity
@@ -184,38 +197,75 @@ module RenderCenter(SideLength, CenterLength, CenterHeight, CenterExtruder)
 }
 
 // 
-// Render an octant (1 - 8)
+// Render an octant:
+//	(1 - 8)  for AntType == "Octants"
+//	(1 - 16) for AntType == "Hexants" 
 //
 
-module RenderOctant2D(Octant, SideLength)
+function IndexForOctantMatrix(AntType, Octant)= 
+  (AntType == "Octants") ? Octant -1               :
+  (AntType == "Hexants") ? floor((Octant - 1) / 2) :
+			               99;
+													
+module RenderOctant2D(AntType, Octant, SideLength)
 {
+	// Points to define an octant in the first quadrant
+	OctantPoints = 
+	[
+		[0,				 	0],
+		[SideLength / 2,	0],
+		[SideLength / 2, 	SideLength / 2]
+	];
+
+	// Points to define a hexant with an even index, in the first quadrant
+	HexantPointsEven =
+	[
+		[0,					0],
+		[SideLength / 2,	0],
+		[SideLength / 2,	SideLength / 4]
+	];
+	
+	// Points to define a hexant with an odd index, in the first quadrant
+	HexantPointsOdd =
+	[
+		[0,					0],
+		[SideLength / 2,	SideLength / 4],
+		[SideLength / 2,	SideLength / 2]
+	];
+
+	// Get index for matrix
+	Index = IndexForOctantMatrix(AntType, Octant);
+			 
+	// Choose points for polygon that defines octant
+	Points = 
+		(AntType == "Octants")                              ? OctantPoints     :
+		(AntType == "Hexants" && (((Octant - 1) % 2) == 0)) ? HexantPointsEven :
+		(AntType == "Hexants" && (((Octant - 1) % 2) != 0)) ? HexantPointsOdd  :
+		                                                      99;
+			
 	translate([SideLength / 2, SideLength / 2, 0])
 	{
-		OctantPoints = 
-		[
-			[0,				 	0],
-			[SideLength / 2,	0],
-			[SideLength / 2, 	SideLength / 2]
-		];
-	
-		multmatrix(OctantMatrix[Octant - 1])
+		multmatrix(OctantMatrix[Index])
 		{
-			polygon(OctantPoints);
+			polygon(Points);
 		}
 	}
 }
 
-module RenderOctantSegment2D(Octant, Segment, SideLength, CenterLength, SegmentWidth, SegmentInset)
+module RenderOctantSegment2D(AntType, Octant, Segment, SideLength, CenterLength, SegmentWidth, SegmentInset)
 {
 	offset(delta=-SegmentInset)
 	{
 		intersection()
 		{
-			RenderOctant2D(Octant, SideLength);
+			RenderOctant2D(AntType, Octant, SideLength);
 			
 			translate([SideLength / 2, SideLength / 2, 0])
 			{
-				multmatrix(OctantMatrix[Octant - 1])
+				// Get index for matrix
+				Index = IndexForOctantMatrix(AntType, Octant);
+
+				multmatrix(OctantMatrix[Index])
 				{
 					translate([CenterLength / 2 + (Segment - 1) * SegmentWidth, 0, 0])
 					{
@@ -227,8 +277,8 @@ module RenderOctantSegment2D(Octant, Segment, SideLength, CenterLength, SegmentW
 	}
 }
 
-// Render a segment (1-N) of an octant (1-8)
-module RenderOctantSegment(Octant, Segment, SideLength, CenterLength, SegmentWidth, SegmentHeight, SegmentInset, SegmentExtruder)
+// Render a segment (1-N) of an octant (1-8) or hexant (1-16)
+module RenderOctantSegment(AntType, Octant, Segment, SideLength, CenterLength, SegmentWidth, SegmentHeight, SegmentInset, SegmentExtruder)
 {
 	Extruder(SegmentExtruder)
 	{
@@ -236,7 +286,7 @@ module RenderOctantSegment(Octant, Segment, SideLength, CenterLength, SegmentWid
 		{
 			offset(delta=-SegmentInset)
 			{
-				RenderOctantSegment2D(Octant, Segment, SideLength, CenterLength, SegmentWidth, SegmentInset);
+				RenderOctantSegment2D(AntType, Octant, Segment, SideLength, CenterLength, SegmentWidth, SegmentInset);
 			}
 		}
 	}
@@ -265,7 +315,7 @@ module RenderChildAsRims(RimHeight, RimCount, RimSpacing, RimThickness)
 	}
 }
 
-module RenderOctantSegmentRim(Octant, Segment, SideLength, CenterLength, SegmentWidth, SegmentHeight, SegmentInset, RimHeight, RimThickness, RimCount, RimSpacing, RimExtruder)
+module RenderOctantSegmentRim(AntType, Octant, Segment, SideLength, CenterLength, SegmentWidth, SegmentHeight, SegmentInset, RimHeight, RimThickness, RimCount, RimSpacing, RimExtruder)
 {
 	Extruder(RimExtruder)
 	{
@@ -275,7 +325,7 @@ module RenderOctantSegmentRim(Octant, Segment, SideLength, CenterLength, Segment
 			{
 				RenderChildAsRims(RimHeight, RimCount, RimSpacing, RimThickness)
 				{
-					RenderOctantSegment2D(Octant, Segment, SideLength, CenterLength, SegmentWidth, SegmentInset);
+					RenderOctantSegment2D(AntType, Octant, Segment, SideLength, CenterLength, SegmentWidth, SegmentInset);
 				}
 			}
 		}
@@ -287,7 +337,7 @@ function ExtruderForOctantSegment(Oct, Seg, ColorMode, FirstExtruder, LastExtrud
 (ColorMode == "Rings") ? FirstExtruder + (Seg - 1) % (LastExtruder - FirstExtruder + 1) :
                          99;
 
-module main(SideLength, CenterLength, RenderBase, BaseHeight, BaseExtruder, CenterExtruder, SegmentCount, SegmentWidth, SegmentHeight, SegmentInset, ColorMode, FirstSegmentExtruder, LastSegmentExtruder, RenderRim, RimHeight, RimThickness, RimCount, RimSpacing, RimExtruder)
+module main(AntType, SideLength, CenterLength, RenderBase, BaseHeight, BaseExtruder, CenterExtruder, SegmentCount, SegmentWidth, SegmentHeight, SegmentInset, ColorMode, FirstSegmentExtruder, LastSegmentExtruder, RenderRim, RimHeight, RimThickness, RimCount, RimSpacing, RimExtruder)
 {
 	echo("SideLength=", _SideLength);
 	
@@ -320,21 +370,26 @@ module main(SideLength, CenterLength, RenderBase, BaseHeight, BaseExtruder, Cent
 		}
 	}
 	
+	OctCount = (AntType == "Octants") ? 8  :
+	           (AntType == "Hexants") ? 16 :
+			                            99;
+
 	// Render segments
-	for (Oct = [1 : 8])
+	// NB to fix, Oct/Octant is not the best prefix now that this also does Hexants
+	for (Oct = [1 : OctCount])
 	{
 		for (Seg = [1 : SegmentCount])
 		{
 			SegmentExtruder = ExtruderForOctantSegment(Oct, Seg, ColorMode, FirstSegmentExtruder, LastSegmentExtruder);
 			
-			RenderOctantSegment(Oct, Seg, SideLength, CenterLength, SegmentWidth, SegmentHeight, SegmentInset, SegmentExtruder);
+			RenderOctantSegment(AntType, Oct, Seg, SideLength, CenterLength, SegmentWidth, SegmentHeight, SegmentInset, SegmentExtruder);
 			
 			if (RenderRim)
 			{
-				RenderOctantSegmentRim(Oct, Seg, SideLength, CenterLength, SegmentWidth, SegmentHeight, SegmentInset, RimHeight, RimThickness, RimCount, RimSpacing, RimExtruder);
+				RenderOctantSegmentRim(AntType, Oct, Seg, SideLength, CenterLength, SegmentWidth, SegmentHeight, SegmentInset, RimHeight, RimThickness, RimCount, RimSpacing, RimExtruder);
 			}
 		}
 	}
 }
 
-main(_SideLength, _CenterLength, _RenderBase, _BaseHeight, _BaseExtruder, _CenterExtruder, _SegmentCount, _SegmentWidth, _SegmentHeight, _SegmentInset, _ColorMode, _FirstSegmentExtruder, _LastSegmentExtruder, _RenderRim, _RimHeight, _RimThickness, _RimCount, _RimSpacing, _RimExtruder);
+main(_AntType, _SideLength, _CenterLength, _RenderBase, _BaseHeight, _BaseExtruder, _CenterExtruder, _SegmentCount, _SegmentWidth, _SegmentHeight, _SegmentInset, _ColorMode, _FirstSegmentExtruder, _LastSegmentExtruder, _RenderRim, _RimHeight, _RimThickness, _RimCount, _RimSpacing, _RimExtruder);
