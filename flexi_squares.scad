@@ -284,10 +284,7 @@ module RenderOctantSegment(AntType, Octant, Segment, SideLength, CenterLength, S
 	{
 		linear_extrude(SegmentHeight)
 		{
-			offset(delta=-SegmentInset)
-			{
-				RenderOctantSegment2D(AntType, Octant, Segment, SideLength, CenterLength, SegmentWidth, SegmentInset);
-			}
+			RenderOctantSegment2D(AntType, Octant, Segment, SideLength, CenterLength, SegmentWidth, SegmentInset);
 		}
 	}
 }
