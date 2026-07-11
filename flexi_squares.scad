@@ -370,20 +370,34 @@ module main(AntType, SideLength, CenterLength, RenderBase, BaseHeight, BaseExtru
 	OctCount = (AntType == "Octants") ? 8  :
 	           (AntType == "Hexants") ? 16 :
 			                            99;
+										
+	// This map compensates for some self-inflicted strangeness in how the octant values map to positions
+	HexantMap = 
+	[
+		0,
+		1,   2,  4,  3,
+		5,   6,  8,  7,
+	    9,  10, 12, 11,
+		13, 14, 16, 15
+	];
 
 	// Render segments
 	// NB to fix, Oct/Octant is not the best prefix now that this also does Hexants
-	for (Oct = [1 : OctCount])
+	for (Oct = [1 : 16])
 	{
 		for (Seg = [1 : SegmentCount])
 		{
-			SegmentExtruder = ExtruderForOctantSegment(Oct, Seg, ColorMode, FirstSegmentExtruder, LastSegmentExtruder);
+			MappedOct = (AntType == "Octants") ? Oct            :
+			            (AntType == "Hexants") ? HexantMap[Oct] :
+						                         99;
+
+			SegmentExtruder = ExtruderForOctantSegment(MappedOct, Seg, ColorMode, FirstSegmentExtruder, LastSegmentExtruder);
 			
-			RenderOctantSegment(AntType, Oct, Seg, SideLength, CenterLength, SegmentWidth, SegmentHeight, SegmentInset, SegmentExtruder);
+			RenderOctantSegment(AntType, MappedOct, Seg, SideLength, CenterLength, SegmentWidth, SegmentHeight, SegmentInset, SegmentExtruder);
 			
 			if (RenderRim)
 			{
-				RenderOctantSegmentRim(AntType, Oct, Seg, SideLength, CenterLength, SegmentWidth, SegmentHeight, SegmentInset, RimHeight, RimThickness, RimCount, RimSpacing, RimExtruder);
+				RenderOctantSegmentRim(AntType, MappedOct, Seg, SideLength, CenterLength, SegmentWidth, SegmentHeight, SegmentInset, RimHeight, RimThickness, RimCount, RimSpacing, RimExtruder);
 			}
 		}
 	}
