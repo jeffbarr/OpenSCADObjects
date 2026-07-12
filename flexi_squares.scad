@@ -4,7 +4,6 @@
 // with optional rim and base.
 //
 // TODO:
-//	- Cannot render center extruder if center is non-zero - render center rim as 3D not 2D, 365
 //	- Generalize naming - Octants should be sectors, rings should be tracks
 //	- Add outset around base
 //  - Add rim that is solid inset of shape
@@ -360,9 +359,12 @@ module main(AntType, SideLength, CenterLength, RenderBase, BaseHeight, BaseExtru
 			{
 				translate([0, 0, SegmentHeight])
 				{
-					RenderChildAsRims(RimHeight, RimCount, RimSpacing, RimThickness)
+					linear_extrude(RimHeight)
 					{
-						//RenderCenter2D(SideLength, CenterLength - RimSpacing);
+						RenderChildAsRims(RimHeight, RimCount, RimSpacing, RimThickness)
+						{
+							RenderCenter2D(SideLength, CenterLength - RimSpacing);
+						}
 					}
 				}
 			}
