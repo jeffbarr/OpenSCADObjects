@@ -4,6 +4,7 @@
 // with optional rim and base.
 //
 // TODO:
+//	- Cannot render center extruder if center is non-zero - render center rim as 3D not 2D, 365
 //	- Generalize naming - Octants should be sectors, rings should be tracks
 //	- Add outset around base
 //  - Add rim that is solid inset of shape
@@ -58,7 +59,7 @@ _RimSpacing = 1.0;		//[0.2 : 0.1 : 10]
 /* [Extruders] */
 
 // Extruder color mode
-_ColorMode = "Rings";	// ["Rings", "Rays"]
+_ColorMode = "Rings";	// ["Rings", "Rays", "Spiral"]
 
 // First segment extruder
 _FirstSegmentExtruder = 1;
@@ -330,8 +331,9 @@ module RenderOctantSegmentRim(AntType, Octant, Segment, SideLength, CenterLength
 }
 
 function ExtruderForOctantSegment(Oct, Seg, ColorMode, FirstExtruder, LastExtruder) =
-(ColorMode == "Rays")  ? FirstExtruder + (Oct - 1) % (LastExtruder - FirstExtruder + 1) :
-(ColorMode == "Rings") ? FirstExtruder + (Seg - 1) % (LastExtruder - FirstExtruder + 1) :
+(ColorMode == "Rays")  ? FirstExtruder + (Oct - 1) % (LastExtruder - FirstExtruder + 1)                :
+(ColorMode == "Rings") ? FirstExtruder + (Seg - 1) % (LastExtruder - FirstExtruder + 1)                :
+(ColorMode == "Spiral") ? FirstExtruder + ((Seg - 1) + (Oct - 1)) % (LastExtruder - FirstExtruder + 1) :
                          99;
 
 module main(AntType, SideLength, CenterLength, RenderBase, BaseHeight, BaseExtruder, CenterExtruder, SegmentCount, SegmentWidth, SegmentHeight, SegmentInset, ColorMode, FirstSegmentExtruder, LastSegmentExtruder, RenderRim, RimHeight, RimThickness, RimCount, RimSpacing, RimExtruder)
@@ -360,7 +362,7 @@ module main(AntType, SideLength, CenterLength, RenderBase, BaseHeight, BaseExtru
 				{
 					RenderChildAsRims(RimHeight, RimCount, RimSpacing, RimThickness)
 					{
-						RenderCenter2D(SideLength, CenterLength - RimSpacing);
+						//RenderCenter2D(SideLength, CenterLength - RimSpacing);
 					}
 				}
 			}
@@ -391,8 +393,8 @@ module main(AntType, SideLength, CenterLength, RenderBase, BaseHeight, BaseExtru
 			            (AntType == "Hexants") ? HexantMap[Oct] :
 						                         99;
 
-			SegmentExtruder = ExtruderForOctantSegment(MappedOct, Seg, ColorMode, FirstSegmentExtruder, LastSegmentExtruder);
-			
+			SegmentExtruder = ExtruderForOctantSegment(Oct, Seg, ColorMode, FirstSegmentExtruder, LastSegmentExtruder);
+
 			RenderOctantSegment(AntType, MappedOct, Seg, SideLength, CenterLength, SegmentWidth, SegmentHeight, SegmentInset, SegmentExtruder);
 			
 			if (RenderRim)
