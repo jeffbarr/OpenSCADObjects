@@ -18,6 +18,7 @@ Here's a review of each one:
 * [nodes_edges.scad](https://github.com/jeffbarr/OpenSCADObjects#nodes_edgesscad)
 * [nodes_graph.scad](https://github.com/jeffbarr/OpenSCADObjects#nodes_graphscad)
 * [polygon.scad]
+* [pog_bin_strip.scad]
 * [pride_hearts.scad](https://github.com/jeffbarr/OpenSCADObjects/blob/main/pride_hearts.scad)
 * [quads.scad](https://github.com/jeffbarr/OpenSCADObjects#quadsscad)
 * [rhombitrihexagon.scad](https://github.com/jeffbarr/OpenSCADObjects#rhombitrihexagonscad)
