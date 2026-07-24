@@ -78,9 +78,9 @@ module RenderBin(BinWidth, BinDepth, BinHeight, BinWallThickness, BinFloorThickn
 		{
 			cube([BinWidth, BinDepth, BinHeight], center=false);
 			
-			translate([BinWallThickness, BinWallThickness, 0])
+			translate([BinWallThickness, BinWallThickness, BinWallThickness])
 			{
-				cube([BinWidth - (2 * BinWallThickness), BinDepth - (2 * BinWallThickness), BinHeight + .1], center=false);
+				cube([BinWidth - (2 * BinWallThickness), BinDepth - (2 * BinWallThickness), BinHeight - BinWallThickness + .1], center=false);
 			}
 		}
 	}
@@ -88,7 +88,7 @@ module RenderBin(BinWidth, BinDepth, BinHeight, BinWallThickness, BinFloorThickn
 	// Render bin floor
 	Extruder(BinFloorExtruder)
 	{
-		translate([BinWallThickness, BinWallThickness, 0])
+		translate([BinWallThickness, BinWallThickness, BinWallThickness])
 		{
 			cube([BinWidth - (2 * BinWallThickness), BinDepth - (2 * BinWallThickness), BinFloorThickness], center=false);
 		}
