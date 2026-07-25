@@ -3,8 +3,8 @@
 // A strip of open bins with varied floor colors
 //
 // TODO:
-// - Collapsing top
 // - Interlocking hinges?
+// - Add more linear extrude options
 //
 
 /* [Bins] */
@@ -29,6 +29,9 @@ _BinWallThickness = 0.4;
 
 // Floor thickness
 _BinFloorThickness = 0.4;
+
+// Scaling
+_BinScale = 1.0;	// [0.0 : 0.1 : 2.0]
 
 /* [Extruders] */
 
@@ -69,33 +72,69 @@ module Extruder(DoExtruder)
    }
 }
 
-module RenderBin(BinWidth, BinDepth, BinHeight, BinWallThickness, BinFloorThickness, BinWallExtruder, BinFloorExtruder)
+//
+// RenderHollowBin -
+//
+// 	Render hollow bin with sub-floor. This looks needlessly complex, but starting with a 2D
+// 	square and extruding it opens the door to the eventual use of all of the variations made
+// 	possible by linear_extrude.
+//
+
+module RenderHollowBin(BinWidth, BinDepth, BinHeight, BinWallThickness, BinScale, BinExtruder)
 {
-	// Render a hollow bin
-	Extruder(BinWallExtruder)
+	Extruder(BinExtruder)
 	{
-		difference()
+		cube([BinWidth, BinDepth, BinWallThickness], center=false);
+				
+		translate([BinWidth / 2, BinDepth / 2, BinWallThickness])
 		{
-			cube([BinWidth, BinDepth, BinHeight], center=false);
-			
-			translate([BinWallThickness, BinWallThickness, BinWallThickness])
+			linear_extrude(BinHeight, scale=BinScale)
 			{
-				cube([BinWidth - (2 * BinWallThickness), BinDepth - (2 * BinWallThickness), BinHeight - BinWallThickness + .1], center=false);
+				translate([-BinWidth / 2, -BinDepth / 2, 0])
+				{
+					difference()
+					{
+						// Outer wall
+						square([BinWidth, BinDepth], center=false);
+			
+						// Inner wall
+						translate([BinWallThickness, BinWallThickness, 0])
+						{
+							square([BinWidth - (2 * BinWallThickness), BinDepth - (2 * BinWallThickness)], center=false);
+						}
+					}
+				}
 			}
-		}
-	}
-	
-	// Render bin floor
-	Extruder(BinFloorExtruder)
-	{
-		translate([BinWallThickness, BinWallThickness, BinWallThickness])
-		{
-			cube([BinWidth - (2 * BinWallThickness), BinDepth - (2 * BinWallThickness), BinFloorThickness], center=false);
 		}
 	}
 }
 
-module RenderBinStrip(BinCount, BinSpacing, BinWidth, BinDepth, BinHeight, BinWallThickness, BinFloorThickness, BinWallExtruder, FirstBinFloorExtruder, LastBinFloorExtruder)
+module RenderBin(BinWidth, BinDepth, BinHeight, BinWallThickness, BinFloorThickness, BinScale, BinWallExtruder, BinFloorExtruder)
+{
+	// Sides and sub-floor
+	RenderHollowBin(BinWidth, BinDepth, BinHeight, BinWallThickness, BinScale, BinWallExtruder);
+	
+	// Render bin floor, taking care to clip it so that it does not portrude through the sides
+	{
+		intersection()
+		{
+			translate([BinWallThickness, BinWallThickness, BinWallThickness])
+			{
+				Extruder(BinFloorExtruder)
+				{
+					cube([BinWidth - (2 * BinWallThickness), BinDepth - (2 * BinWallThickness), BinFloorThickness], center=false);
+				}
+			}
+			
+			hull()
+			{
+				RenderHollowBin(BinWidth, BinDepth, BinHeight, BinWallThickness, BinScale, BinFloorExtruder);
+			}
+		}
+	}
+}
+
+module RenderBinStrip(BinCount, BinSpacing, BinWidth, BinDepth, BinHeight, BinWallThickness, BinFloorThickness, BinScale, BinWallExtruder, FirstBinFloorExtruder, LastBinFloorExtruder)
 {
 	for (B = [0 : BinCount - 1])
 	{
@@ -105,14 +144,14 @@ module RenderBinStrip(BinCount, BinSpacing, BinWidth, BinDepth, BinHeight, BinWa
 		
 		translate([BinX, 0, 0])
 		{
-			RenderBin(BinWidth, BinDepth, BinHeight, BinWallThickness, BinFloorThickness, BinWallExtruder, BinFloorExtruder);
+			RenderBin(BinWidth, BinDepth, BinHeight, BinWallThickness, BinFloorThickness, BinScale, BinWallExtruder, BinFloorExtruder);
 		}
 	}
 }
 
 module main(Args)
 {
-	RenderBinStrip(Args.BinCount, Args.BinSpacing, Args.BinWidth, Args.BinDepth, Args.BinHeight, Args.BinWallThickness, Args.BinFloorThickness, Args.BinWallExtruder, Args.FirstBinFloorExtruder, Args.LastBinFloorExtruder);
+	RenderBinStrip(Args.BinCount, Args.BinSpacing, Args.BinWidth, Args.BinDepth, Args.BinHeight, Args.BinWallThickness, Args.BinFloorThickness, Args.BinScale, Args.BinWallExtruder, Args.FirstBinFloorExtruder, Args.LastBinFloorExtruder);
 	
 	TotalWidth = (Args.BinCount * Args.BinWidth) + ((Args.BinCount - 1) * Args.BinSpacing);
 	echo("Total Width=", TotalWidth);
@@ -128,6 +167,7 @@ Args = object
 		["BinHeight",				_BinHeight],
 		["BinWallThickness",		_BinWallThickness],
 		["BinFloorThickness",		_BinFloorThickness],
+		["BinScale",				_BinScale],
 		["BinWallExtruder",			_BinWallExtruder],
 		["FirstBinFloorExtruder",	_FirstBinFloorExtruder],
 		["LastBinFloorExtruder",	_LastBinFloorExtruder]
