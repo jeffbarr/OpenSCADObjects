@@ -30,8 +30,11 @@ _BinWallThickness = 0.4;
 // Floor thickness
 _BinFloorThickness = 0.4;
 
-// Scaling
-_BinScale = 1.0;	// [0.0 : 0.1 : 2.0]
+// Scaling (X)
+_BinScaleX = 1.0;	// [0.0 : 0.1 : 2.0]
+
+// Scaling (Y)
+_BinScaleY = 1.0;	// [0.0 : 0.1 : 2.0]
 
 /* [Extruders] */
 
@@ -80,7 +83,7 @@ module Extruder(DoExtruder)
 // 	possible by linear_extrude.
 //
 
-module RenderHollowBin(BinWidth, BinDepth, BinHeight, BinWallThickness, BinScale, BinExtruder)
+module RenderHollowBin(BinWidth, BinDepth, BinHeight, BinWallThickness, BinScaleX, BinScaleY, BinExtruder)
 {
 	Extruder(BinExtruder)
 	{
@@ -88,7 +91,7 @@ module RenderHollowBin(BinWidth, BinDepth, BinHeight, BinWallThickness, BinScale
 				
 		translate([BinWidth / 2, BinDepth / 2, BinWallThickness])
 		{
-			linear_extrude(BinHeight, scale=BinScale)
+			linear_extrude(BinHeight, scale=[BinScaleX, BinScaleY])
 			{
 				translate([-BinWidth / 2, -BinDepth / 2, 0])
 				{
@@ -109,10 +112,10 @@ module RenderHollowBin(BinWidth, BinDepth, BinHeight, BinWallThickness, BinScale
 	}
 }
 
-module RenderBin(BinWidth, BinDepth, BinHeight, BinWallThickness, BinFloorThickness, BinScale, BinWallExtruder, BinFloorExtruder)
+module RenderBin(BinWidth, BinDepth, BinHeight, BinWallThickness, BinFloorThickness, BinScaleX, BinScaleY, BinWallExtruder, BinFloorExtruder)
 {
 	// Sides and sub-floor
-	RenderHollowBin(BinWidth, BinDepth, BinHeight, BinWallThickness, BinScale, BinWallExtruder);
+	RenderHollowBin(BinWidth, BinDepth, BinHeight, BinWallThickness, BinScaleX, BinScaleY, BinWallExtruder);
 	
 	// Render bin floor, taking care to clip it so that it does not portrude through the sides
 	{
@@ -128,13 +131,13 @@ module RenderBin(BinWidth, BinDepth, BinHeight, BinWallThickness, BinFloorThickn
 			
 			hull()
 			{
-				RenderHollowBin(BinWidth, BinDepth, BinHeight, BinWallThickness, BinScale, BinFloorExtruder);
+				RenderHollowBin(BinWidth, BinDepth, BinHeight, BinWallThickness, BinScaleX, BinScaleY, BinFloorExtruder);
 			}
 		}
 	}
 }
 
-module RenderBinStrip(BinCount, BinSpacing, BinWidth, BinDepth, BinHeight, BinWallThickness, BinFloorThickness, BinScale, BinWallExtruder, FirstBinFloorExtruder, LastBinFloorExtruder)
+module RenderBinStrip(BinCount, BinSpacing, BinWidth, BinDepth, BinHeight, BinWallThickness, BinFloorThickness, BinScaleX, BinScaleY, BinWallExtruder, FirstBinFloorExtruder, LastBinFloorExtruder)
 {
 	for (B = [0 : BinCount - 1])
 	{
@@ -144,14 +147,14 @@ module RenderBinStrip(BinCount, BinSpacing, BinWidth, BinDepth, BinHeight, BinWa
 		
 		translate([BinX, 0, 0])
 		{
-			RenderBin(BinWidth, BinDepth, BinHeight, BinWallThickness, BinFloorThickness, BinScale, BinWallExtruder, BinFloorExtruder);
+			RenderBin(BinWidth, BinDepth, BinHeight, BinWallThickness, BinFloorThickness, BinScaleX, BinScaleY, BinWallExtruder, BinFloorExtruder);
 		}
 	}
 }
 
 module main(Args)
 {
-	RenderBinStrip(Args.BinCount, Args.BinSpacing, Args.BinWidth, Args.BinDepth, Args.BinHeight, Args.BinWallThickness, Args.BinFloorThickness, Args.BinScale, Args.BinWallExtruder, Args.FirstBinFloorExtruder, Args.LastBinFloorExtruder);
+	RenderBinStrip(Args.BinCount, Args.BinSpacing, Args.BinWidth, Args.BinDepth, Args.BinHeight, Args.BinWallThickness, Args.BinFloorThickness, Args.BinScaleX, Args.BinScaleY, Args.BinWallExtruder, Args.FirstBinFloorExtruder, Args.LastBinFloorExtruder);
 	
 	TotalWidth = (Args.BinCount * Args.BinWidth) + ((Args.BinCount - 1) * Args.BinSpacing);
 	echo("Total Width=", TotalWidth);
@@ -167,7 +170,8 @@ Args = object
 		["BinHeight",				_BinHeight],
 		["BinWallThickness",		_BinWallThickness],
 		["BinFloorThickness",		_BinFloorThickness],
-		["BinScale",				_BinScale],
+		["BinScaleX",				_BinScaleX],
+		["BinScaleY",				_BinScaleY],
 		["BinWallExtruder",			_BinWallExtruder],
 		["FirstBinFloorExtruder",	_FirstBinFloorExtruder],
 		["LastBinFloorExtruder",	_LastBinFloorExtruder]
