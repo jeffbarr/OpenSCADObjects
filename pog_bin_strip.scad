@@ -25,7 +25,7 @@ _BinDepth = 50.0;
 _BinHeight = 10.0;
 
 // Wall thickness
-_BinWallThickness = 0.4;
+_BinWallThickness = 1.0;
 
 // Floor thickness
 _BinFloorThickness = 0.4;
