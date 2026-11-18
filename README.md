@@ -5,6 +5,7 @@ Here's a review of each one:
 
 * [arcs.scad]
 * [aws_fabric_tiles.scad](https://github.com/jeffbarr/OpenSCADObjects#aws_fabric_tilesscad)
+* [barbell_tiles.scad]
 * [dentist_square.scad](https://github.com/jeffbarr/OpenSCADObjects#dentist_squarescad)
 * [diamonds.scad](https://github.com/jeffbarr/OpenSCADObjects#diamondsscad)
 * [fan_blades.scad]
