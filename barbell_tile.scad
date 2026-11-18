@@ -5,10 +5,12 @@
 //	https://photos.app.goo.gl/o6XYw7JjXdCT37jK6 
 //
 // TODO:
-// - Fix circle so that position and size account for tile gap
 // - Try with Fabric
 // - Option to put a rim around entire set of tiles to make puzzle-like pieces
 // - Base that is shaped like entire set of tiles
+//
+// BUGS:
+//	- Seems like RingWidth is somehow being divided by 2 before being used
 //
 // NOTES:
 //
@@ -250,28 +252,31 @@ module RenderTile3D(TileShape, TileSize, CircleDiameter, TileHeight, TileRotatio
 					// Embossed ring
 					if (AddRing)
 					{
+						// Adjust ring size to reflect gap between tiles
+						RingDiameter = TileSize + TileGap + RingWidth / 2;
+						
 						// Top left
-						translate([0, TileSize, TileHeight - RingDepth])
+						translate([-TileGap / 2, TileSize + TileGap / 2, TileHeight - RingDepth])
 						{
 							linear_extrude(RingDepth + RimHeight)
 							{
 								difference()
 								{
-									circle(d=TileSize,             $fn=99);
-									circle(d=TileSize - RingWidth, $fn=99);
+									circle(d=RingDiameter,             $fn=99);
+									circle(d=RingDiameter - RingWidth, $fn=99);
 								}
 							}
 						}
 				
 						// Bottom right
-						translate([TileSize, 0, TileHeight - RingDepth])
+						translate([TileSize + TileGap / 2, -TileGap / 2, TileHeight - RingDepth])
 						{
 							linear_extrude(RingDepth + RimHeight)
 							{
 								difference()
 								{
-									circle(d=TileSize,             $fn=99);
-									circle(d=TileSize - RingWidth, $fn=99);
+									circle(d=RingDiameter,             $fn=99);
+									circle(d=RingDiameter - RingWidth, $fn=99);
 								}
 							}
 						}
