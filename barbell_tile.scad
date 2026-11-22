@@ -5,7 +5,7 @@
 //	https://photos.app.goo.gl/o6XYw7JjXdCT37jK6 
 //
 // TODO:
-// - Option to render ring instead of embossing it (needs separate Extruder)
+// - Option to fill in an embossed ring
 // - Option to put a rim around entire set of tiles to make puzzle-like pieces
 // - Base that is shaped like entire set of tiles
 //
@@ -53,14 +53,14 @@ _RimHeight = 0.2;
 
 // [Ring]
 
-// Add Ring
-_AddRing = true;
+// Ring Style
+_RingStyle = "None";	// ["None", "Emboss", "Deboss"]
 
 // Ring Width
 _RingWidth = 0.2;
 
-// Ring Depth
-_RingDepth = 0.2;
+// Ring Height
+_RingHeight = 0.2;
 
 // [Base]
 
@@ -80,6 +80,9 @@ _BaseExtruder = 1;
 
 // Rim Extruder
 _RimExtruder = 2;
+
+// Ring Extruder
+_RingExtruder = 2;
 
 // First Tile Extruder
 _FirstTileExtruder = 1;
@@ -219,20 +222,26 @@ module RenderRim(TileShape, TileSize, CircleDiameter, TileGap, RimThickness, Rim
 	}
 }
 
-module RenderRing(Diameter, Height, Width)
+module RenderRing(RingExtruder, Diameter, Height, Width)
 {
-	linear_extrude(Height)
+	Extruder(RingExtruder)
 	{
-		difference()
+		linear_extrude(Height)
 		{
-			circle(d=Diameter,             $fn=99);
-			circle(d=Diameter - 2 * Width, $fn=99);
+			difference()
+			{
+				circle(d=Diameter,             $fn=99);
+				circle(d=Diameter - 2 * Width, $fn=99);
+			}
 		}
 	}
 }
 
-module RenderTile3D(TileShape, TileSize, CircleDiameter, TileHeight, TileRotation, TileGap, AddRim, RimThickness, RimHeight, AddRing, RingWidth, RingDepth, TileExtruder, RimExtruder)
+module RenderTile3D(TileShape, TileSize, CircleDiameter, TileHeight, TileRotation, TileGap, AddRim, RimThickness, RimHeight, RingStyle, RingWidth, RingHeight, TileExtruder, RimExtruder, RingExtruder)
 {
+	// Adjust ring size to reflect gap between tiles
+	RingDiameter = TileSize + TileGap + RingWidth / 2;
+						
 	translate([TileSize / 2, TileSize / 2, 0]) 
 	{
 		rotate([0, 0, TileRotation])
@@ -259,24 +268,51 @@ module RenderTile3D(TileShape, TileSize, CircleDiameter, TileHeight, TileRotatio
 								RenderRim(TileShape, TileSize, CircleDiameter, TileGap, RimThickness, RimHeight, RimExtruder);
 							}
 						}
+						
+						if (RingStyle == "Deboss")
+						{
+							// This is tricky -- generate the rings and intersect them with the tile
+							// shape so that the rings don't span the inter-tile gaps.
+							intersection()
+							{
+								// Rings
+								union()
+								{
+									// Top left
+									translate([-TileGap / 2, TileSize + TileGap / 2, TileHeight])
+									{
+										RenderRing(RingExtruder, RingDiameter, RingHeight + RimHeight, RingWidth);
+									}
+						
+									// Bottom right
+									translate([TileSize + TileGap / 2, -TileGap / 2, TileHeight])
+									{
+										RenderRing(RingExtruder, RingDiameter, RingHeight + RimHeight, RingWidth);
+									}
+								}
+								
+								// Tile
+								linear_extrude(TileHeight + RingHeight)
+								{
+									RenderTile2D(TileShape, TileSize, CircleDiameter, TileGap);
+								}
+							}
+						}
 					}
 					
 					// Embossed ring
-					if (AddRing)
+					if (RingStyle == "Emboss")
 					{
-						// Adjust ring size to reflect gap between tiles
-						RingDiameter = TileSize + TileGap + RingWidth / 2;
-						
 						// Top left
-						translate([-TileGap / 2, TileSize + TileGap / 2, TileHeight - RingDepth])
+						translate([-TileGap / 2, TileSize + TileGap / 2, TileHeight - RingHeight])
 						{
-							RenderRing(RingDiameter, RingDepth + RimHeight, RingWidth);
+							RenderRing(RingExtruder, RingDiameter, RingHeight + RimHeight, RingWidth);
 						}
 				
 						// Bottom right
-						translate([TileSize + TileGap / 2, -TileGap / 2, TileHeight - RingDepth])
+						translate([TileSize + TileGap / 2, -TileGap / 2, TileHeight - RingHeight])
 						{
-							RenderRing(RingDiameter, RingDepth + RimHeight, RingWidth);
+							RenderRing(RingExtruder, RingDiameter, RingHeight + RimHeight, RingWidth);
 						}
 					}
 				}				
@@ -299,7 +335,7 @@ function RotationForTileShape(TileShape, X, Y) =
   (TileShape == "In Out In Out") ? ((X + Y) % 2 == 1 ? 90 : 0) :
                                    0;
 
-module RenderTileGrid(TileCountX, TileCountY, TileGap, TileSize, CircleDiameter, TileHeight, AddRim, RimWidth, RimHeight, TileShape, TilePattern, AddRing, RingWidth, RingDepth, FirstTileExtruder, RimExtruder)
+module RenderTileGrid(TileCountX, TileCountY, TileGap, TileSize, CircleDiameter, TileHeight, AddRim, RimWidth, RimHeight, TileShape, TilePattern, RingStyle, RingWidth, RingHeight, FirstTileExtruder, RimExtruder, RingExtruder)
 {
     for (X = [0 : TileCountX - 1])
     {
@@ -317,7 +353,7 @@ module RenderTileGrid(TileCountX, TileCountY, TileGap, TileSize, CircleDiameter,
 
             translate([PointX, PointY, 0])
             {
-				RenderTile3D(TileShape, TileSize, CircleDiameter, TileHeight, TileRotation, TileGap, AddRim, RimWidth, RimHeight, AddRing, RingWidth, RingDepth, TileExtruder, RimExtruder);
+				RenderTile3D(TileShape, TileSize, CircleDiameter, TileHeight, TileRotation, TileGap, AddRim, RimWidth, RimHeight, RingStyle, RingWidth, RingHeight, TileExtruder, RimExtruder, RingExtruder);
             }
         }
     }
@@ -349,7 +385,7 @@ module RenderBase(BaseThickness, BaseBorder, TileCountX, TileCountY, TileGap, Ti
 	}
 }
 
-module main(TileCountX, TileCountY, TileGap, TileSize, CircleDiameter, TileHeight, AddRim, RimWidth, RimHeight, AddBase, BaseThickness, BaseBorder, TileShape, TilePattern, AddRing, RingWidth, RingDepth, FirstTileExtruder, BaseExtruder, RimExtruder)
+module main(TileCountX, TileCountY, TileGap, TileSize, CircleDiameter, TileHeight, AddRim, RimWidth, RimHeight, AddBase, BaseThickness, BaseBorder, TileShape, TilePattern, RingStyle, RingWidth, RingHeight, FirstTileExtruder, BaseExtruder, RimExtruder, RingExtruder)
 {
 	if (AddBase)
 	{
@@ -362,8 +398,8 @@ module main(TileCountX, TileCountY, TileGap, TileSize, CircleDiameter, TileHeigh
 	
 	translate([GridOriginX, GridOriginY, GridOriginZ])
 	{
-		RenderTileGrid(TileCountX, TileCountY, TileGap, TileSize, CircleDiameter, TileHeight, AddRim, RimWidth, RimHeight, TileShape, TilePattern, AddRing, RingWidth, RingDepth, FirstTileExtruder, RimExtruder);
+		RenderTileGrid(TileCountX, TileCountY, TileGap, TileSize, CircleDiameter, TileHeight, AddRim, RimWidth, RimHeight, TileShape, TilePattern, RingStyle, RingWidth, RingHeight, FirstTileExtruder, RimExtruder, RingExtruder);
 	}
 }
 
-main(_TileCountX, _TileCountY, _TileGap, _TileSize, _CircleDiameter, _TileHeight, _AddRim,  _RimWidth, _RimHeight, _AddBase, _BaseThickness, _BaseBorder, _TileShape, _TilePattern, _AddRing, _RingWidth, _RingDepth, _FirstTileExtruder, _BaseExtruder, _RimExtruder);
+main(_TileCountX, _TileCountY, _TileGap, _TileSize, _CircleDiameter, _TileHeight, _AddRim,  _RimWidth, _RimHeight, _AddBase, _BaseThickness, _BaseBorder, _TileShape, _TilePattern, _RingStyle, _RingWidth, _RingHeight, _FirstTileExtruder, _BaseExtruder, _RimExtruder, _RingExtruder);
