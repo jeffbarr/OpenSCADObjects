@@ -5,12 +5,9 @@
 //	https://photos.app.goo.gl/o6XYw7JjXdCT37jK6 
 //
 // TODO:
-// - Try with Fabric
+// - Option to render ring instead of embossing it (needs separate Extruder)
 // - Option to put a rim around entire set of tiles to make puzzle-like pieces
 // - Base that is shaped like entire set of tiles
-//
-// BUGS:
-//	- Seems like RingWidth is somehow being divided by 2 before being used
 //
 // NOTES:
 //
@@ -222,6 +219,18 @@ module RenderRim(TileShape, TileSize, CircleDiameter, TileGap, RimThickness, Rim
 	}
 }
 
+module RenderRing(Diameter, Height, Width)
+{
+	linear_extrude(Height)
+	{
+		difference()
+		{
+			circle(d=Diameter,             $fn=99);
+			circle(d=Diameter - 2 * Width, $fn=99);
+		}
+	}
+}
+
 module RenderTile3D(TileShape, TileSize, CircleDiameter, TileHeight, TileRotation, TileGap, AddRim, RimThickness, RimHeight, AddRing, RingWidth, RingDepth, TileExtruder, RimExtruder)
 {
 	translate([TileSize / 2, TileSize / 2, 0]) 
@@ -233,22 +242,25 @@ module RenderTile3D(TileShape, TileSize, CircleDiameter, TileHeight, TileRotatio
 				difference()
 				{
 					// Tile
-					Extruder(TileExtruder)
+					union()
 					{
-						linear_extrude(TileHeight)
+						Extruder(TileExtruder)
 						{
-							RenderTile2D(TileShape, TileSize, CircleDiameter, TileGap);
+							linear_extrude(TileHeight)
+							{
+								RenderTile2D(TileShape, TileSize, CircleDiameter, TileGap);
+							}
+						}
+					
+						if (AddRim)
+						{
+							translate([0, 0, TileHeight])
+							{
+								RenderRim(TileShape, TileSize, CircleDiameter, TileGap, RimThickness, RimHeight, RimExtruder);
+							}
 						}
 					}
-				
-					if (AddRim)
-					{
-						translate([0, 0, TileHeight])
-						{
-							RenderRim(TileShape, TileSize, CircleDiameter, TileGap, RimThickness, RimHeight, RimExtruder);
-						}
-					}
-										
+					
 					// Embossed ring
 					if (AddRing)
 					{
@@ -258,27 +270,13 @@ module RenderTile3D(TileShape, TileSize, CircleDiameter, TileHeight, TileRotatio
 						// Top left
 						translate([-TileGap / 2, TileSize + TileGap / 2, TileHeight - RingDepth])
 						{
-							linear_extrude(RingDepth + RimHeight)
-							{
-								difference()
-								{
-									circle(d=RingDiameter,             $fn=99);
-									circle(d=RingDiameter - RingWidth, $fn=99);
-								}
-							}
+							RenderRing(RingDiameter, RingDepth + RimHeight, RingWidth);
 						}
 				
 						// Bottom right
 						translate([TileSize + TileGap / 2, -TileGap / 2, TileHeight - RingDepth])
 						{
-							linear_extrude(RingDepth + RimHeight)
-							{
-								difference()
-								{
-									circle(d=RingDiameter,             $fn=99);
-									circle(d=RingDiameter - RingWidth, $fn=99);
-								}
-							}
+							RenderRing(RingDiameter, RingDepth + RimHeight, RingWidth);
 						}
 					}
 				}				
